@@ -52,11 +52,13 @@ describe("structure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "E007")).toBe(true);
   });
 
-  it("E026: reports incorrect sparkle namespace URI", () => {
-    const xml = `<rss version="2.0" xmlns:sparkle="http://wrong.example.com/sparkle">
+  it("W026: warns about non-canonical sparkle namespace URI", () => {
+    // Use the old namespace format (missing www.) - a known variant that works with Sparkle
+    const xml = `<rss version="2.0" xmlns:sparkle="http://andymatuschak.org/xml-namespaces/sparkle">
       <channel><title>T</title><item><sparkle:version>1</sparkle:version>
-      <enclosure url="https://x.com/a" length="1" type="application/octet-stream"/></item></channel></rss>`;
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="sig"/></item></channel></rss>`;
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "E026")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W026")).toBe(true);
+    expect(result.valid).toBe(true); // Should still be valid (warning, not error)
   });
 });

@@ -117,9 +117,12 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "E014")).toBe(true);
   });
 
-  it("bad-namespace.xml produces E026", () => {
+  it("bad-namespace.xml is invalid (unknown namespace)", () => {
     const result = validate(readFixture("invalid", "bad-namespace.xml"));
-    expect(result.diagnostics.some((d) => d.id === "E026")).toBe(true);
+    // With a completely unknown namespace, sparkle:* elements aren't found
+    // so E008 (missing version) is reported instead of W026
+    expect(result.valid).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
   });
 
   it("dsa-only.xml produces W006", () => {

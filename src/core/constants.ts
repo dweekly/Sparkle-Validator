@@ -1,5 +1,22 @@
-/** The Sparkle XML namespace URI */
+/** The canonical Sparkle XML namespace URI */
 export const SPARKLE_NS = "http://www.andymatuschak.org/xml-namespaces/sparkle";
+
+/**
+ * Acceptable Sparkle namespace variants.
+ * These are known variants that work with Sparkle in practice.
+ * The namespace URI is just an identifier, not actually fetched.
+ */
+export const SPARKLE_NS_VARIANTS = new Set([
+  "http://www.andymatuschak.org/xml-namespaces/sparkle", // canonical
+  "http://andymatuschak.org/xml-namespaces/sparkle", // missing www (common)
+  "https://www.andymatuschak.org/xml-namespaces/sparkle", // https variant
+  "https://andymatuschak.org/xml-namespaces/sparkle", // https without www
+]);
+
+/** Check if a namespace URI is a known Sparkle namespace variant */
+export function isSparkleNamespace(ns: string | undefined): boolean {
+  return ns !== undefined && SPARKLE_NS_VARIANTS.has(ns);
+}
 
 /** Common Sparkle namespace prefixes */
 export const SPARKLE_PREFIXES = ["sparkle"];

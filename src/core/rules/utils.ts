@@ -1,5 +1,5 @@
 import type { XmlElement } from "../types.js";
-import { SPARKLE_NS } from "../constants.js";
+import { isSparkleNamespace } from "../constants.js";
 
 /**
  * Find all direct child elements with the given local name (no namespace).
@@ -16,6 +16,7 @@ export function childElements(
 
 /**
  * Find all direct child elements with the given local name in the Sparkle namespace.
+ * Accepts known Sparkle namespace variants.
  */
 export function sparkleChildElements(
   parent: XmlElement,
@@ -23,7 +24,9 @@ export function sparkleChildElements(
 ): XmlElement[] {
   return parent.children.filter(
     (c): c is XmlElement =>
-      c.type === "element" && c.name === localName && c.namespace === SPARKLE_NS
+      c.type === "element" &&
+      c.name === localName &&
+      isSparkleNamespace(c.namespace)
   );
 }
 
@@ -70,14 +73,15 @@ export function attr(element: XmlElement, qname: string): string | undefined {
 /**
  * Get an attribute that might appear with or without a sparkle: prefix.
  * Checks sparkle-namespaced attributes first, then falls back to un-namespaced.
+ * Accepts known Sparkle namespace variants.
  */
 export function sparkleAttr(
   element: XmlElement,
   localName: string
 ): string | undefined {
-  // Check for sparkle:localName (namespaced)
+  // Check for sparkle:localName (namespaced) - accept known variants
   for (const a of Object.values(element.attributes)) {
-    if (a.namespace === SPARKLE_NS && a.name === localName) {
+    if (isSparkleNamespace(a.namespace) && a.name === localName) {
       return a.value;
     }
   }
@@ -94,10 +98,9 @@ export function elementPath(element: XmlElement): string {
   const parts: string[] = [];
   let current: XmlElement | undefined = element;
   while (current) {
-    let label =
-      current.namespace === SPARKLE_NS
-        ? `sparkle:${current.name}`
-        : current.name;
+    let label = isSparkleNamespace(current.namespace)
+      ? `sparkle:${current.name}`
+      : current.name;
 
     // Add index if there are sibling elements with the same name
     if (current.parent) {
@@ -128,10 +131,11 @@ export function getItems(channel: XmlElement): XmlElement[] {
 
 /**
  * Check if a string is a valid absolute URL with an allowed scheme.
+ * Allowed schemes: https, http, feed (RSS convention for feed readers)
  */
 export function isValidUrl(
   url: string,
-  allowedSchemes = ["https", "http"]
+  allowedSchemes = ["https", "http", "feed"]
 ): boolean {
   try {
     const parsed = new URL(url);

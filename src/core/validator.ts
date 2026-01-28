@@ -33,9 +33,7 @@ export function validate(xml: string): ValidationResult {
         diagnostics.some(
           (d) =>
             d.severity === "error" &&
-            ["E002", "E003", "E004", "E005", "E006", "E007", "E026"].includes(
-              d.id
-            )
+            ["E002", "E003", "E004", "E005", "E006", "E007"].includes(d.id)
         )
       ) {
         // Still run remaining rules if we at least have channel+items

@@ -227,7 +227,7 @@ function validateUrl(
       line: element.line,
       column: element.column,
       path: elementPath(element),
-      fix: "Use a valid absolute URL with https:// or http:// scheme",
+      fix: "Use a valid absolute URL with https://, http://, or feed:// scheme",
     });
     return;
   }
