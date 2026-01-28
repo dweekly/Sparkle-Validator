@@ -24,7 +24,9 @@ program
       const result = validate(xml);
 
       const useColor =
-        options.color !== false && process.stdout.isTTY && !process.env.NO_COLOR;
+        options.color !== false &&
+        process.stdout.isTTY &&
+        !process.env.NO_COLOR;
 
       let output: string;
       if (options.format === "json") {

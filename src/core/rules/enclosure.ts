@@ -39,7 +39,10 @@ export function enclosureRules(
   for (const item of items) {
     const enclosure = childElement(item, "enclosure");
     const link = childElement(item, "link");
-    const informationalUpdate = sparkleChildElement(item, "informationalUpdate");
+    const informationalUpdate = sparkleChildElement(
+      item,
+      "informationalUpdate"
+    );
 
     // E009: Must have enclosure with url or link
     if (!enclosure && !link && !informationalUpdate) {
@@ -50,7 +53,7 @@ export function enclosureRules(
         line: item.line,
         column: item.column,
         path: elementPath(item),
-        fix: "Add an <enclosure url=\"...\" length=\"...\" type=\"...\"/> or <link> element",
+        fix: 'Add an <enclosure url="..." length="..." type="..."/> or <link> element',
       });
       continue;
     }
@@ -79,7 +82,10 @@ export function enclosureRules(
     // Check installationType on enclosure attribute
     if (enclosure) {
       const instType = sparkleAttr(enclosure, "installationType");
-      if (instType && !(VALID_INSTALLATION_TYPES as readonly string[]).includes(instType)) {
+      if (
+        instType &&
+        !(VALID_INSTALLATION_TYPES as readonly string[]).includes(instType)
+      ) {
         diagnostics.push({
           id: "E022",
           severity: "error",
@@ -204,7 +210,8 @@ function validateEnclosure(
     diagnostics.push({
       id: "W006",
       severity: "warning",
-      message: "Enclosure only has a DSA signature; DSA is deprecated in favor of EdDSA",
+      message:
+        "Enclosure only has a DSA signature; DSA is deprecated in favor of EdDSA",
       line: enclosure.line,
       column: enclosure.column,
       path: elementPath(enclosure),
@@ -213,10 +220,7 @@ function validateEnclosure(
   }
 }
 
-function validateDeltas(
-  deltasEl: XmlElement,
-  diagnostics: Diagnostic[]
-): void {
+function validateDeltas(deltasEl: XmlElement, diagnostics: Diagnostic[]): void {
   const deltaEnclosures = childElements(deltasEl, "enclosure");
 
   // E023: deltas must contain enclosure elements
@@ -244,7 +248,7 @@ function validateDeltas(
         line: deltaEnc.line,
         column: deltaEnc.column,
         path: elementPath(deltaEnc),
-        fix: "Add sparkle:deltaFrom=\"<previousVersion>\" to the delta enclosure",
+        fix: 'Add sparkle:deltaFrom="<previousVersion>" to the delta enclosure',
       });
     }
 

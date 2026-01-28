@@ -65,7 +65,12 @@ export function systemRequirementRules(
     }
 
     // W013: min > max
-    if (minVer && maxVer && MACOS_VERSION_REGEX.test(minVer) && MACOS_VERSION_REGEX.test(maxVer)) {
+    if (
+      minVer &&
+      maxVer &&
+      MACOS_VERSION_REGEX.test(minVer) &&
+      MACOS_VERSION_REGEX.test(maxVer)
+    ) {
       if (compareVersions(minVer, maxVer) > 0) {
         diagnostics.push({
           id: "W013",

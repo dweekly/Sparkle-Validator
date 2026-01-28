@@ -46,7 +46,8 @@ export function versionRules(
       diagnostics.push({
         id: "E008",
         severity: "error",
-        message: "Item is missing sparkle:version (neither element nor enclosure attribute)",
+        message:
+          "Item is missing sparkle:version (neither element nor enclosure attribute)",
         line: item.line,
         column: item.column,
         path: elementPath(item),
@@ -69,7 +70,11 @@ export function versionRules(
     }
 
     // W007: Redundant version
-    if (versionElText && enclosureVersion && versionElText === enclosureVersion) {
+    if (
+      versionElText &&
+      enclosureVersion &&
+      versionElText === enclosureVersion
+    ) {
       diagnostics.push({
         id: "W007",
         severity: "warning",

@@ -83,7 +83,8 @@ export function dateRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       diagnostics.push({
         id: "W018",
         severity: "warning",
-        message: "Items are not sorted by pubDate in descending order (newest first)",
+        message:
+          "Items are not sorted by pubDate in descending order (newest first)",
         line: items[0].line,
         column: items[0].column,
         path: elementPath(items[0]),

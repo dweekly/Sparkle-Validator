@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo "Running pre-push checks..."
+
+# Format check
+echo "Checking formatting..."
+npm run format:check || {
+  echo "Format check failed. Run 'npm run format' to fix."
+  exit 1
+}
+
+# Lint and type check
+echo "Running lint and type check..."
+npm run lint || {
+  echo "Lint/type check failed."
+  exit 1
+}
+
+# Tests
+echo "Running tests..."
+npm test || {
+  echo "Tests failed."
+  exit 1
+}
+
+echo "All pre-push checks passed!"

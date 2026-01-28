@@ -32,7 +32,9 @@ export function validate(xml: string): ValidationResult {
         diagnostics.some(
           (d) =>
             d.severity === "error" &&
-            ["E002", "E003", "E004", "E005", "E006", "E007", "E026"].includes(d.id)
+            ["E002", "E003", "E004", "E005", "E006", "E007", "E026"].includes(
+              d.id
+            )
         )
       ) {
         // Still run remaining rules if we at least have channel+items
@@ -53,7 +55,9 @@ export function validate(xml: string): ValidationResult {
   });
 
   const errorCount = diagnostics.filter((d) => d.severity === "error").length;
-  const warningCount = diagnostics.filter((d) => d.severity === "warning").length;
+  const warningCount = diagnostics.filter(
+    (d) => d.severity === "warning"
+  ).length;
   const infoCount = diagnostics.filter((d) => d.severity === "info").length;
 
   return {

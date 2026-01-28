@@ -46,7 +46,13 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
     if (rnLink) {
       const url = textContent(rnLink).trim();
       if (url) {
-        validateUrl(url, "E016", "sparkle:releaseNotesLink", rnLink, diagnostics);
+        validateUrl(
+          url,
+          "E016",
+          "sparkle:releaseNotesLink",
+          rnLink,
+          diagnostics
+        );
       }
     }
 
@@ -55,7 +61,13 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
     if (frnLink) {
       const url = textContent(frnLink).trim();
       if (url) {
-        validateUrl(url, "E017", "sparkle:fullReleaseNotesLink", frnLink, diagnostics);
+        validateUrl(
+          url,
+          "E017",
+          "sparkle:fullReleaseNotesLink",
+          frnLink,
+          diagnostics
+        );
       }
     }
 
@@ -66,7 +78,13 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       for (const deltaEnc of deltaEnclosures) {
         const url = attr(deltaEnc, "url");
         if (url) {
-          validateUrl(url, "E018", "delta enclosure url", deltaEnc, diagnostics);
+          validateUrl(
+            url,
+            "E018",
+            "delta enclosure url",
+            deltaEnc,
+            diagnostics
+          );
         }
       }
     }

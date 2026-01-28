@@ -19,7 +19,8 @@
   --radius: 8px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   --font-mono: "SF Mono", "Menlo", "Consolas", monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -92,7 +93,9 @@ header p {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .tab-btn:hover {

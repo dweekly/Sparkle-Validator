@@ -25,14 +25,18 @@ export function releaseNotesRules(
   for (const item of items) {
     const description = childElement(item, "description");
     const releaseNotesLink = sparkleChildElement(item, "releaseNotesLink");
-    const fullReleaseNotesLink = sparkleChildElement(item, "fullReleaseNotesLink");
+    const fullReleaseNotesLink = sparkleChildElement(
+      item,
+      "fullReleaseNotesLink"
+    );
 
     const hasDescription =
       description && textContent(description).trim().length > 0;
     const hasReleaseNotesLink =
       releaseNotesLink && textContent(releaseNotesLink).trim().length > 0;
     const hasFullReleaseNotesLink =
-      fullReleaseNotesLink && textContent(fullReleaseNotesLink).trim().length > 0;
+      fullReleaseNotesLink &&
+      textContent(fullReleaseNotesLink).trim().length > 0;
 
     if (!hasDescription && !hasReleaseNotesLink && !hasFullReleaseNotesLink) {
       diagnostics.push({

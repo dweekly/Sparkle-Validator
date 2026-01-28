@@ -69,13 +69,17 @@ export function bestPracticeRules(
     }
 
     // W017: informationalUpdate on item that also has enclosure
-    const informationalUpdate = sparkleChildElement(item, "informationalUpdate");
+    const informationalUpdate = sparkleChildElement(
+      item,
+      "informationalUpdate"
+    );
     const enclosure = childElement(item, "enclosure");
     if (informationalUpdate && enclosure) {
       diagnostics.push({
         id: "W017",
         severity: "warning",
-        message: "Item has both <sparkle:informationalUpdate> and <enclosure>; informational updates typically should not include a download",
+        message:
+          "Item has both <sparkle:informationalUpdate> and <enclosure>; informational updates typically should not include a download",
         line: informationalUpdate.line,
         column: informationalUpdate.column,
         path: elementPath(informationalUpdate),

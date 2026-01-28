@@ -178,7 +178,9 @@ describe("info rules", () => {
   });
 
   it("I003: reports phased rollout", () => {
-    const xml = wrap(`<sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>`);
+    const xml = wrap(
+      `<sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>`
+    );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "I003")).toBe(true);
   });

@@ -39,7 +39,9 @@ function formatDiagnostic(
   const parts: string[] = [];
 
   // Severity + ID
-  parts.push(`  ${severityIcon(diag.severity, options)} ${c(diag.id, BOLD, options)}`);
+  parts.push(
+    `  ${severityIcon(diag.severity, options)} ${c(diag.id, BOLD, options)}`
+  );
 
   // Location
   if (diag.line) {
@@ -120,8 +122,12 @@ export function formatText(
 
   // Summary line
   const summary: string[] = [];
-  summary.push(`${result.errorCount} error${result.errorCount !== 1 ? "s" : ""}`);
-  summary.push(`${result.warningCount} warning${result.warningCount !== 1 ? "s" : ""}`);
+  summary.push(
+    `${result.errorCount} error${result.errorCount !== 1 ? "s" : ""}`
+  );
+  summary.push(
+    `${result.warningCount} warning${result.warningCount !== 1 ? "s" : ""}`
+  );
   if (!options.noInfo) {
     summary.push(`${result.infoCount} info`);
   }

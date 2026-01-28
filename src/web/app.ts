@@ -60,9 +60,7 @@ btnUpload.addEventListener("click", () => {
 // --- Validate: URL ---
 
 const urlInput = document.getElementById("url-input") as HTMLInputElement;
-const btnUrl = document.getElementById(
-  "btn-validate-url"
-) as HTMLButtonElement;
+const btnUrl = document.getElementById("btn-validate-url") as HTMLButtonElement;
 
 btnUrl.addEventListener("click", async () => {
   const url = urlInput.value.trim();
@@ -136,9 +134,7 @@ function showResults(result: ValidationResult): void {
 
   // Summary
   const parts = [];
-  parts.push(
-    `${result.errorCount} error${result.errorCount !== 1 ? "s" : ""}`
-  );
+  parts.push(`${result.errorCount} error${result.errorCount !== 1 ? "s" : ""}`);
   parts.push(
     `${result.warningCount} warning${result.warningCount !== 1 ? "s" : ""}`
   );
@@ -148,9 +144,7 @@ function showResults(result: ValidationResult): void {
 
   // Sections
   if (errors.length > 0) {
-    resultsEl.appendChild(
-      renderSection("Errors", "errors", errors, true)
-    );
+    resultsEl.appendChild(renderSection("Errors", "errors", errors, true));
   }
   if (warnings.length > 0) {
     resultsEl.appendChild(
@@ -176,10 +170,7 @@ function renderSection(
     `${title} (${diagnostics.length})`
   );
 
-  const body = el(
-    "div",
-    `section-body${startOpen ? " open" : ""}`
-  );
+  const body = el("div", `section-body${startOpen ? " open" : ""}`);
 
   for (const d of diagnostics) {
     body.appendChild(renderDiagnostic(d));

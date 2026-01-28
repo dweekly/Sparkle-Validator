@@ -52,7 +52,10 @@ export function sparkleChildElement(
  */
 export function textContent(element: XmlElement): string {
   return element.children
-    .filter((c): c is { type: "text"; text: string; line: number; column: number } => c.type === "text")
+    .filter(
+      (c): c is { type: "text"; text: string; line: number; column: number } =>
+        c.type === "text"
+    )
     .map((c) => c.text)
     .join("");
 }
@@ -91,9 +94,10 @@ export function elementPath(element: XmlElement): string {
   const parts: string[] = [];
   let current: XmlElement | undefined = element;
   while (current) {
-    let label = current.namespace === SPARKLE_NS
-      ? `sparkle:${current.name}`
-      : current.name;
+    let label =
+      current.namespace === SPARKLE_NS
+        ? `sparkle:${current.name}`
+        : current.name;
 
     // Add index if there are sibling elements with the same name
     if (current.parent) {
