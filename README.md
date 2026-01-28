@@ -255,7 +255,7 @@ interface Diagnostic {
 | I002 | Item contains N delta updates |
 | I003 | Item uses phased rollout |
 | I004 | Item marked as critical update |
-| I005 | Item targets specific OS |
+| I005 | Item targets non-macOS platform |
 
 ## Development
 

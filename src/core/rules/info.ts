@@ -77,15 +77,16 @@ export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       });
     }
 
-    // I005: OS-specific
+    // I005: OS-specific (only flag non-macos targets as notable)
     const enclosure = childElement(item, "enclosure");
     if (enclosure) {
       const os = sparkleAttr(enclosure, "os");
-      if (os) {
+      // Only flag if targeting non-macOS (sparkle:os="macos" is redundant/default)
+      if (os && os.toLowerCase() !== "macos") {
         diagnostics.push({
           id: "I005",
           severity: "info",
-          message: `Item targets specific OS: "${os}"`,
+          message: `Item targets non-macOS platform: "${os}"`,
           line: enclosure.line,
           column: enclosure.column,
           path: elementPath(enclosure),
