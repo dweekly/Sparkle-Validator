@@ -13,7 +13,9 @@ import {
  * I002: Item contains N delta updates
  * I003: Item uses phased rollout
  * I004: Item marked as critical update
- * I005: Item targets specific OS
+ * I005: Item targets non-macOS platform
+ * I006: Item requires specific hardware (Sparkle 2.9+)
+ * I007: Item requires minimum app version to update (Sparkle 2.9+)
  */
 export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   const { root } = doc;
@@ -92,6 +94,34 @@ export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
           path: elementPath(enclosure),
         });
       }
+    }
+
+    // I006: Hardware requirements (Sparkle 2.9+)
+    const hardwareEl = sparkleChildElement(item, "hardwareRequirements");
+    if (hardwareEl) {
+      const requirements = textContent(hardwareEl).trim();
+      diagnostics.push({
+        id: "I006",
+        severity: "info",
+        message: `Item requires specific hardware: "${requirements}"`,
+        line: hardwareEl.line,
+        column: hardwareEl.column,
+        path: elementPath(hardwareEl),
+      });
+    }
+
+    // I007: Minimum update version (Sparkle 2.9+)
+    const minUpdateEl = sparkleChildElement(item, "minimumUpdateVersion");
+    if (minUpdateEl) {
+      const minVersion = textContent(minUpdateEl).trim();
+      diagnostics.push({
+        id: "I007",
+        severity: "info",
+        message: `Item requires app version ${minVersion} or later to update`,
+        line: minUpdateEl.line,
+        column: minUpdateEl.column,
+        path: elementPath(minUpdateEl),
+      });
     }
   }
 

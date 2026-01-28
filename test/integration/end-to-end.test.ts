@@ -51,6 +51,20 @@ describe("valid fixtures", () => {
     expect(result.valid).toBe(true);
     expect(result.errorCount).toBe(0);
   });
+
+  it("sparkle-2.9-features.xml is valid and reports I006/I007", () => {
+    const result = validate(readFixture("valid", "sparkle-2.9-features.xml"));
+    expect(result.valid).toBe(true);
+    expect(result.errorCount).toBe(0);
+    // Should report hardware requirements (I006)
+    const hwDiag = result.diagnostics.find((d) => d.id === "I006");
+    expect(hwDiag).toBeDefined();
+    expect(hwDiag!.message).toContain("arm64");
+    // Should report minimum update version (I007)
+    const minUpdateDiag = result.diagnostics.find((d) => d.id === "I007");
+    expect(minUpdateDiag).toBeDefined();
+    expect(minUpdateDiag!.message).toContain("200");
+  });
 });
 
 describe("invalid fixtures", () => {
@@ -136,5 +150,18 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true); // bad min version
     expect(result.diagnostics.some((d) => d.id === "E022")).toBe(true); // bad installationType
     expect(result.diagnostics.some((d) => d.id === "E019")).toBe(true); // bad channel name
+  });
+
+  it("sparkle-2.9-errors.xml produces expected warnings", () => {
+    const result = validate(readFixture("invalid", "sparkle-2.9-errors.xml"));
+    // W003: Missing pubDate
+    expect(result.diagnostics.some((d) => d.id === "W003")).toBe(true);
+    // W005: Missing signature
+    expect(result.diagnostics.some((d) => d.id === "W005")).toBe(true);
+    // E021: Phased rollout without pubDate
+    expect(result.diagnostics.some((d) => d.id === "E021")).toBe(true);
+    // Should still report I006/I007 for the 2.9 features
+    expect(result.diagnostics.some((d) => d.id === "I006")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "I007")).toBe(true);
   });
 });

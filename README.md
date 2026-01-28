@@ -247,7 +247,7 @@ interface Diagnostic {
 | W019 | Enclosure length is 0 |
 | W020 | Duplicate version |
 
-### Info (I001-I005)
+### Info (I001-I007)
 
 | ID | Description |
 |----|-------------|
@@ -256,6 +256,8 @@ interface Diagnostic {
 | I003 | Item uses phased rollout |
 | I004 | Item marked as critical update |
 | I005 | Item targets non-macOS platform |
+| I006 | Item requires specific hardware (Sparkle 2.9+) |
+| I007 | Item requires minimum app version to update (Sparkle 2.9+) |
 
 ## Development
 

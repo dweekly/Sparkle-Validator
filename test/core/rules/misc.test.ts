@@ -184,4 +184,24 @@ describe("info rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "I003")).toBe(true);
   });
+
+  it("I006: reports hardware requirements (Sparkle 2.9+)", () => {
+    const xml = wrap(
+      `<sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>`
+    );
+    const result = validate(xml);
+    const diag = result.diagnostics.find((d) => d.id === "I006");
+    expect(diag).toBeDefined();
+    expect(diag?.message).toContain("arm64");
+  });
+
+  it("I007: reports minimum update version (Sparkle 2.9+)", () => {
+    const xml = wrap(
+      `<sparkle:minimumUpdateVersion>50</sparkle:minimumUpdateVersion>`
+    );
+    const result = validate(xml);
+    const diag = result.diagnostics.find((d) => d.id === "I007");
+    expect(diag).toBeDefined();
+    expect(diag?.message).toContain("50");
+  });
 });

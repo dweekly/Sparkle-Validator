@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Invalid appcast with Sparkle 2.9 features used incorrectly -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Broken 2.9 Features App</title>
+    <link>https://example.com/</link>
+
+    <!-- Item with hardware requirements but missing basic requirements -->
+    <item>
+      <title>Broken ARM64 Update</title>
+      <!-- Missing pubDate - W003 -->
+      <sparkle:version>300</sparkle:version>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <sparkle:minimumUpdateVersion>200</sparkle:minimumUpdateVersion>
+
+      <!-- Missing signature - W005 -->
+      <enclosure
+        url="https://example.com/downloads/App-3.0.zip"
+        length="15000000"
+        type="application/octet-stream"
+      />
+    </item>
+
+    <!-- Item using phased rollout without pubDate - E021 -->
+    <item>
+      <title>Phased Rollout Without Date</title>
+      <sparkle:version>250</sparkle:version>
+      <sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>
+      <sparkle:hardwareRequirements>arm64,x86_64</sparkle:hardwareRequirements>
+
+      <enclosure
+        url="https://example.com/downloads/App-2.5.zip"
+        sparkle:edSignature="XYZ789..."
+        length="20000000"
+        type="application/octet-stream"
+      />
+    </item>
+  </channel>
+</rss>

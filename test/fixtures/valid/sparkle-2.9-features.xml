@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Valid appcast using Sparkle 2.9+ features -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>App with Sparkle 2.9 Features</title>
+    <link>https://example.com/</link>
+    <description>Demonstrates Sparkle 2.9+ appcast features</description>
+    <language>en</language>
+
+    <!-- Apple Silicon only update with minimum version requirement -->
+    <item>
+      <title>Version 3.0 (Apple Silicon)</title>
+      <pubDate>Mon, 28 Jan 2026 12:00:00 -0800</pubDate>
+      <sparkle:version>300</sparkle:version>
+      <sparkle:shortVersionString>3.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+
+      <!-- Sparkle 2.9: Requires Apple Silicon -->
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+
+      <!-- Sparkle 2.9: Requires version 200+ to update directly -->
+      <sparkle:minimumUpdateVersion>200</sparkle:minimumUpdateVersion>
+
+      <description><![CDATA[
+        <h2>Version 3.0</h2>
+        <p>This update requires Apple Silicon and version 2.0 or later.</p>
+        <ul>
+          <li>Native Apple Silicon performance</li>
+          <li>Requires macOS 14.0+</li>
+        </ul>
+      ]]></description>
+
+      <enclosure
+        url="https://example.com/downloads/App-3.0-arm64.zip"
+        sparkle:edSignature="ABC123..."
+        length="15000000"
+        type="application/octet-stream"
+      />
+    </item>
+
+    <!-- Universal update for users on older versions -->
+    <item>
+      <title>Version 2.5 (Universal)</title>
+      <pubDate>Sun, 15 Dec 2025 10:00:00 -0800</pubDate>
+      <sparkle:version>250</sparkle:version>
+      <sparkle:shortVersionString>2.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+
+      <description><![CDATA[<p>Universal update for all users.</p>]]></description>
+
+      <enclosure
+        url="https://example.com/downloads/App-2.5-Universal.zip"
+        sparkle:edSignature="DEF456..."
+        length="20000000"
+        type="application/octet-stream"
+      />
+    </item>
+  </channel>
+</rss>
