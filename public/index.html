@@ -1,63 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sparkle Validator — Validate appcast.xml feeds</title>
-  <meta name="description" content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices.">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Sparkle Validator</h1>
-      <p>Validate your Sparkle appcast.xml feed for errors, warnings, and best practices</p>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkle Validator — Validate appcast.xml feeds</title>
+    <meta
+      name="description"
+      content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices."
+    />
 
-    <main>
-      <div class="tabs" role="tablist">
-        <button class="tab-btn active" role="tab" data-tab="url" aria-selected="true">From URL</button>
-        <button class="tab-btn" role="tab" data-tab="upload" aria-selected="false">Upload File</button>
-        <button class="tab-btn" role="tab" data-tab="paste" aria-selected="false">Paste XML</button>
-      </div>
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/icons/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/icons/favicon-16x16.png"
+    />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0071e3" />
 
-      <div id="tab-url" class="tab-panel active" role="tabpanel">
-        <div class="input-row">
-          <input type="text" id="url-input" placeholder="https://example.com/appcast.xml">
-          <button id="btn-validate-url" class="btn">Fetch &amp; Validate</button>
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://sparklevalidator.com/" />
+    <meta
+      property="og:title"
+      content="Sparkle Validator — Validate appcast.xml feeds"
+    />
+    <meta
+      property="og:description"
+      content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices."
+    />
+    <meta
+      property="og:image"
+      content="https://sparklevalidator.com/og-image.jpg"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Sparkle Validator — Validate appcast.xml feeds"
+    />
+    <meta
+      name="twitter:description"
+      content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices."
+    />
+    <meta
+      name="twitter:image"
+      content="https://sparklevalidator.com/og-image.jpg"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Sparkle Validator</h1>
+        <p>
+          Validate your Sparkle appcast.xml feed for errors, warnings, and best
+          practices
+        </p>
+      </header>
+
+      <main>
+        <div class="tabs" role="tablist">
+          <button
+            class="tab-btn active"
+            role="tab"
+            data-tab="url"
+            aria-selected="true"
+          >
+            From URL
+          </button>
+          <button
+            class="tab-btn"
+            role="tab"
+            data-tab="upload"
+            aria-selected="false"
+          >
+            Upload File
+          </button>
+          <button
+            class="tab-btn"
+            role="tab"
+            data-tab="paste"
+            aria-selected="false"
+          >
+            Paste XML
+          </button>
         </div>
-        <p class="cors-note">Note: Fetching URLs may fail due to CORS restrictions. If this happens, use Upload File or Paste XML.</p>
-      </div>
 
-      <div id="tab-upload" class="tab-panel" role="tabpanel">
-        <input type="file" id="file-input" accept=".xml,.rss,.atom">
-        <div class="actions">
-          <button id="btn-validate-upload" class="btn" disabled>Validate</button>
+        <div id="tab-url" class="tab-panel active" role="tabpanel">
+          <div class="input-row">
+            <input
+              type="text"
+              id="url-input"
+              placeholder="https://example.com/appcast.xml"
+            />
+            <button id="btn-validate-url" class="btn">
+              Fetch &amp; Validate
+            </button>
+          </div>
+          <p class="cors-note">
+            Note: Fetching URLs may fail due to CORS restrictions. If this
+            happens, use Upload File or Paste XML.
+          </p>
         </div>
-      </div>
 
-      <div id="tab-paste" class="tab-panel" role="tabpanel">
-        <textarea id="xml-input" placeholder="Paste your appcast.xml content here..." spellcheck="false"></textarea>
-        <div class="actions">
-          <button id="btn-validate-paste" class="btn">Validate</button>
+        <div id="tab-upload" class="tab-panel" role="tabpanel">
+          <input type="file" id="file-input" accept=".xml,.rss,.atom" />
+          <div class="actions">
+            <button id="btn-validate-upload" class="btn" disabled>
+              Validate
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div id="results"></div>
-    </main>
+        <div id="tab-paste" class="tab-panel" role="tabpanel">
+          <textarea
+            id="xml-input"
+            placeholder="Paste your appcast.xml content here..."
+            spellcheck="false"
+          ></textarea>
+          <div class="actions">
+            <button id="btn-validate-paste" class="btn">Validate</button>
+          </div>
+        </div>
 
-    <footer>
-      <p>
-        <a href="https://github.com/dweekly/Sparkle-Validator">GitHub</a> &middot;
-        MIT License &middot;
-        CLI: <code>npm install -g sparkle-validator</code>
-      </p>
-      <p class="disclaimer">
-        This is an independent community project, not affiliated with the official <a href="https://sparkle-project.org/">Sparkle</a> project.
-      </p>
-    </footer>
-  </div>
+        <div id="results"></div>
+      </main>
 
-  <script src="app.global.js"></script>
-</body>
+      <footer>
+        <p>
+          <a href="https://github.com/dweekly/Sparkle-Validator">GitHub</a>
+          &middot; MIT License &middot; CLI:
+          <code>npm install -g sparkle-validator</code>
+        </p>
+        <p class="disclaimer">
+          This is an independent community project, not affiliated with the
+          official <a href="https://sparkle-project.org/">Sparkle</a> project.
+        </p>
+      </footer>
+    </div>
+
+    <script src="app.global.js"></script>
+  </body>
 </html>
