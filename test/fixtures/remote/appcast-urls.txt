@@ -1,0 +1,172 @@
+# Public Sparkle Appcast URLs
+# Real-world appcast feeds from macOS applications
+# Used for integration testing and validation benchmarking
+#
+# Last verified: 2026-01-28
+# Total tested: 499 URLs
+# Results: 209 VALID, 65 INVALID, 96 404, 127 FETCH_ERR, 2 TIMEOUT
+
+# ============================================================================
+# VERIFIED VALID - Zero Warnings (Perfect appcasts!)
+# ============================================================================
+http://abyss.designheresy.com/marked/marked.xml # Marked
+http://skim-app.sourceforge.net/skim.xml # Skim PDF
+http://softwareupdate.pilotmoon.com/update/scrollreverser/appcast.xml # Scroll Reverser
+http://www.soma-zone.com/LaunchControl/a/appcast.xml # LaunchControl
+https://product-downloads.atlassian.com/software/sourcetree/Appcast/SparkleAppcast.xml # SourceTree
+https://raw.githubusercontent.com/ninxsoft/LowProfile/main/appcast.xml # LowProfile
+https://www.texpadapp.com/static-collected/upgrades/texpadappcast.xml # Texpad
+
+# ============================================================================
+# VERIFIED VALID - Low Warnings (1-5 warnings)
+# ============================================================================
+http://hyperswitch.bahoom.com/appcast.xml # HyperSwitch (1w)
+http://moneymoney-app.com/update/appcast.xml # MoneyMoney (1w)
+http://update.menial.co.uk/software/base/ # Base (1w)
+http://www.pocketsoap.com/osx/soqlx/appcast.xml # SoqlXplorer (1w)
+http://www.scummvm.org/appcasts/macosx/release.xml # ScummVM (1w)
+http://handbrake.fr/appcast.x86_64.xml # HandBrake (2w)
+http://www.cleverfiles.com/releases/auto-update/dd2-newestr.xml # Disk Drill (2w)
+http://www.irradiatedsoftware.com/updates/profiles/tickets.php # Tickets (2w)
+http://www.maintain.se/downloads/sparkle/mavericks/mavericks.xml # Cocktail (2w)
+http://www.orange-carb.org/SBM/updates/sbm.xml # SlimBatteryMonitor (2w)
+http://www.repetier.com/updates/rhm/rhm-appcast.xml # Repetier-Host (2w)
+https://iterm2.com/appcasts/final_modern.xml # iTerm2 (2w)
+https://kapeli.com/Dash7.xml # Dash (2w)
+https://raw.github.com/marcw/soundcleod/master/appcast.xml # TwentyTwo (2w)
+https://s3.amazonaws.com/tunnelbear/downloads/mac/appcast.xml # TunnelBear (2w)
+https://updates.expandrive.com/appcast/expandrive.xml?version=3 # ExpanDrive (2w)
+https://version.cyberduck.io/changelog.rss # Cyberduck (3w)
+https://www.tunnelblick.net/appcast.rss # Tunnelblick (2w)
+http://appgineers.de/mountain/files/mountaincast.xml # Mountain (3w)
+http://cord.sourceforge.net/sparkle.xml # CoRD (3w)
+http://collect3.com.au/hiss/appcast.xml # Hiss (3w)
+http://downloads.nulana.com/flexiglass/appcast.xml # Flexiglass (3w)
+http://gitx.frim.nl/Downloads/appcast.xml # GitX (3w)
+http://imageoptim.com/appcast.xml # ImageOptim (3w)
+http://macfusionapp.org/appcast.xml # Macfusion (3w)
+http://mizage.com/updates/profiles/divvy.php # Divvy (3w)
+http://neat.io/appcasts/bee-appcast.xml # Bee (3w)
+http://cocoaholic.com/sparkle/snippet_edit/sparkle.xml # Snippet Edit (3w)
+http://secure.goldenhillsoftware.com/updates/cloudpull/appcast.xml # CloudPull (3w)
+http://silverback.s3.amazonaws.com/release/appcast.xml # Silverback (3w)
+http://spotdox.herokuapp.com/downloads/appcast.xml # Spotdox (3w)
+http://pages.uoregon.edu/koch/texshop/texshop-64/texshopappcast.xml # TeXShop (3w)
+http://peterborgapps.com/updates/lingonx-appcast.xml # Lingon X (3w)
+http://sublimetext.com/updates/2/stable/appcast_osx.xml # Sublime Text (3w)
+http://trankynam.com/atext/aText-Appcast.xml # aText (3w)
+http://tresrrr.com/All2MP3/Appcast.xml # All2MP3 (3w)
+http://www.lynapp.com/lyn/update.xml # Lyn (3w)
+http://zqueue.com/servetome/stm3_mac_appcast.xml # ServeToMe (3w)
+http://cidian.youdao.com/apps/macupdate/update.xml # Youdao (3w)
+https://raw.github.com/OpenEmu/OpenEmu-Update/master/appcast.xml # OpenEmu (4w)
+https://raw.githubusercontent.com/p0deje/Maccy/master/appcast.xml # Maccy (4w)
+
+# ============================================================================
+# VERIFIED VALID - Moderate Warnings (5-30 warnings)
+# ============================================================================
+http://www.adium.im/sparkle/update.php # Adium (5w)
+http://www.publicspace.net/app/signed_abfa5.xml # A Better Finder Attributes (6w)
+http://www.publicspace.net/app/signed_abfr9.xml # A Better Finder Rename (6w)
+https://freemacsoft.net/appcleaner/Updates.xml # AppCleaner (8w)
+http://www.clamxav.com/sparkle/profileInfo.php # ClamXav (9w)
+http://update.kekaosx.com # Keka (11w)
+http://www.publicspace.net/app/signed_mb5.xml # MacBreakZ (15w)
+http://dl.apparentsoft.com/trickster.rss # Trickster (18w)
+http://update.transmissionbt.com/appcast.xml # Transmission (22w)
+http://manytricks.com/keycodes/appcast.xml # Key Codes (22w)
+https://raw.github.com/ryanmaxwell/uncrustifyx/appcast/uncrustifyx-appcast.xml # UncrustifyX (23w)
+http://ianyh.github.io/Amethyst/appcast.xml # Amethyst (27w)
+http://weiboformac.sinaapp.com/appcast/wm2.xml # Weibox (28w)
+https://flexibits.com/chatology/appcast.php # Chatology (30w)
+
+# ============================================================================
+# VERIFIED VALID - Many Warnings (30+ warnings, but still valid XML)
+# ============================================================================
+https://iina.io/appcast.xml # IINA (67w - many W037 xml:lang)
+http://manytricks.com/moom/appcast.xml # Moom (66w)
+http://macdown.uranusjr.com/sparkle/macdown/appcast.xml # MacDown (72w)
+http://www.macbartender.com/updates/updates.php # Bartender (93w)
+http://www.sourcetreeapp.com/update/SparkleAppcast.xml # SourceTree (170w)
+http://bibdesk.sourceforge.net/bibdesk.xml # BibDesk (229w)
+http://update.videolan.org/vlc/sparkle/vlc-intel64.xml # VLC (232w)
+http://hobbyistsoftware.com/Downloads/VLCStreamer/vlcStreamerVersions.xml # VLC Streamer (274w)
+
+# ============================================================================
+# INVALID - Parse or validation errors (65 URLs)
+# ============================================================================
+# These fail validation but may still work with Sparkle
+# http://www.asteroidapp.com/appupdates.php # 530 errors - HTML not XML
+# http://nothirst.com/feeds/DebtQuencherAppcast.xml # 549 errors
+# http://orbitapp.net/updates/appcast.xml # 525 errors
+# http://beamer-app.com/sparkle-appcast.xml # 326 errors
+# http://version.dssw.co.uk/activityaudit/standard # 270 errors
+# http://dl.screenhero.com/update/screenhero/sparkle.xml # 389 errors
+# http://gitx.laullon.com/appcast.xml # 17 errors
+# http://gitboxapp.com/updates.xml # 73 errors
+# https://versioncheck.barebones.com/BBEdit.xml # 1 error
+# http://macitbetter.com/BetterZip2.rss # 1 error
+# http://www.bombich.com/software/updates/ccc.php # 1 error (CCC)
+# http://jumpcut.sf.net/jumpcut.appcast.xml # 1 error
+# http://update.evernote.com/public/ENMac/EvernoteMacUpdate.xml # 1 error
+
+# ============================================================================
+# 404 / NOT FOUND (96 URLs) - Commented out
+# ============================================================================
+# http://airparrot.com/updates/AirParrot.xml
+# http://backend.metaquark.de/appcast/appfresh.xml
+# http://bluezbox.com/audiobookbinder/appcast.xml
+# http://ccmenu.sourceforge.net/update-stable.xml
+# http://chronomateapp.com/update
+# http://coccinellida.sourceforge.net/sparkle.xml
+# http://colloquy.info/update.php?rss
+# http://decimus.net/appcasts/DTerm.xml
+# http://dl.dropboxusercontent.com/u/1760713/appcast/appcast.xml
+# http://grabbox.devsoft.no/appcastBeta.xml
+# http://groths.org/kextdrop/updates/update.xml
+# http://links.clockworkengine.com/lp-mac-update-feed
+# http://monolingual.sourceforge.net/appcast.xml
+# http://sparkler.herokuapp.com/apps/3/updates.xml
+# http://subler.googlecode.com/svn/doc/appcast.xml
+# http://www.appzapper.com/az2appcast.xml
+# http://www.colorschemer.com/appcast/studio2_mac.xml
+# http://www.papersapp.com/papers/appcast_v3.xml
+# http://www.smilesoftware.com/appcast/update.php
+# https://api.gog.com/en/downloader2/status/mac-stable
+# https://incident57.com/codekit/appcast/ck2appcast.xml
+# https://raw.github.com/sdegutis/bahamut/master/appcast.xml
+# https://sparkle.boinx.com/appcast.lasso
+# https://www.macupdate.com/desktop/updates.xml
+# https://www.mindnode.com/softwareupdate/mindnodepro.xml
+
+# ============================================================================
+# FETCH ERRORS (127 URLs) - May be temporary, could retry
+# ============================================================================
+# These had connection errors, timeouts, or other fetch issues
+# http://appcast.boastr.net # BetterTouchTool
+# http://www.panic.com/updates/update.php # Coda/Transmit
+# https://updates.blackpixel.com/updates?app=ks # Kaleidoscope
+# https://updates.blackpixel.com/updates?app=nnw # NetNewsWire
+# https://updates.blackpixel.com/updates?app=vs # Versions
+# http://downloads.culturedcode.com/things/download/Things_Updates.php # Things
+# http://www.bohemiancoding.com/sketch/appcast.xml # Sketch
+
+# ============================================================================
+# FINDINGS SUMMARY (from 499 URLs tested)
+# ============================================================================
+#
+# Common validation issues in real-world appcasts:
+#
+# 1. DSA signatures (W006) - Most older feeds still use DSA, not EdDSA
+# 2. Missing <sparkle:version> element (W015) - Many use only enclosure attr
+# 3. RFC 2822 date format issues (W004) - Various non-standard date formats
+# 4. Missing length attribute (W011) - Some feeds omit file size
+# 5. Missing xml:lang (W037) - Localized release notes without lang tags
+# 6. Items not sorted by date (W018) - Several feeds have oldest-first ordering
+# 7. Missing signatures (W005) - Some open source apps don't sign updates
+# 8. Mixed HTTP/HTTPS URLs (W035) - VLC notably mixes protocols
+#
+# Best examples to study:
+# - LowProfile: https://raw.githubusercontent.com/ninxsoft/LowProfile/main/appcast.xml
+# - Scroll Reverser: http://softwareupdate.pilotmoon.com/update/scrollreverser/appcast.xml
+# - Skim: http://skim-app.sourceforge.net/skim.xml

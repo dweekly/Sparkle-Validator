@@ -102,13 +102,13 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "E007")).toBe(true);
   });
 
-  it("missing-enclosure-attrs.xml produces E010, E011, E012, E013", () => {
+  it("missing-enclosure-attrs.xml produces E010, W011, W012, E013", () => {
     const result = validate(
       readFixture("invalid", "missing-enclosure-attrs.xml")
     );
     expect(result.diagnostics.some((d) => d.id === "E010")).toBe(true);
-    expect(result.diagnostics.some((d) => d.id === "E011")).toBe(true);
-    expect(result.diagnostics.some((d) => d.id === "E012")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W012")).toBe(true);
     expect(result.diagnostics.some((d) => d.id === "E013")).toBe(true);
   });
 

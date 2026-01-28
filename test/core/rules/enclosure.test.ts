@@ -33,20 +33,20 @@ describe("enclosure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "E010")).toBe(true);
   });
 
-  it("E011: reports missing length on enclosure", () => {
+  it("W011: warns about missing length on enclosure", () => {
     const xml = wrap(
       `<enclosure url="https://example.com/a.zip" type="application/octet-stream" sparkle:edSignature="s"/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "E011")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true);
   });
 
-  it("E012: reports missing type on enclosure", () => {
+  it("W012: warns about missing type on enclosure", () => {
     const xml = wrap(
       `<enclosure url="https://example.com/a.zip" length="1" sparkle:edSignature="s"/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "E012")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W012")).toBe(true);
   });
 
   it("E013: reports non-numeric length", () => {

@@ -35,6 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - I008: Reports when feed contains >50 items (performance consideration)
   - I009: Summarizes OS version requirements across all items
 
+- **Public appcast URL collection** for testing
+  - Added `test/fixtures/remote/appcast-urls.txt` with verified real-world appcasts
+
+### Changed
+
+- **Downgraded enclosure attribute checks to warnings** (Sparkle works without these)
+  - E011 → W011: Missing `length` attribute (used for progress display only)
+  - E012 → W012: Missing `type` attribute (Sparkle can infer from URL)
+
 ## [1.1.0] - 2025-01-28
 
 ### Added

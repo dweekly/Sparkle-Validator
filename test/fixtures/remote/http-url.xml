@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test fixture: URL using HTTP instead of HTTPS (should warn W024) -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>HTTP Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description>Test release</description>
+      <enclosure
+        url="http://httpbin.org/status/200"
+        length="0"
+        type="application/octet-stream"
+        sparkle:edSignature="ABC123="
+      />
+    </item>
+  </channel>
+</rss>

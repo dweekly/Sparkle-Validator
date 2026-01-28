@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Test fixture: URL pointing to private IP (should be skipped with W023) -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Private IP Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description>Test release</description>
+      <enclosure
+        url="https://192.168.1.100/app.zip"
+        length="1000000"
+        type="application/octet-stream"
+        sparkle:edSignature="ABC123="
+      />
+    </item>
+    <item>
+      <title>Version 0.9</title>
+      <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>90</sparkle:version>
+      <description>Older release</description>
+      <enclosure
+        url="https://10.0.0.5/app-old.zip"
+        length="900000"
+        type="application/octet-stream"
+        sparkle:edSignature="DEF456="
+      />
+    </item>
+  </channel>
+</rss>

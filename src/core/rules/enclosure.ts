@@ -35,8 +35,6 @@ function isValidBase64Signature(sig: string): boolean {
 /**
  * E009: Item has neither <enclosure> with url nor <link>
  * E010: <enclosure> missing url attribute
- * E011: <enclosure> missing length attribute
- * E012: <enclosure> missing type attribute
  * E013: length is not a valid non-negative integer
  * E022: sparkle:installationType not "application" or "package"
  * E023-E025: Delta update structure errors
@@ -44,6 +42,8 @@ function isValidBase64Signature(sig: string): boolean {
  * W005: Enclosure has no signature at all
  * W006: Only DSA signature, no EdDSA
  * W010: Enclosure type not application/octet-stream
+ * W011: <enclosure> missing length attribute (Sparkle works without it)
+ * W012: <enclosure> missing type attribute (Sparkle works without it)
  * W019: Enclosure length is 0
  * W029: Signature doesn't look like valid base64
  * W031: Delta deltaFrom version not found in feed
@@ -184,11 +184,11 @@ function validateEnclosure(
     });
   }
 
-  // E011
+  // W011: Missing length (Sparkle works without it, used for progress display)
   if (length === undefined) {
     diagnostics.push({
-      id: "E011",
-      severity: "error",
+      id: "W011",
+      severity: "warning",
       message: "<enclosure> is missing the length attribute",
       line: enclosure.line,
       column: enclosure.column,
@@ -197,11 +197,11 @@ function validateEnclosure(
     });
   }
 
-  // E012
+  // W012: Missing type (Sparkle works without it, can infer from URL)
   if (!type) {
     diagnostics.push({
-      id: "E012",
-      severity: "error",
+      id: "W012",
+      severity: "warning",
       message: "<enclosure> is missing the type attribute",
       line: enclosure.line,
       column: enclosure.column,
