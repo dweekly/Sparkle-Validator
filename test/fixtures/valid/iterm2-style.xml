@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>iTerm2 Updates</title>
+    <link>https://iterm2.com/</link>
+    <description>Updates for iTerm2 terminal emulator</description>
+    <language>en</language>
+
+    <item>
+      <title>iTerm2 3.5.2</title>
+      <sparkle:version>3.5.2</sparkle:version>
+      <sparkle:shortVersionString>3.5.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <pubDate>Mon, 22 Jan 2024 12:00:00 -0800</pubDate>
+      <sparkle:releaseNotesLink>https://iterm2.com/appcasts/changes3.5.2.html</sparkle:releaseNotesLink>
+      <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_2.zip"
+                 length="29358080"
+                 type="application/octet-stream"
+                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+    </item>
+
+    <item>
+      <title>iTerm2 3.5.1</title>
+      <sparkle:version>3.5.1</sparkle:version>
+      <sparkle:shortVersionString>3.5.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <pubDate>Thu, 04 Jan 2024 12:00:00 -0800</pubDate>
+      <sparkle:releaseNotesLink>https://iterm2.com/appcasts/changes3.5.1.html</sparkle:releaseNotesLink>
+      <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_1.zip"
+                 length="29200000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+    </item>
+
+    <item>
+      <title>iTerm2 3.5.0</title>
+      <sparkle:version>3.5.0</sparkle:version>
+      <sparkle:shortVersionString>3.5.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <pubDate>Mon, 18 Dec 2023 12:00:00 -0800</pubDate>
+      <sparkle:releaseNotesLink>https://iterm2.com/appcasts/changes3.5.0.html</sparkle:releaseNotesLink>
+      <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_0.zip"
+                 length="29000000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+    </item>
+  </channel>
+</rss>

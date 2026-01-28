@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Bad URL App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <!-- Relative URL - not absolute -->
+      <enclosure url="downloads/app.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+    <item>
+      <title>Version 0.9</title>
+      <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>90</sparkle:version>
+      <!-- ftp:// scheme not allowed -->
+      <enclosure url="ftp://example.com/app.zip"
+                 length="11000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+      <sparkle:releaseNotesLink>not a url at all</sparkle:releaseNotesLink>
+    </item>
+  </channel>
+</rss>

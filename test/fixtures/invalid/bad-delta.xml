@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Bad Delta App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Mon, 15 Jan 2024 10:00:00 -0800</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <description><![CDATA[<p>Delta with issues.</p>]]></description>
+      <enclosure url="https://example.com/app-2.0.zip"
+                 length="20000000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+      <sparkle:deltas>
+        <!-- Empty deltas element - E023 -->
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>Version 1.5</title>
+      <pubDate>Mon, 01 Jan 2024 10:00:00 -0800</pubDate>
+      <sparkle:version>150</sparkle:version>
+      <description><![CDATA[<p>Delta missing deltaFrom.</p>]]></description>
+      <enclosure url="https://example.com/app-1.5.zip"
+                 length="18000000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+      <sparkle:deltas>
+        <!-- Missing sparkle:deltaFrom - E024 -->
+        <enclosure url="https://example.com/delta-1.0-to-1.5.delta"
+                   length="2000000"
+                   type="application/octet-stream"
+                   sparkle:edSignature="ZGVsdGE=" />
+        <!-- Missing url - E025 -->
+        <enclosure length="1500000"
+                   type="application/octet-stream"
+                   sparkle:deltaFrom="140"
+                   sparkle:edSignature="ZGVsdGEy" />
+      </sparkle:deltas>
+    </item>
+  </channel>
+</rss>

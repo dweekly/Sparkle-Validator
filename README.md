@@ -1,0 +1,275 @@
+# Sparkle Validator
+
+A comprehensive validator for [Sparkle](https://sparkle-project.org/) appcast.xml feeds. Available as a CLI tool, JavaScript library, and web application.
+
+> **Note:** This is an independent community project. It is not affiliated with, endorsed by, or sponsored by the official Sparkle project or its maintainers.
+
+[![CI](https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml/badge.svg)](https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/sparkle-validator.svg)](https://www.npmjs.com/package/sparkle-validator)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Features
+
+- Validates Sparkle appcast.xml feeds against all known requirements
+- Reports errors, warnings, and informational messages with line numbers
+- Provides fix suggestions for common issues
+- Works as CLI, library, or web app
+- Checks:
+  - XML structure (RSS 2.0 + Sparkle namespace)
+  - Version declarations
+  - Enclosure attributes (url, length, type)
+  - URL validity
+  - Date formats (RFC 2822)
+  - Signatures (EdDSA/DSA)
+  - System requirements
+  - Delta updates
+  - Phased rollouts
+  - Channel names
+  - And more...
+
+## Web App
+
+Try it online at [SparkleValidator.com](https://sparklevalidator.com)
+
+## CLI Installation
+
+```bash
+npm install -g sparkle-validator
+```
+
+Or with Homebrew:
+
+```bash
+brew tap dweekly/sparkle-validator
+brew install sparkle-validator
+```
+
+## CLI Usage
+
+```bash
+# Validate a local file
+sparkle-validator appcast.xml
+
+# Validate from URL
+sparkle-validator https://example.com/appcast.xml
+
+# Validate from stdin
+cat appcast.xml | sparkle-validator -
+
+# JSON output
+sparkle-validator --format json appcast.xml
+
+# Strict mode (warnings as errors)
+sparkle-validator --strict appcast.xml
+
+# Only show errors
+sparkle-validator --quiet appcast.xml
+```
+
+### CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `-f, --format <type>` | Output format: `text` (default) or `json` |
+| `-s, --strict` | Treat warnings as errors |
+| `--no-info` | Suppress informational messages |
+| `--no-color` | Disable colored output |
+| `-q, --quiet` | Only show errors |
+| `-v, --version` | Show version number |
+| `-h, --help` | Show help |
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Valid (no errors) |
+| 1 | Invalid (has errors, or warnings with `--strict`) |
+| 2 | Input error (file not found, network error, etc.) |
+
+## CI/CD Integration
+
+### GitHub Actions
+
+Add appcast validation to your release workflow:
+
+```yaml
+name: Validate Appcast
+
+on:
+  push:
+    paths:
+      - 'appcast.xml'
+  pull_request:
+    paths:
+      - 'appcast.xml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate appcast.xml
+        run: npx sparkle-validator appcast.xml
+
+      # Or with strict mode (warnings fail the build)
+      - name: Validate appcast.xml (strict)
+        run: npx sparkle-validator --strict appcast.xml
+
+      # Or output JSON for further processing
+      - name: Validate and capture results
+        run: |
+          npx sparkle-validator --format json appcast.xml > validation.json
+          cat validation.json
+```
+
+### Validate Remote Appcast
+
+```yaml
+      - name: Validate published appcast
+        run: npx sparkle-validator https://example.com/appcast.xml
+```
+
+### Pre-commit Hook
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/sh
+npx sparkle-validator appcast.xml || exit 1
+```
+
+## Library Usage
+
+```javascript
+import { validate } from 'sparkle-validator';
+
+const xml = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>My App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <description><![CDATA[<p>New features!</p>]]></description>
+      <enclosure url="https://example.com/app.zip"
+                 length="12345678"
+                 type="application/octet-stream"
+                 sparkle:edSignature="ABC123=" />
+    </item>
+  </channel>
+</rss>`;
+
+const result = validate(xml);
+
+console.log(result.valid);       // true
+console.log(result.errorCount);  // 0
+console.log(result.diagnostics); // Array of diagnostics
+```
+
+### ValidationResult
+
+```typescript
+interface ValidationResult {
+  valid: boolean;           // true if no errors
+  diagnostics: Diagnostic[];
+  errorCount: number;
+  warningCount: number;
+  infoCount: number;
+}
+
+interface Diagnostic {
+  id: string;          // e.g. "E008", "W003"
+  severity: "error" | "warning" | "info";
+  message: string;
+  line?: number;       // 1-based
+  column?: number;     // 1-based
+  path?: string;       // e.g. "rss > channel > item[2] > enclosure"
+  fix?: string;        // Suggestion for fixing the issue
+}
+```
+
+## Validation Rules
+
+### Errors (E001-E026)
+
+| ID | Description |
+|----|-------------|
+| E001 | Not well-formed XML |
+| E002 | Root element is not `<rss>` |
+| E003 | Missing `version="2.0"` on `<rss>` |
+| E004 | Missing Sparkle namespace declaration |
+| E005 | Missing `<channel>` inside `<rss>` |
+| E006 | More than one `<channel>` element |
+| E007 | No `<item>` elements in `<channel>` |
+| E008 | Item missing `sparkle:version` |
+| E009 | Item has neither `<enclosure>` with url nor `<link>` |
+| E010-E013 | Enclosure missing/invalid attributes |
+| E014-E018 | Invalid URLs |
+| E019 | Invalid channel name characters |
+| E020-E021 | Phased rollout errors |
+| E022 | Invalid installationType |
+| E023-E025 | Delta update structure errors |
+| E026 | Incorrect Sparkle namespace URI |
+
+### Warnings (W001-W020)
+
+| ID | Description |
+|----|-------------|
+| W001-W002 | Missing title on channel/item |
+| W003-W004 | Missing or invalid pubDate |
+| W005-W006 | Missing/deprecated signatures |
+| W007-W008 | Redundant version declarations |
+| W009 | No release notes |
+| W010 | Non-standard MIME type |
+| W011-W013 | System version format issues |
+| W014 | Missing channel link |
+| W015 | Version only on enclosure attribute |
+| W016 | Unencoded URL characters |
+| W017 | informationalUpdate with enclosure |
+| W018 | Items not sorted by date |
+| W019 | Enclosure length is 0 |
+| W020 | Duplicate version |
+
+### Info (I001-I005)
+
+| ID | Description |
+|----|-------------|
+| I001 | Summary: N items across M channels |
+| I002 | Item contains N delta updates |
+| I003 | Item uses phased rollout |
+| I004 | Item marked as critical update |
+| I005 | Item targets specific OS |
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Build
+npm run build
+
+# Type check
+npm run lint
+```
+
+## Supply Chain Security
+
+This package is published with:
+- **npm provenance** — cryptographically attests that the package was built from this repository via GitHub Actions
+- **SBOM** — Software Bill of Materials (CycloneDX format) attached to each GitHub release
+
+You can verify provenance on npm: `npm audit signatures`
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Bad Rollout App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <!-- No pubDate, but has phased rollout -->
+      <sparkle:version>200</sparkle:version>
+      <sparkle:phasedRolloutInterval>not-a-number</sparkle:phasedRolloutInterval>
+      <description><![CDATA[<p>Bad rollout config.</p>]]></description>
+      <enclosure url="https://example.com/app-2.0.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+    <item>
+      <title>Version 1.9</title>
+      <sparkle:version>190</sparkle:version>
+      <sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>
+      <description><![CDATA[<p>Valid interval but no pubDate.</p>]]></description>
+      <enclosure url="https://example.com/app-1.9.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+  </channel>
+</rss>

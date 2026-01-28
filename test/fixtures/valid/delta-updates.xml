@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>DeltaApp Updates</title>
+    <link>https://deltaapp.example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Mon, 15 Jan 2024 10:00:00 -0800</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <sparkle:shortVersionString>2.0</sparkle:shortVersionString>
+      <description><![CDATA[<p>New version with delta updates.</p>]]></description>
+      <enclosure url="https://deltaapp.example.com/DeltaApp-2.0.zip"
+                 length="20971520"
+                 type="application/octet-stream"
+                 sparkle:edSignature="ZGVsdGEtZnVsbC1zaWc=" />
+      <sparkle:deltas>
+        <enclosure url="https://deltaapp.example.com/DeltaApp-1.5-to-2.0.delta"
+                   length="2097152"
+                   type="application/octet-stream"
+                   sparkle:deltaFrom="150"
+                   sparkle:edSignature="ZGVsdGEtMTUtc2ln" />
+        <enclosure url="https://deltaapp.example.com/DeltaApp-1.9-to-2.0.delta"
+                   length="1048576"
+                   type="application/octet-stream"
+                   sparkle:deltaFrom="190"
+                   sparkle:edSignature="ZGVsdGEtMTktc2ln" />
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>Version 1.9</title>
+      <pubDate>Fri, 01 Dec 2023 09:00:00 -0800</pubDate>
+      <sparkle:version>190</sparkle:version>
+      <sparkle:shortVersionString>1.9</sparkle:shortVersionString>
+      <description><![CDATA[<p>Bug fixes.</p>]]></description>
+      <enclosure url="https://deltaapp.example.com/DeltaApp-1.9.zip"
+                 length="19922944"
+                 type="application/octet-stream"
+                 sparkle:edSignature="djEuOS1zaWc=" />
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>RealBroken App</title>
+    <item>
+      <!-- Common mistake: version only on enclosure, no element -->
+      <title>Version 3.0</title>
+      <pubDate>2024-01-15</pubDate>
+      <description><![CDATA[<p>New major version.</p>]]></description>
+      <enclosure url="https://example.com/app with spaces/App 3.0.zip"
+                 length="0"
+                 type="application/zip"
+                 sparkle:version="300"
+                 sparkle:shortVersionString="3.0"
+                 sparkle:dsaSignature="MC0CFGfLa4gYABT9yXk=" />
+      <sparkle:minimumSystemVersion>10.15.x</sparkle:minimumSystemVersion>
+      <sparkle:maximumSystemVersion>14</sparkle:maximumSystemVersion>
+      <sparkle:installationType>invalid-type</sparkle:installationType>
+      <sparkle:channel>beta channel!</sparkle:channel>
+    </item>
+    <item>
+      <title>Version 2.5</title>
+      <!-- Duplicate version with same os/channel -->
+      <sparkle:version>250</sparkle:version>
+      <enclosure url="https://example.com/app-2.5.zip"
+                 length="15000000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+    <item>
+      <!-- Earlier pubDate but listed after later item - wrong order -->
+      <title>Version 2.5 (duplicate)</title>
+      <pubDate>Thu, 01 Feb 2024 10:00:00 -0800</pubDate>
+      <sparkle:version>250</sparkle:version>
+      <sparkle:informationalUpdate />
+      <enclosure url="https://example.com/app-2.5-dup.zip"
+                 length="15000000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+  </channel>
+</rss>

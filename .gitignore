@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+public/*.js
+public/*.js.map
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+
+# npm pack artifacts
+*.tgz

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Missing Version App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Some Update</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <!-- No sparkle:version anywhere -->
+      <description><![CDATA[<p>No version specified!</p>]]></description>
+      <enclosure url="https://example.com/app.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2lnbmF0dXJl" />
+    </item>
+  </channel>
+</rss>

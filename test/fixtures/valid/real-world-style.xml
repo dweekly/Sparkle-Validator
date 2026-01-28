@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Sequel Pro</title>
+    <link>https://sequelpro.com/</link>
+    <description>Appcast for Sequel Pro — MySQL/MariaDB database management for macOS</description>
+    <language>en</language>
+
+    <item>
+      <title>Sequel Pro 1.1.2</title>
+      <pubDate>Sat, 28 Oct 2017 22:00:00 +0000</pubDate>
+      <sparkle:version>97</sparkle:version>
+      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://sequelpro.com/appcast/build-97.html</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/sequelpro/sequelpro/releases/download/release-1.1.2/sequel-pro-1.1.2.dmg"
+                 length="10248832"
+                 type="application/octet-stream"
+                 sparkle:edSignature="ZWRkc2Etc2lnbmF0dXJlLWhlcmU=" />
+    </item>
+
+    <item>
+      <title>Sequel Pro 1.1.1</title>
+      <pubDate>Thu, 29 Jun 2017 12:00:00 +0000</pubDate>
+      <sparkle:version>96</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://sequelpro.com/appcast/build-96.html</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/sequelpro/sequelpro/releases/download/release-1.1.1/sequel-pro-1.1.1.dmg"
+                 length="10100736"
+                 type="application/octet-stream"
+                 sparkle:edSignature="cHJldi1lZGRzYS1zaWc=" />
+    </item>
+
+    <item>
+      <title>Sequel Pro 1.1</title>
+      <pubDate>Mon, 27 Mar 2017 10:00:00 +0000</pubDate>
+      <sparkle:version>95</sparkle:version>
+      <sparkle:shortVersionString>1.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>10.9</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://sequelpro.com/appcast/build-95.html</sparkle:releaseNotesLink>
+      <enclosure url="https://github.com/sequelpro/sequelpro/releases/download/release-1.1/sequel-pro-1.1.dmg"
+                 length="9953280"
+                 type="application/octet-stream"
+                 sparkle:edSignature="b2xkLWVkZHNhLXNpZw==" />
+    </item>
+  </channel>
+</rss>

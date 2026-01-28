@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>SuperApp Updates</title>
+    <link>https://superapp.example.com</link>
+    <description>Most recent changes with links to updates.</description>
+    <language>en</language>
+
+    <!-- Latest stable release -->
+    <item>
+      <title>Version 3.1.0</title>
+      <pubDate>Mon, 15 Jan 2024 10:00:00 -0800</pubDate>
+      <sparkle:version>3100</sparkle:version>
+      <sparkle:shortVersionString>3.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <sparkle:releaseNotesLink>https://superapp.example.com/notes/3.1.0.html</sparkle:releaseNotesLink>
+      <sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>
+      <enclosure url="https://superapp.example.com/releases/SuperApp-3.1.0.dmg"
+                 length="52428800"
+                 type="application/octet-stream"
+                 sparkle:edSignature="Zm9vYmFyYmF6MTIzNDU2Nzg5MA==" />
+    </item>
+
+    <!-- Critical security update -->
+    <item>
+      <title>Version 3.0.1 (Security Fix)</title>
+      <pubDate>Fri, 05 Jan 2024 08:00:00 -0800</pubDate>
+      <sparkle:version>3001</sparkle:version>
+      <sparkle:shortVersionString>3.0.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <sparkle:criticalUpdate />
+      <description><![CDATA[<h2>Security Fix</h2><p>Fixed critical vulnerability CVE-2024-XXXX.</p>]]></description>
+      <enclosure url="https://superapp.example.com/releases/SuperApp-3.0.1.dmg"
+                 length="51380224"
+                 type="application/octet-stream"
+                 sparkle:edSignature="YmFyYmF6Zm9vMTIzNDU2Nzg5MA==" />
+    </item>
+
+    <!-- Older release -->
+    <item>
+      <title>Version 3.0.0</title>
+      <pubDate>Mon, 01 Jan 2024 12:00:00 -0800</pubDate>
+      <sparkle:version>3000</sparkle:version>
+      <sparkle:shortVersionString>3.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <sparkle:fullReleaseNotesLink>https://superapp.example.com/notes/3.0.0-full.html</sparkle:fullReleaseNotesLink>
+      <description><![CDATA[<h2>Major Update</h2><p>Completely redesigned UI.</p>]]></description>
+      <enclosure url="https://superapp.example.com/releases/SuperApp-3.0.0.dmg"
+                 length="50331648"
+                 type="application/octet-stream"
+                 sparkle:edSignature="Zm9vYmFyMTIzNDU2Nzg5MGJheg==" />
+    </item>
+  </channel>
+</rss>

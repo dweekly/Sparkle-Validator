@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>MyApp Changelog</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <sparkle:shortVersionString>2.0</sparkle:shortVersionString>
+      <description><![CDATA[<h2>New Features</h2><ul><li>Feature one</li></ul>]]></description>
+      <enclosure url="https://example.com/MyApp-2.0.zip"
+                 length="12345678"
+                 type="application/octet-stream"
+                 sparkle:edSignature="ABC123DEF456=" />
+    </item>
+  </channel>
+</rss>

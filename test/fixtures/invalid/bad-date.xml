@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Bad Date App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>2023-07-13T14:30:00Z</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description><![CDATA[<p>ISO 8601 date instead of RFC 2822.</p>]]></description>
+      <enclosure url="https://example.com/app.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+    <item>
+      <title>Version 0.9</title>
+      <pubDate>July 13 2023</pubDate>
+      <sparkle:version>90</sparkle:version>
+      <description><![CDATA[<p>Free-form date string.</p>]]></description>
+      <enclosure url="https://example.com/app-0.9.zip"
+                 length="11000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="c2ln" />
+    </item>
+  </channel>
+</rss>
