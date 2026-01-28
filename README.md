@@ -46,6 +46,12 @@ Try it online at [SparkleValidator.com](https://sparklevalidator.com)
 npm install -g sparkle-validator
 ```
 
+Or run directly without installing:
+
+```bash
+npx sparkle-validator https://example.com/appcast.xml
+```
+
 Or with Homebrew:
 
 ```bash
