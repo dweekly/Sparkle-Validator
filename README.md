@@ -1,12 +1,21 @@
-# Sparkle Validator
+<p align="center">
+  <img src="https://sparklevalidator.com/icons/android-chrome-192x192.png" alt="Sparkle Validator logo" width="128" height="128">
+</p>
 
-A comprehensive validator for [Sparkle](https://sparkle-project.org/) appcast.xml feeds. Available as a CLI tool, JavaScript library, and web application.
+<h1 align="center">Sparkle Validator</h1>
+
+<p align="center">
+  A comprehensive validator for <a href="https://sparkle-project.org/">Sparkle</a> appcast.xml feeds.<br>
+  Available as a CLI tool, JavaScript library, and web application.
+</p>
+
+<p align="center">
+  <a href="https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml"><img src="https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/sparkle-validator"><img src="https://badge.fury.io/js/sparkle-validator.svg" alt="npm version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
 
 > **Note:** This is an independent community project. It is not affiliated with, endorsed by, or sponsored by the official Sparkle project or its maintainers.
-
-[![CI](https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml/badge.svg)](https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml)
-[![npm version](https://badge.fury.io/js/sparkle-validator.svg)](https://www.npmjs.com/package/sparkle-validator)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
