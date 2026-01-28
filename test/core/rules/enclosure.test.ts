@@ -106,4 +106,134 @@ describe("enclosure rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E022")).toBe(false);
   });
+
+  it("E030: reports invalid sparkle:os value", () => {
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="linux" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E030")).toBe(true);
+  });
+
+  it("accepts valid sparkle:os values", () => {
+    const xmlMacos = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="macos" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+    );
+    const xmlWindows = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="windows" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+    );
+    expect(validate(xmlMacos).diagnostics.some((d) => d.id === "E030")).toBe(
+      false
+    );
+    expect(validate(xmlWindows).diagnostics.some((d) => d.id === "E030")).toBe(
+      false
+    );
+  });
+
+  it("W029: warns about invalid base64 signature", () => {
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="not-valid-base64!!!"/>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+  });
+
+  it("W029: warns about too-short signature", () => {
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="abc"/>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+  });
+
+  it("accepts valid base64 signature", () => {
+    // A valid-looking EdDSA signature (88 chars is typical for Ed25519)
+    const validSig =
+      "dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmdoZXJlaXNtb3JlY29udGVudHRvbWFrZWl0bG9uZ2Vu";
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="${validSig}"/>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(false);
+  });
+
+  it("W031: warns about delta referencing non-existent version", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V2</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <sparkle:deltas>
+        <enclosure url="https://example.com/delta.zip" length="1" type="application/octet-stream"
+                   sparkle:deltaFrom="150" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>V1</title>
+      <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W031")).toBe(true);
+  });
+
+  it("no W031 when delta references existing version", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V2</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <sparkle:deltas>
+        <enclosure url="https://example.com/delta.zip" length="1" type="application/octet-stream"
+                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>V1</title>
+      <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W031")).toBe(false);
+  });
+
+  it("W032: warns about duplicate delta enclosures for same deltaFrom", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V2</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <sparkle:deltas>
+        <enclosure url="https://example.com/delta1.zip" length="1" type="application/octet-stream"
+                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+        <enclosure url="https://example.com/delta2.zip" length="1" type="application/octet-stream"
+                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      </sparkle:deltas>
+    </item>
+    <item>
+      <title>V1</title>
+      <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W032")).toBe(true);
+  });
 });

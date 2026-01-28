@@ -204,4 +204,152 @@ describe("info rules", () => {
     expect(diag).toBeDefined();
     expect(diag?.message).toContain("50");
   });
+
+  it("I008: reports large feed (>50 items)", () => {
+    // Create a feed with 51 items
+    const items = Array(51)
+      .fill(null)
+      .map(
+        (_, i) => `
+        <item>
+          <title>V${i}</title>
+          <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+          <sparkle:version>${100 + i}</sparkle:version>
+          <enclosure url="https://example.com/${i}.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+        </item>
+      `
+      )
+      .join("");
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    ${items}
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "I008")).toBe(true);
+  });
+
+  it("I009: reports OS version requirements", () => {
+    const xml = wrap(
+      `<sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "I009")).toBe(true);
+  });
+
+  it("W036: warns about unknown hardware architecture", () => {
+    const xml = wrap(
+      `<sparkle:hardwareRequirements>powerpc</sparkle:hardwareRequirements>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(true);
+  });
+
+  it("no W036 warning for known architectures", () => {
+    const xml = wrap(
+      `<sparkle:hardwareRequirements>arm64, x86_64</sparkle:hardwareRequirements>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(false);
+  });
+});
+
+describe("additional best practice rules", () => {
+  it("W033: warns about unusual shortVersionString format", () => {
+    const xml = wrap(
+      `<sparkle:shortVersionString>v2.0-beta</sparkle:shortVersionString>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W033")).toBe(true);
+  });
+
+  it("no W033 warning for standard x.y.z format", () => {
+    const xml = wrap(
+      `<sparkle:shortVersionString>2.0.1</sparkle:shortVersionString>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W033")).toBe(false);
+  });
+
+  it("W034: warns about invalid criticalUpdate version attribute", () => {
+    const xml = wrap(`<sparkle:criticalUpdate version="v1.0-alpha"/>`);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W034")).toBe(true);
+  });
+
+  it("no W034 warning for valid criticalUpdate version", () => {
+    const xml = wrap(`<sparkle:criticalUpdate version="100"/>`);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W034")).toBe(false);
+  });
+
+  it("W037: warns about missing xml:lang on multiple releaseNotesLinks", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink>https://example.com/notes-en.html</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink>https://example.com/notes-de.html</sparkle:releaseNotesLink>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W037")).toBe(true);
+  });
+
+  it("no W037 warning when xml:lang is present on multiple releaseNotesLinks", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink xml:lang="en">https://example.com/notes-en.html</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink xml:lang="de">https://example.com/notes-de.html</sparkle:releaseNotesLink>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W037")).toBe(false);
+  });
+});
+
+describe("XML format rules", () => {
+  it("W039: warns about missing encoding in XML declaration", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W039")).toBe(true);
+  });
+
+  it("no W039 warning when encoding is present", () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W039")).toBe(false);
+  });
+
+  it("W038: warns about CDATA in sparkle:version element", () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version><![CDATA[100]]></sparkle:version>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W038")).toBe(true);
+  });
 });

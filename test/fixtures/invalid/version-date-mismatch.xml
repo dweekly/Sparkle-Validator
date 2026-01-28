@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W028: Version decreases while pubDate increases -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Older version with newer date</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>99</sparkle:version>
+      <enclosure url="https://example.com/v99.zip" length="1234567" type="application/octet-stream"
+                 sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+    <item>
+      <title>Newer version with older date</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/v100.zip" length="1234567" type="application/octet-stream"
+                 sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>

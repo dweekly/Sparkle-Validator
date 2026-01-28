@@ -8,6 +8,19 @@ import {
   sparkleAttr,
 } from "./utils.js";
 
+/** Known/valid hardware architecture values */
+const KNOWN_ARCHITECTURES = [
+  "arm64",
+  "x86_64",
+  "x86-64",
+  "amd64",
+  "i386",
+  "i686",
+  "universal",
+  "apple-silicon",
+  "intel",
+];
+
 /**
  * I001: Summary: N items across M channels
  * I002: Item contains N delta updates
@@ -16,6 +29,9 @@ import {
  * I005: Item targets non-macOS platform
  * I006: Item requires specific hardware (Sparkle 2.9+)
  * I007: Item requires minimum app version to update (Sparkle 2.9+)
+ * I008: Feed contains >50 items
+ * I009: Summary of OS support range across all items
+ * W036: hardwareRequirements contains unknown architecture
  */
 export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   const { root } = doc;
@@ -26,6 +42,9 @@ export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
 
   const items = childElements(channel, "item");
   const channelNames = new Set<string>();
+  // Track OS requirements for I009
+  const minOsVersions = new Set<string>();
+  const maxOsVersions = new Set<string>();
 
   for (const item of items) {
     // Collect channel names
@@ -108,6 +127,39 @@ export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
         column: hardwareEl.column,
         path: elementPath(hardwareEl),
       });
+
+      // W036: Check for unknown architecture values
+      const archValues = requirements
+        .split(/[,\s]+/)
+        .filter((v) => v.length > 0);
+      for (const arch of archValues) {
+        const normalizedArch = arch.toLowerCase().replace(/_/g, "-");
+        if (
+          !KNOWN_ARCHITECTURES.some((known) => normalizedArch.includes(known))
+        ) {
+          diagnostics.push({
+            id: "W036",
+            severity: "warning",
+            message: `Unknown hardware architecture "${arch}" in hardwareRequirements`,
+            line: hardwareEl.line,
+            column: hardwareEl.column,
+            path: elementPath(hardwareEl),
+            fix: `Expected values like: ${KNOWN_ARCHITECTURES.slice(0, 4).join(", ")}`,
+          });
+        }
+      }
+    }
+
+    // Collect OS version requirements for I009
+    const minSysEl = sparkleChildElement(item, "minimumSystemVersion");
+    if (minSysEl) {
+      const version = textContent(minSysEl).trim();
+      if (version) minOsVersions.add(version);
+    }
+    const maxSysEl = sparkleChildElement(item, "maximumSystemVersion");
+    if (maxSysEl) {
+      const version = textContent(maxSysEl).trim();
+      if (version) maxOsVersions.add(version);
     }
 
     // I007: Minimum update version (Sparkle 2.9+)
@@ -135,6 +187,46 @@ export function infoRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       id: "I001",
       severity: "info",
       message: `Found ${items.length} item${items.length > 1 ? "s" : ""}${channelInfo}`,
+      line: channel.line,
+      column: channel.column,
+      path: elementPath(channel),
+    });
+  }
+
+  // I008: Large feed warning
+  if (items.length > 50) {
+    diagnostics.push({
+      id: "I008",
+      severity: "info",
+      message: `Feed contains ${items.length} items; large feeds may cause performance issues`,
+      line: channel.line,
+      column: channel.column,
+      path: elementPath(channel),
+    });
+  }
+
+  // I009: OS support range summary
+  if (minOsVersions.size > 0 || maxOsVersions.size > 0) {
+    const sortedMin = [...minOsVersions].sort();
+    const sortedMax = [...maxOsVersions].sort();
+    let osInfo = "";
+    if (sortedMin.length > 0) {
+      osInfo += `minimum: ${sortedMin[0]}`;
+      if (sortedMin.length > 1) {
+        osInfo += ` to ${sortedMin[sortedMin.length - 1]}`;
+      }
+    }
+    if (sortedMax.length > 0) {
+      if (osInfo) osInfo += ", ";
+      osInfo += `maximum: ${sortedMax[0]}`;
+      if (sortedMax.length > 1) {
+        osInfo += ` to ${sortedMax[sortedMax.length - 1]}`;
+      }
+    }
+    diagnostics.push({
+      id: "I009",
+      severity: "info",
+      message: `OS version requirements across items: ${osInfo}`,
       line: channel.line,
       column: channel.column,
       path: elementPath(channel),

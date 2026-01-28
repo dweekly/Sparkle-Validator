@@ -1,5 +1,6 @@
 import { parseXml } from "./parser.js";
 import { allRules } from "./rules/index.js";
+import { xmlFormatRules } from "./rules/xml-format.js";
 import type { Diagnostic, ValidationResult } from "./types.js";
 
 /**
@@ -43,6 +44,9 @@ export function validate(xml: string): ValidationResult {
         if (!hasChannel || !hasItems) break;
       }
     }
+
+    // Step 3: Run XML format rules (require raw XML string)
+    xmlFormatRules(document, diagnostics, xml);
   }
 
   // Sort diagnostics: errors first, then warnings, then info

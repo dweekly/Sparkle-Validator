@@ -79,6 +79,12 @@ sparkle-validator --strict appcast.xml
 
 # Only show errors
 sparkle-validator --quiet appcast.xml
+
+# Check that URLs exist and sizes match
+sparkle-validator --check-urls appcast.xml
+
+# Check URLs with custom timeout (ms)
+sparkle-validator --check-urls --timeout 30000 appcast.xml
 ```
 
 ### CLI Options
@@ -87,6 +93,8 @@ sparkle-validator --quiet appcast.xml
 |--------|-------------|
 | `-f, --format <type>` | Output format: `text` (default) or `json` |
 | `-s, --strict` | Treat warnings as errors |
+| `-c, --check-urls` | Check that URLs exist and sizes match |
+| `--timeout <ms>` | Timeout for URL checks (default: 10000ms) |
 | `--no-info` | Suppress informational messages |
 | `--no-color` | Disable colored output |
 | `-q, --quiet` | Only show errors |
@@ -207,7 +215,7 @@ interface Diagnostic {
 
 ## Validation Rules
 
-### Errors (E001-E026)
+### Errors (E001-E030)
 
 | ID | Description |
 |----|-------------|
@@ -227,8 +235,12 @@ interface Diagnostic {
 | E022 | Invalid installationType |
 | E023-E025 | Delta update structure errors |
 | E026 | Incorrect Sparkle namespace URI |
+| E027 | URL returns non-2xx status (`--check-urls`) |
+| E028 | Content-Length doesn't match declared length (`--check-urls`) |
+| E029 | Version string is empty or whitespace-only |
+| E030 | Invalid `sparkle:os` value (must be "macos" or "windows") |
 
-### Warnings (W001-W020)
+### Warnings (W001-W040)
 
 | ID | Description |
 |----|-------------|
@@ -246,8 +258,28 @@ interface Diagnostic {
 | W018 | Items not sorted by date |
 | W019 | Enclosure length is 0 |
 | W020 | Duplicate version |
+| W021 | URL redirects to different location (`--check-urls`) |
+| W022 | Content-Length header missing (`--check-urls`) |
+| W023 | Local/private URL skipped (`--check-urls`) |
+| W024 | URL uses insecure HTTP instead of HTTPS (`--check-urls`) |
+| W025 | pubDate is in the future |
+| W026 | pubDate is implausibly old (before 2001) |
+| W027 | Version string is non-numeric (may cause comparison failures) |
+| W028 | Version decreases while pubDate increases |
+| W029 | Signature doesn't look like valid base64 |
+| W030 | URL file extension doesn't match expected type |
+| W031 | Delta `deltaFrom` version not found in feed |
+| W032 | Multiple delta enclosures for same `deltaFrom` |
+| W033 | `shortVersionString` format unusual (not x.y.z) |
+| W034 | `criticalUpdate` version attribute not valid format |
+| W035 | Feed mixes HTTP and HTTPS URLs |
+| W036 | `hardwareRequirements` contains unknown architecture |
+| W037 | `releaseNotesLink` missing `xml:lang` for localization |
+| W038 | CDATA section used in version/signature elements |
+| W039 | XML declaration missing encoding attribute |
+| W040 | Channel has language but items have different lang |
 
-### Info (I001-I007)
+### Info (I001-I009)
 
 | ID | Description |
 |----|-------------|
@@ -258,6 +290,8 @@ interface Diagnostic {
 | I005 | Item targets non-macOS platform |
 | I006 | Item requires specific hardware (Sparkle 2.9+) |
 | I007 | Item requires minimum app version to update (Sparkle 2.9+) |
+| I008 | Feed contains >50 items (performance consideration) |
+| I009 | Summary of OS support range across all items |
 
 ## Development
 

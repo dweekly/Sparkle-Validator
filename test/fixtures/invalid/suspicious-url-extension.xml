@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W030: Suspicious URL file extension for download -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <enclosure url="https://example.com/download.html" length="1234567" type="application/octet-stream"
+                 sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>

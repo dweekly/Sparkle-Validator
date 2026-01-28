@@ -9,9 +9,53 @@ import {
   sparkleChildElement,
 } from "./utils.js";
 
+/** Expected file extensions for enclosure downloads */
+const EXPECTED_DOWNLOAD_EXTENSIONS = [
+  ".zip",
+  ".dmg",
+  ".pkg",
+  ".app",
+  ".tar",
+  ".tar.gz",
+  ".tgz",
+  ".tar.bz2",
+  ".tbz",
+  ".xz",
+  ".7z",
+];
+
+/** Suspicious extensions for download URLs */
+const SUSPICIOUS_EXTENSIONS = [
+  ".html",
+  ".htm",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".css",
+  ".js",
+];
+
+/**
+ * Get the file extension from a URL path.
+ */
+function getUrlExtension(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname;
+    const lastDot = pathname.lastIndexOf(".");
+    if (lastDot === -1 || lastDot === pathname.length - 1) return null;
+    return pathname.substring(lastDot).toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * E014-E018: URL validation rules
  * W016: URL has unencoded special characters
+ * W030: URL file extension doesn't match expected type
+ * W035: Feed mixes HTTP and HTTPS URLs
  */
 export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   const { root } = doc;
@@ -22,6 +66,23 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
 
   const items = childElements(channel, "item");
 
+  // Track HTTP vs HTTPS URLs for W035
+  const httpUrls: { url: string; element: XmlElement }[] = [];
+  const httpsUrls: { url: string; element: XmlElement }[] = [];
+
+  function trackProtocol(url: string, element: XmlElement): void {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === "http:") {
+        httpUrls.push({ url, element });
+      } else if (parsed.protocol === "https:") {
+        httpsUrls.push({ url, element });
+      }
+    } catch {
+      // Invalid URL, skip tracking
+    }
+  }
+
   for (const item of items) {
     // Check enclosure url
     const enclosure = childElement(item, "enclosure");
@@ -29,6 +90,21 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       const url = attr(enclosure, "url");
       if (url) {
         validateUrl(url, "E014", "enclosure url", enclosure, diagnostics);
+        trackProtocol(url, enclosure);
+
+        // W030: Check for suspicious file extensions on enclosure URLs
+        const ext = getUrlExtension(url);
+        if (ext && SUSPICIOUS_EXTENSIONS.includes(ext)) {
+          diagnostics.push({
+            id: "W030",
+            severity: "warning",
+            message: `Enclosure URL has suspicious extension "${ext}" for a download file`,
+            line: enclosure.line,
+            column: enclosure.column,
+            path: elementPath(enclosure),
+            fix: `Download URLs should typically end with ${EXPECTED_DOWNLOAD_EXTENSIONS.slice(0, 3).join(", ")}, etc.`,
+          });
+        }
       }
     }
 
@@ -38,6 +114,7 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
       const url = textContent(link).trim();
       if (url) {
         validateUrl(url, "E015", "item <link>", link, diagnostics);
+        trackProtocol(url, link);
       }
     }
 
@@ -53,6 +130,7 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
           rnLink,
           diagnostics
         );
+        trackProtocol(url, rnLink);
       }
     }
 
@@ -68,6 +146,7 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
           frnLink,
           diagnostics
         );
+        trackProtocol(url, frnLink);
       }
     }
 
@@ -85,6 +164,21 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
             deltaEnc,
             diagnostics
           );
+          trackProtocol(url, deltaEnc);
+
+          // W030: Check for suspicious file extensions on delta enclosure URLs
+          const ext = getUrlExtension(url);
+          if (ext && SUSPICIOUS_EXTENSIONS.includes(ext)) {
+            diagnostics.push({
+              id: "W030",
+              severity: "warning",
+              message: `Delta enclosure URL has suspicious extension "${ext}" for a download file`,
+              line: deltaEnc.line,
+              column: deltaEnc.column,
+              path: elementPath(deltaEnc),
+              fix: `Download URLs should typically end with ${EXPECTED_DOWNLOAD_EXTENSIONS.slice(0, 3).join(", ")}, etc.`,
+            });
+          }
         }
       }
     }
@@ -96,6 +190,24 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
     const url = textContent(channelLink).trim();
     if (url) {
       validateUrl(url, "E015", "channel <link>", channelLink, diagnostics);
+      trackProtocol(url, channelLink);
+    }
+  }
+
+  // W035: Feed mixes HTTP and HTTPS URLs
+  if (httpUrls.length > 0 && httpsUrls.length > 0) {
+    // Report on the HTTP URLs as they're the less secure ones
+    for (const { element } of httpUrls) {
+      diagnostics.push({
+        id: "W035",
+        severity: "warning",
+        message:
+          "Feed mixes HTTP and HTTPS URLs; consider using HTTPS consistently",
+        line: element.line,
+        column: element.column,
+        path: elementPath(element),
+        fix: "Use HTTPS for all URLs for consistent security",
+      });
     }
   }
 }

@@ -164,4 +164,94 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "I006")).toBe(true);
     expect(result.diagnostics.some((d) => d.id === "I007")).toBe(true);
   });
+
+  it("empty-version.xml produces E029", () => {
+    const result = validate(readFixture("invalid", "empty-version.xml"));
+    expect(result.diagnostics.some((d) => d.id === "E029")).toBe(true);
+  });
+
+  it("non-numeric-version.xml produces W027", () => {
+    const result = validate(readFixture("invalid", "non-numeric-version.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W027")).toBe(true);
+  });
+
+  it("version-date-mismatch.xml produces W028", () => {
+    const result = validate(
+      readFixture("invalid", "version-date-mismatch.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W028")).toBe(true);
+  });
+
+  it("invalid-os.xml produces E030", () => {
+    const result = validate(readFixture("invalid", "invalid-os.xml"));
+    expect(result.diagnostics.some((d) => d.id === "E030")).toBe(true);
+  });
+
+  it("invalid-signature.xml produces W029", () => {
+    const result = validate(readFixture("invalid", "invalid-signature.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+  });
+
+  it("suspicious-url-extension.xml produces W030", () => {
+    const result = validate(
+      readFixture("invalid", "suspicious-url-extension.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W030")).toBe(true);
+  });
+
+  it("delta-missing-version.xml produces W031", () => {
+    const result = validate(
+      readFixture("invalid", "delta-missing-version.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W031")).toBe(true);
+  });
+
+  it("duplicate-deltas.xml produces W032", () => {
+    const result = validate(readFixture("invalid", "duplicate-deltas.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W032")).toBe(true);
+  });
+
+  it("mixed-protocols.xml produces W035", () => {
+    const result = validate(readFixture("invalid", "mixed-protocols.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W035")).toBe(true);
+  });
+
+  it("unusual-short-version.xml produces W033", () => {
+    const result = validate(
+      readFixture("invalid", "unusual-short-version.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W033")).toBe(true);
+  });
+
+  it("bad-critical-version.xml produces W034", () => {
+    const result = validate(readFixture("invalid", "bad-critical-version.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W034")).toBe(true);
+  });
+
+  it("unknown-architecture.xml produces W036", () => {
+    const result = validate(readFixture("invalid", "unknown-architecture.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(true);
+  });
+
+  it("missing-xml-lang.xml produces W037", () => {
+    const result = validate(readFixture("invalid", "missing-xml-lang.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W037")).toBe(true);
+  });
+
+  it("cdata-version.xml produces W038", () => {
+    const result = validate(readFixture("invalid", "cdata-version.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W038")).toBe(true);
+  });
+
+  it("missing-encoding.xml produces W039", () => {
+    const result = validate(readFixture("invalid", "missing-encoding.xml"));
+    expect(result.diagnostics.some((d) => d.id === "W039")).toBe(true);
+  });
+
+  it("inconsistent-language.xml produces W040", () => {
+    const result = validate(
+      readFixture("invalid", "inconsistent-language.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W040")).toBe(true);
+  });
 });

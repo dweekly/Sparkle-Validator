@@ -11,6 +11,27 @@ import {
   textContent,
 } from "./utils.js";
 
+/** Valid values for sparkle:os attribute */
+const VALID_OS_VALUES = ["macos", "windows"] as const;
+
+/**
+ * Check if a string looks like valid base64.
+ * Base64 should only contain A-Z, a-z, 0-9, +, /, and = for padding.
+ * Also checks length is reasonable for EdDSA/DSA signatures.
+ */
+function isValidBase64Signature(sig: string): boolean {
+  // Base64 pattern: alphanumeric + and / with optional = padding
+  const base64Pattern = /^[A-Za-z0-9+/]+=*$/;
+  if (!base64Pattern.test(sig)) return false;
+
+  // EdDSA signatures (Ed25519) are 64 bytes = 88 base64 chars (with padding)
+  // DSA signatures are typically 40-48 bytes = ~54-64 base64 chars
+  // Allow reasonable range: 20-500 characters
+  if (sig.length < 20 || sig.length > 500) return false;
+
+  return true;
+}
+
 /**
  * E009: Item has neither <enclosure> with url nor <link>
  * E010: <enclosure> missing url attribute
@@ -19,10 +40,14 @@ import {
  * E013: length is not a valid non-negative integer
  * E022: sparkle:installationType not "application" or "package"
  * E023-E025: Delta update structure errors
+ * E030: sparkle:os attribute has invalid value
  * W005: Enclosure has no signature at all
  * W006: Only DSA signature, no EdDSA
  * W010: Enclosure type not application/octet-stream
  * W019: Enclosure length is 0
+ * W029: Signature doesn't look like valid base64
+ * W031: Delta deltaFrom version not found in feed
+ * W032: Multiple delta enclosures for same deltaFrom
  */
 export function enclosureRules(
   doc: XmlDocument,
@@ -35,6 +60,21 @@ export function enclosureRules(
   if (!channel) return;
 
   const items = childElements(channel, "item");
+
+  // Collect all versions in the feed for W031 check
+  const feedVersions = new Set<string>();
+  for (const item of items) {
+    const versionEl = sparkleChildElement(item, "version");
+    if (versionEl) {
+      const version = textContent(versionEl).trim();
+      if (version) feedVersions.add(version);
+    }
+    const enclosure = childElement(item, "enclosure");
+    if (enclosure) {
+      const enclosureVersion = sparkleAttr(enclosure, "version");
+      if (enclosureVersion) feedVersions.add(enclosureVersion);
+    }
+  }
 
   for (const item of items) {
     const enclosure = childElement(item, "enclosure");
@@ -60,6 +100,23 @@ export function enclosureRules(
 
     if (enclosure) {
       validateEnclosure(enclosure, diagnostics);
+
+      // E030: Check sparkle:os attribute
+      const os = sparkleAttr(enclosure, "os");
+      if (
+        os &&
+        !(VALID_OS_VALUES as readonly string[]).includes(os.toLowerCase())
+      ) {
+        diagnostics.push({
+          id: "E030",
+          severity: "error",
+          message: `Invalid sparkle:os value "${os}"; must be "macos" or "windows"`,
+          line: enclosure.line,
+          column: enclosure.column,
+          path: elementPath(enclosure),
+          fix: 'Set sparkle:os to "macos" or "windows"',
+        });
+      }
     }
 
     // E022: installationType validation (on item-level element)
@@ -101,7 +158,7 @@ export function enclosureRules(
     // Delta updates: check <sparkle:deltas> children
     const deltasEl = sparkleChildElement(item, "deltas");
     if (deltasEl) {
-      validateDeltas(deltasEl, diagnostics);
+      validateDeltas(deltasEl, feedVersions, diagnostics);
     }
   }
 }
@@ -218,9 +275,37 @@ function validateEnclosure(
       fix: "Add a sparkle:edSignature attribute and consider removing dsaSignature",
     });
   }
+
+  // W029: Check if signatures look like valid base64
+  if (edSig && !isValidBase64Signature(edSig)) {
+    diagnostics.push({
+      id: "W029",
+      severity: "warning",
+      message: "edSignature doesn't appear to be valid base64",
+      line: enclosure.line,
+      column: enclosure.column,
+      path: elementPath(enclosure),
+      fix: "Ensure the signature is a valid base64-encoded EdDSA signature",
+    });
+  }
+  if (dsaSig && !isValidBase64Signature(dsaSig)) {
+    diagnostics.push({
+      id: "W029",
+      severity: "warning",
+      message: "dsaSignature doesn't appear to be valid base64",
+      line: enclosure.line,
+      column: enclosure.column,
+      path: elementPath(enclosure),
+      fix: "Ensure the signature is a valid base64-encoded DSA signature",
+    });
+  }
 }
 
-function validateDeltas(deltasEl: XmlElement, diagnostics: Diagnostic[]): void {
+function validateDeltas(
+  deltasEl: XmlElement,
+  feedVersions: Set<string>,
+  diagnostics: Diagnostic[]
+): void {
   const deltaEnclosures = childElements(deltasEl, "enclosure");
 
   // E023: deltas must contain enclosure elements
@@ -237,6 +322,9 @@ function validateDeltas(deltasEl: XmlElement, diagnostics: Diagnostic[]): void {
     return;
   }
 
+  // Track deltaFrom versions for W032 duplicate check
+  const deltaFromVersions = new Map<string, XmlElement[]>();
+
   for (const deltaEnc of deltaEnclosures) {
     // E024: Delta enclosure must have sparkle:deltaFrom
     const deltaFrom = sparkleAttr(deltaEnc, "deltaFrom");
@@ -250,6 +338,25 @@ function validateDeltas(deltasEl: XmlElement, diagnostics: Diagnostic[]): void {
         path: elementPath(deltaEnc),
         fix: 'Add sparkle:deltaFrom="<previousVersion>" to the delta enclosure',
       });
+    } else {
+      // W031: Check if deltaFrom version exists in feed
+      if (!feedVersions.has(deltaFrom)) {
+        diagnostics.push({
+          id: "W031",
+          severity: "warning",
+          message: `Delta references version "${deltaFrom}" which does not exist in the feed`,
+          line: deltaEnc.line,
+          column: deltaEnc.column,
+          path: elementPath(deltaEnc),
+          fix: "Ensure the deltaFrom version matches a version that exists in the feed",
+        });
+      }
+
+      // Track for W032 duplicate check
+      if (!deltaFromVersions.has(deltaFrom)) {
+        deltaFromVersions.set(deltaFrom, []);
+      }
+      deltaFromVersions.get(deltaFrom)!.push(deltaEnc);
     }
 
     // E025: Delta enclosure must also have standard enclosure attributes
@@ -267,5 +374,22 @@ function validateDeltas(deltasEl: XmlElement, diagnostics: Diagnostic[]): void {
 
     // Also validate the delta enclosure like a regular one (length, type, signatures)
     validateEnclosure(deltaEnc, diagnostics);
+  }
+
+  // W032: Check for duplicate deltaFrom versions
+  for (const [version, enclosures] of deltaFromVersions) {
+    if (enclosures.length > 1) {
+      for (let i = 1; i < enclosures.length; i++) {
+        diagnostics.push({
+          id: "W032",
+          severity: "warning",
+          message: `Duplicate delta enclosure for deltaFrom="${version}"`,
+          line: enclosures[i].line,
+          column: enclosures[i].column,
+          path: elementPath(enclosures[i]),
+          fix: "Remove duplicate delta enclosures; only one delta per source version is needed",
+        });
+      }
+    }
   }
 }

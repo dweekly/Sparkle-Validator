@@ -1,6 +1,6 @@
 {
   "name": "sparkle-validator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Validate Sparkle appcast.xml feeds — CLI tool, library, and web app",
   "author": "David E. Weekly <David@weekly.org>",
   "homepage": "https://sparklevalidator.com",

@@ -57,4 +57,30 @@ describe("date rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W018")).toBe(true);
   });
+
+  it("W025: warns about future pubDate", () => {
+    // Create a date 1 year in the future
+    const futureDate = new Date();
+    futureDate.setFullYear(futureDate.getFullYear() + 1);
+    const futureDateStr = futureDate.toUTCString().replace("GMT", "+0000");
+
+    const xml = wrap(`<pubDate>${futureDateStr}</pubDate>`);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W025")).toBe(true);
+  });
+
+  it("W026: warns about implausibly old pubDate", () => {
+    const xml = wrap(`<pubDate>Thu, 13 Jul 1995 14:30:00 -0700</pubDate>`);
+    const result = validate(xml);
+    const diag = result.diagnostics.find((d) => d.id === "W026");
+    expect(diag).toBeDefined();
+    expect(diag?.message).toContain("1995");
+    expect(diag?.message).toContain("implausibly old");
+  });
+
+  it("accepts dates from 2001 onwards", () => {
+    const xml = wrap(`<pubDate>Thu, 13 Jul 2006 14:30:00 -0700</pubDate>`);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W026")).toBe(false);
+  });
 });

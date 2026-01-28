@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W040: Inconsistent language settings -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>https://example.com</link>
+    <language>en-US</language>
+    <item>
+      <title>Version 1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <!-- Item with different language release notes -->
+      <sparkle:releaseNotesLink xml:lang="de">https://example.com/notes-de.html</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink xml:lang="fr">https://example.com/notes-fr.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/app.zip" length="1234567" type="application/octet-stream"
+                 sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+    </item>
+  </channel>
+</rss>

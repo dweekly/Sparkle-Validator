@@ -2,6 +2,8 @@ import { Command } from "commander";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { validate } from "../core/validator.js";
+import { validateRemote } from "../core/remote.js";
+import { parseXml } from "../core/parser.js";
 import { formatText } from "./formatters/text.js";
 import { formatJson } from "./formatters/json.js";
 import { fetchUrl, readStdin } from "./fetch.js";
@@ -11,17 +13,50 @@ const program = new Command();
 program
   .name("sparkle-validator")
   .description("Validate Sparkle appcast.xml feeds")
-  .version("1.0.0")
+  .version("1.1.0")
   .argument("<source>", 'File path, URL (http/https), or "-" for stdin')
   .option("-f, --format <type>", "Output format: text or json", "text")
   .option("-s, --strict", "Treat warnings as errors")
   .option("--no-info", "Suppress informational messages")
   .option("--no-color", "Disable colored output")
   .option("-q, --quiet", "Only show errors")
+  .option("-c, --check-urls", "Check that URLs exist and sizes match")
+  .option("--timeout <ms>", "Timeout for URL checks in milliseconds", "10000")
   .action(async (source: string, options) => {
     try {
       const xml = await readSource(source);
       const result = validate(xml);
+
+      // Run remote validation if --check-urls is specified
+      if (options.checkUrls) {
+        const { document } = parseXml(xml);
+        const remoteDiags = await validateRemote(document, {
+          timeout: parseInt(options.timeout, 10) || 10000,
+        });
+        result.diagnostics.push(...remoteDiags);
+
+        // Recalculate counts
+        result.errorCount = result.diagnostics.filter(
+          (d) => d.severity === "error"
+        ).length;
+        result.warningCount = result.diagnostics.filter(
+          (d) => d.severity === "warning"
+        ).length;
+        result.infoCount = result.diagnostics.filter(
+          (d) => d.severity === "info"
+        ).length;
+        result.valid = result.errorCount === 0;
+
+        // Re-sort diagnostics
+        const severityOrder = { error: 0, warning: 1, info: 2 };
+        result.diagnostics.sort((a, b) => {
+          const sev =
+            severityOrder[a.severity as keyof typeof severityOrder] -
+            severityOrder[b.severity as keyof typeof severityOrder];
+          if (sev !== 0) return sev;
+          return (a.line ?? 0) - (b.line ?? 0);
+        });
+      }
 
       const useColor =
         options.color !== false &&
