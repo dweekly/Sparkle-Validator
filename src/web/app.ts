@@ -70,18 +70,20 @@ btnUrl.addEventListener("click", async () => {
   btnUrl.textContent = "Fetching...";
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      showError(`HTTP ${response.status}: ${response.statusText}`);
+    // Use our proxy to avoid CORS issues
+    const proxyUrl = `/api/fetch?url=${encodeURIComponent(url)}`;
+    const response = await fetch(proxyUrl);
+    const data = await response.json();
+
+    if (data.error) {
+      showError(data.error);
       return;
     }
-    const xml = await response.text();
-    showResults(validate(xml));
+
+    showResults(validate(data.xml));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    showError(
-      `Failed to fetch URL: ${msg}. This may be due to CORS restrictions.`
-    );
+    showError(`Failed to fetch URL: ${msg}`);
   } finally {
     btnUrl.disabled = false;
     btnUrl.textContent = "Fetch & Validate";
