@@ -4,6 +4,7 @@ import {
   sparkleChildElement,
   textContent,
   sparkleAttr,
+  attr,
   elementPath,
   childElement,
   parseRfc2822Date,
@@ -16,6 +17,49 @@ import {
  */
 function isNumericVersion(version: string): boolean {
   return /^\d+(\.\d+)*$/.test(version);
+}
+
+/**
+ * Extract version from a download URL using Sparkle's underscore-splitting fallback.
+ *
+ * Sparkle's logic (from SUAppcastItem.m):
+ * 1. Split URL by underscore characters
+ * 2. If there are at least 2 components, take the last one
+ * 3. Remove the file extension
+ *
+ * Examples:
+ * - "https://example.com/MyApp_1.5.zip" → "1.5"
+ * - "https://example.com/App_Name_2.0.1.dmg" → "2.0.1"
+ * - "https://example.com/NoUnderscore.zip" → null (can't deduce)
+ *
+ * @see https://github.com/sparkle-project/Sparkle/blob/2.x/Sparkle/SUAppcastItem.m
+ */
+function extractVersionFromUrl(url: string): string | null {
+  // Split by underscore
+  const components = url.split("_");
+
+  // Need at least 2 components (name + version)
+  if (components.length < 2) {
+    return null;
+  }
+
+  // Take the last component
+  const lastComponent = components[components.length - 1];
+
+  // Remove file extension (everything after the last dot)
+  const lastDotIndex = lastComponent.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return lastComponent; // No extension
+  }
+
+  const version = lastComponent.substring(0, lastDotIndex);
+
+  // Validate it looks like a version (not empty, contains at least one digit)
+  if (!version || !/\d/.test(version)) {
+    return null;
+  }
+
+  return version;
 }
 
 /**
@@ -37,7 +81,7 @@ function compareVersions(v1: string, v2: string): number {
 }
 
 /**
- * E008: Item missing sparkle:version (not as element or enclosure attribute)
+ * E008: Item missing sparkle:version and cannot be deduced from filename
  * E029: Version string is empty or whitespace-only
  * W007: Redundant version - both element and enclosure attribute with same value
  * W008: Redundant shortVersionString - both element and enclosure attribute with same value
@@ -45,6 +89,7 @@ function compareVersions(v1: string, v2: string): number {
  * W020: Duplicate version without differing os/channel
  * W027: Version string is non-numeric (contains letters/symbols)
  * W028: Version decreases while pubDate increases
+ * W041: Version missing but can be deduced from filename (undocumented Sparkle fallback)
  */
 export function versionRules(
   doc: XmlDocument,
@@ -107,22 +152,46 @@ export function versionRules(
       });
     }
 
-    const version = versionElText || enclosureVersion;
+    const explicitVersion = versionElText || enclosureVersion;
 
-    // E008: No version anywhere
-    if (!version) {
-      diagnostics.push({
-        id: "E008",
-        severity: "error",
-        message:
-          "Item is missing sparkle:version (neither element nor enclosure attribute)",
-        line: item.line,
-        column: item.column,
-        path: elementPath(item),
-        fix: "Add a <sparkle:version> element or sparkle:version attribute on <enclosure>",
-      });
-      continue;
+    // Check for filename fallback version
+    const enclosureUrl = enclosure ? attr(enclosure, "url") : undefined;
+    const filenameVersion = enclosureUrl
+      ? extractVersionFromUrl(enclosureUrl)
+      : null;
+
+    // E008/W041: No explicit version - check filename fallback
+    if (!explicitVersion) {
+      if (filenameVersion) {
+        // W041: Version can be deduced from filename (undocumented Sparkle behavior)
+        diagnostics.push({
+          id: "W041",
+          severity: "warning",
+          message: `Item has no sparkle:version but Sparkle may deduce "${filenameVersion}" from filename`,
+          line: item.line,
+          column: item.column,
+          path: elementPath(item),
+          fix: `Add <sparkle:version>${filenameVersion}</sparkle:version> explicitly instead of relying on filename parsing`,
+        });
+        // Continue processing with the deduced version for other checks
+      } else {
+        // E008: No version and can't deduce from filename
+        diagnostics.push({
+          id: "E008",
+          severity: "error",
+          message:
+            "Item is missing sparkle:version (neither element nor enclosure attribute, and cannot be deduced from filename)",
+          line: item.line,
+          column: item.column,
+          path: elementPath(item),
+          fix: "Add a <sparkle:version> element or sparkle:version attribute on <enclosure>",
+        });
+        continue;
+      }
     }
+
+    // Effective version for subsequent checks (explicit takes precedence)
+    const version = explicitVersion || filenameVersion!;
 
     // W027: Non-numeric version string
     if (!isNumericVersion(version)) {

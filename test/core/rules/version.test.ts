@@ -9,15 +9,57 @@ const wrap = (itemContent: string) => `<?xml version="1.0"?>
 </rss>`;
 
 describe("version rules", () => {
-  it("E008: reports missing version", () => {
+  it("E008: reports missing version when cannot deduce from filename", () => {
     const xml = wrap(`
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
+    expect(result.valid).toBe(false);
+  });
+
+  it("W041: warns when version can be deduced from filename", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <description>x</description>
+      <enclosure url="https://example.com/MyApp_2.5.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W041")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "E008")).toBe(false);
+    expect(result.valid).toBe(true); // Warning, not error
+    // Check the deduced version is in the message
+    const w041 = result.diagnostics.find((d) => d.id === "W041");
+    expect(w041?.message).toContain("2.5");
+  });
+
+  it("W041: handles multiple underscores in filename", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <description>x</description>
+      <enclosure url="https://example.com/My_Cool_App_1.2.3.dmg" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W041")).toBe(true);
+    const w041 = result.diagnostics.find((d) => d.id === "W041");
+    expect(w041?.message).toContain("1.2.3"); // Takes last component
+  });
+
+  it("E008: fails when filename has no underscore", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <description>x</description>
+      <enclosure url="https://example.com/MyApp-v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W041")).toBe(false);
   });
 
   it("accepts version as sparkle:version element", () => {

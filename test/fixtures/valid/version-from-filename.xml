@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test: Version deduced from filename (W041 warning but still VALID) -->
+<!-- Sparkle's fallback: splits URL by underscore, takes last part, removes extension -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>App with Filename Version</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.5</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <!-- No sparkle:version - will be deduced as "2.5" from filename -->
+      <sparkle:shortVersionString>2.5</sparkle:shortVersionString>
+      <enclosure url="https://example.com/downloads/MyApp_2.5.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="validSig123"/>
+    </item>
+    <item>
+      <title>Version 2.4.1</title>
+      <pubDate>Mon, 10 Jul 2023 10:00:00 -0700</pubDate>
+      <!-- No sparkle:version - will be deduced as "2.4.1" from filename -->
+      <sparkle:shortVersionString>2.4.1</sparkle:shortVersionString>
+      <enclosure url="https://example.com/downloads/MyApp_2.4.1.dmg"
+                 length="12000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="validSig456"/>
+    </item>
+    <item>
+      <title>Version 100</title>
+      <pubDate>Sun, 09 Jul 2023 09:00:00 -0700</pubDate>
+      <!-- Build number style version deduced from filename -->
+      <enclosure url="https://example.com/downloads/MyApp_100.zip"
+                 length="11000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="validSig789"/>
+    </item>
+  </channel>
+</rss>

@@ -142,6 +142,20 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "E024")).toBe(true);
   });
 
+  it("no-version-no-fallback.xml produces E008", () => {
+    const result = validate(readFixture("invalid", "no-version-no-fallback.xml"));
+    expect(result.valid).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
+  });
+
+  it("version-from-filename.xml is valid with W041 warnings", () => {
+    const result = validate(readFixture("valid", "version-from-filename.xml"));
+    expect(result.valid).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W041")).toBe(true);
+    // Should not have E008
+    expect(result.diagnostics.some((d) => d.id === "E008")).toBe(false);
+  });
+
   it("real-world-broken.xml produces multiple errors and warnings", () => {
     const result = validate(readFixture("invalid", "real-world-broken.xml"));
     // Should have errors

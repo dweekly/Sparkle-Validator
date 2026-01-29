@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test: No version and cannot be deduced from filename (E008 error) -->
+<!-- Sparkle requires underscore in filename to deduce version -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>App Missing Version</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Some Update</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <!-- No sparkle:version and filename has no underscore - E008 error -->
+      <enclosure url="https://example.com/downloads/app.zip"
+                 length="12345"
+                 type="application/octet-stream"
+                 sparkle:edSignature="validSig123"/>
+    </item>
+    <item>
+      <title>Another Update</title>
+      <pubDate>Mon, 10 Jul 2023 10:00:00 -0700</pubDate>
+      <!-- No sparkle:version and filename has no underscore - E008 error -->
+      <enclosure url="https://example.com/MyApp-Latest.dmg"
+                 length="12000"
+                 type="application/octet-stream"
+                 sparkle:edSignature="validSig456"/>
+    </item>
+  </channel>
+</rss>
