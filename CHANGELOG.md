@@ -5,20 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2025-01-28
 
 ### Added
+
+- **Remote URL validation** (`--check-urls` flag)
+  - Verifies that enclosure URLs return HTTP 2xx status codes (E027)
+  - Validates Content-Length header matches declared `length` attribute (E028)
+  - Reports URL redirects as warnings (W021)
+  - Warns when Content-Length header is missing (W022)
+  - Skips local/private URLs with warning (W023)
+  - Warns about insecure HTTP URLs (W024)
+  - Configurable timeout via `--timeout` flag (default: 10000ms)
+  - Checks main enclosures, delta updates, and release notes links
+  - Detailed error messages for DNS failures, TLS errors, connection issues
 
 - **Diagnostic consolidation** — Multiple diagnostics of the same type are now
   consolidated into a single entry with a count (e.g., "message (and 109 more similar issues)").
   This prevents output spam when validating large feeds with repeated issues.
 
-- **Ed25519 signature validation** — E031 now properly validates Ed25519 signatures:
+- **Ed25519 signature validation** — E031 properly validates Ed25519 signatures:
   - Must be exactly 64 bytes (88 base64 characters with padding)
   - Strips whitespace before validation (line-wrapped base64 is valid)
   - Invalid signatures are errors (not warnings) since Sparkle rejects them
 
-- **Website prefill** — The web app now prefills with iTerm2's appcast URL as a working demo
+- **Sparkle 2.9+ feature detection**
+  - I006: Reports `sparkle:hardwareRequirements` (e.g., arm64, x86_64)
+  - I007: Reports `sparkle:minimumUpdateVersion` restrictions
+
+- **Date plausibility checks**
+  - W025: Warns when pubDate is in the future
+  - W026: Warns when pubDate is implausibly old (before 2001/Mac OS X era)
 
 - **Version fallback detection**
   - W041: Warns when version is missing but can be deduced from filename
@@ -49,9 +66,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Informational rules**
   - I008: Reports when feed contains >50 items (performance consideration)
   - I009: Summarizes OS version requirements across all items
+  - I010: Notes when enclosure has no signature (signatures are optional)
 
-- **Public appcast URL collection** for testing
-  - Added `test/fixtures/remote/appcast-urls.txt` with verified real-world appcasts
+- **XSD Schema** for xmllint validation
+  - `appcast.xsd` - Main RSS 2.0 structure with Sparkle imports
+  - `sparkle-appcast.xsd` - Sparkle namespace elements and attributes
+  - Usage: `xmllint --schema appcast.xsd --noout yourfile.xml`
+
+- **Documentation**
+  - `APPCAST-FORMAT.md` - Comprehensive Sparkle appcast format specification
+  - `CLAUDE-SKILL.md` - Instructions for AI assistants working with appcasts
+  - `ROADMAP.md` - Future feature plans
+
+- **Testing infrastructure**
+  - XSD schema validation tests (23 tests via xmllint)
+  - Public appcast URL collection (`test/fixtures/remote/appcast-urls.txt`)
+  - 192 total tests
+
+- **Website improvements**
+  - Prefills with iTerm2's appcast URL as a working demo
 
 ### Changed
 
@@ -77,46 +110,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - E011 → W011: Missing `length` attribute (used for progress display only)
   - E012 → W012: Missing `type` attribute (Sparkle can infer from URL)
 
-## [1.1.0] - 2025-01-28
-
-### Added
-
-- **Remote URL validation** (`--check-urls` flag)
-  - Verifies that enclosure URLs return HTTP 2xx status codes (E027)
-  - Validates Content-Length header matches declared `length` attribute (E028)
-  - Reports URL redirects as warnings (W021)
-  - Warns when Content-Length header is missing (W022)
-  - Skips local/private URLs with warning (W023)
-  - Warns about insecure HTTP URLs (W024)
-  - Configurable timeout via `--timeout` flag (default: 10000ms)
-  - Checks main enclosures, delta updates, and release notes links
-  - Detailed error messages for DNS failures, TLS errors, connection issues
-
-- **Sparkle 2.9+ feature detection**
-  - I006: Reports `sparkle:hardwareRequirements` (e.g., arm64, x86_64)
-  - I007: Reports `sparkle:minimumUpdateVersion` restrictions
-
-- **Date plausibility checks**
-  - W025: Warns when pubDate is in the future
-  - W026: Warns when pubDate is implausibly old (before 2001/Mac OS X era)
-
-- **XSD Schema** for xmllint validation
-  - `appcast.xsd` - Main RSS 2.0 structure with Sparkle imports
-  - `sparkle-appcast.xsd` - Sparkle namespace elements and attributes
-  - Usage: `xmllint --schema appcast.xsd --noout yourfile.xml`
-
-- **Documentation**
-  - `APPCAST-FORMAT.md` - Comprehensive Sparkle appcast format specification
-  - `CLAUDE-SKILL.md` - Instructions for AI assistants working with appcasts
-  - `ROADMAP.md` - Future feature plans
-
-### Changed
-
 - I005 now only reports non-macOS targets (sparkle:os="macos" is the default and no longer flagged)
 
 ### Fixed
 
 - Corrected handling of `sparkle:os` attribute (was incorrectly looking for `sparkle:osType`)
+
+### Security
+
+- **SSRF protection in fetch proxy** — The web app's URL fetching proxy now:
+  - Resolves hostnames via Cloudflare DNS-over-HTTPS before fetching
+  - Blocks requests to private/internal IP ranges (RFC 1918, loopback, link-local,
+    carrier-grade NAT, cloud metadata 169.254.x.x, multicast, reserved)
+  - Prevents SSRF attacks targeting internal services
 
 ## [1.0.0] - 2025-01-27
 
@@ -138,6 +144,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - npm package: `sparkle-validator`
 - Homebrew tap: `brew install dweekly/sparkle-validator/sparkle-validator`
 
-[Unreleased]: https://github.com/dweekly/sparkle-validator/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/dweekly/sparkle-validator/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/dweekly/sparkle-validator/releases/tag/v1.0.0
