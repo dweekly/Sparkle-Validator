@@ -107,11 +107,17 @@
   </xs:element>
 
   <!-- enclosure element - Required for downloadable updates -->
+  <!-- enclosure element - Required for downloadable updates -->
+  <!--
+    Note: Only 'url' is truly required. Sparkle works without 'length' and 'type':
+    - length: Used for download progress display only
+    - type: Sparkle infers from URL/content
+  -->
   <xs:element name="enclosure">
     <xs:complexType>
       <xs:attribute name="url" type="xs:anyURI" use="required"/>
-      <xs:attribute name="length" type="xs:nonNegativeInteger" use="required"/>
-      <xs:attribute name="type" type="xs:string" use="required"/>
+      <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="type" type="xs:string"/>
       <!-- Sparkle attributes -->
       <xs:attribute ref="sparkle:version"/>
       <xs:attribute ref="sparkle:shortVersionString"/>
