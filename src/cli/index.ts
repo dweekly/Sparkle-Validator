@@ -10,10 +10,12 @@ import { fetchUrl, readStdin } from "./fetch.js";
 
 const program = new Command();
 
+declare const __VERSION__: string;
+
 program
   .name("sparkle-validator")
   .description("Validate Sparkle appcast.xml feeds")
-  .version("1.1.0")
+  .version(__VERSION__)
   .argument("<source>", 'File path, URL (http/https), or "-" for stdin')
   .option("-f, --format <type>", "Output format: text or json", "text")
   .option("-s, --strict", "Treat warnings as errors")

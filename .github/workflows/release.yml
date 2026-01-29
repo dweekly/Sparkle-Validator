@@ -34,7 +34,19 @@ jobs:
       - name: Generate SBOM
         run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json
 
+      - name: Check if version already published
+        id: check-npm
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "sparkle-validator@${VERSION}" version 2>/dev/null; then
+            echo "already_published=true" >> $GITHUB_OUTPUT
+            echo "Version ${VERSION} already published to npm"
+          else
+            echo "already_published=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Publish to npm with provenance
+        if: steps.check-npm.outputs.already_published == 'false'
         run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -52,7 +64,9 @@ jobs:
           VERSION_TAG: ${{ github.ref_name }}
         run: |
           VERSION="${VERSION_TAG#v}"
-          SHA256=$(curl -sL "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz" | shasum -a 256 | cut -d' ' -f1)
+          # Download file first, then calculate checksum (never pipe to shasum)
+          curl -sL -o /tmp/sparkle-validator.tgz "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz"
+          SHA256=$(shasum -a 256 /tmp/sparkle-validator.tgz | cut -d' ' -f1)
 
           # Clone homebrew tap
           git clone "https://x-access-token:${GH_TOKEN}@github.com/dweekly/homebrew-sparkle-validator.git" tap
