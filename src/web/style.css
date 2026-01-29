@@ -652,6 +652,16 @@ textarea::placeholder {
   white-space: nowrap;
 }
 
+.code-block pre {
+  flex: 1;
+  margin: 0;
+}
+
+.code-block pre code {
+  white-space: pre;
+  display: block;
+}
+
 /* ============================================
    Schema Links
    ============================================ */
