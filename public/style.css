@@ -369,6 +369,12 @@ footer .disclaimer {
   color: var(--text-secondary);
 }
 
+footer .copyright {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
 /* CLI Section */
 .cli-section,
 .xsd-section {
