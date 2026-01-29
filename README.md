@@ -215,7 +215,7 @@ interface Diagnostic {
 
 ## Validation Rules
 
-### Errors (E001-E030)
+### Errors (E001-E030, excluding E026)
 
 | ID | Description |
 |----|-------------|
@@ -234,13 +234,12 @@ interface Diagnostic {
 | E020-E021 | Phased rollout errors |
 | E022 | Invalid installationType |
 | E023-E025 | Delta update structure errors |
-| E026 | Incorrect Sparkle namespace URI |
 | E027 | URL returns non-2xx status (`--check-urls`) |
 | E028 | Content-Length doesn't match declared length (`--check-urls`) |
 | E029 | Version string is empty or whitespace-only |
 | E030 | Invalid `sparkle:os` value (must be "macos" or "windows") |
 
-### Warnings (W001-W040)
+### Warnings (W001-W041)
 
 | ID | Description |
 |----|-------------|
@@ -263,7 +262,7 @@ interface Diagnostic {
 | W023 | Local/private URL skipped (`--check-urls`) |
 | W024 | URL uses insecure HTTP instead of HTTPS (`--check-urls`) |
 | W025 | pubDate is in the future |
-| W026 | pubDate is implausibly old (before 2001) |
+| W026 | Non-canonical Sparkle namespace URI (old format or HTTPS variant) |
 | W027 | Version string is non-numeric (may cause comparison failures) |
 | W028 | Version decreases while pubDate increases |
 | W029 | Signature doesn't look like valid base64 |
@@ -278,6 +277,7 @@ interface Diagnostic {
 | W038 | CDATA section used in version/signature elements |
 | W039 | XML declaration missing encoding attribute |
 | W040 | Channel has language but items have different lang |
+| W041 | Version missing but deducible from filename (Sparkle fallback) |
 
 ### Info (I001-I009)
 

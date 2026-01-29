@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Version fallback detection**
+  - W041: Warns when version is missing but can be deduced from filename
+    (Sparkle's undocumented fallback: splits URL by underscore, e.g., `MyApp_2.5.zip` → `2.5`)
+
 - **Silent failure prevention rules**
   - E029: Reports empty or whitespace-only version strings
   - E030: Reports invalid `sparkle:os` values (must be "macos" or "windows")
@@ -39,6 +43,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `test/fixtures/remote/appcast-urls.txt` with verified real-world appcasts
 
 ### Changed
+
+- **Downgraded namespace check to warning** (Sparkle accepts variants)
+  - E026 → W026: Non-canonical Sparkle namespace URI (old format without "www.", HTTPS variant)
+  - Known variants are now accepted; elements are still recognized correctly
+
+- **Improved URL scheme support**
+  - Now accepts `feed://` URLs (common RSS convention) in addition to `http://` and `https://`
+
+- **Smarter version detection**
+  - E008 now only fires when version truly cannot be determined
+  - If version can be deduced from filename (Sparkle's fallback), emits W041 instead
 
 - **Downgraded enclosure attribute checks to warnings** (Sparkle works without these)
   - E011 → W011: Missing `length` attribute (used for progress display only)
