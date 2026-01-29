@@ -368,3 +368,98 @@ footer .disclaimer {
   font-size: 0.7rem;
   color: var(--text-secondary);
 }
+
+/* CLI Section */
+.cli-section,
+.xsd-section {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.cli-section h2,
+.xsd-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.install-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.install-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.install-option strong {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.install-option code {
+  background: var(--code-bg);
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.cli-features {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.cli-features code {
+  background: var(--code-bg);
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.block-code {
+  display: block;
+  background: var(--code-bg);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+}
+
+.xsd-section p {
+  font-size: 0.9rem;
+}
+
+.xsd-section a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.xsd-section a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .install-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .install-option strong {
+    min-width: auto;
+  }
+}

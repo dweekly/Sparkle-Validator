@@ -145,11 +145,45 @@
         <div id="results"></div>
       </main>
 
+      <section class="cli-section">
+        <h2>Command Line Interface</h2>
+        <p>Install the CLI for local validation and CI/CD integration:</p>
+        <div class="install-options">
+          <div class="install-option">
+            <strong>npm</strong>
+            <code>npm install -g sparkle-validator</code>
+          </div>
+          <div class="install-option">
+            <strong>Homebrew</strong>
+            <code>brew install dweekly/sparkle-validator/sparkle-validator</code>
+          </div>
+          <div class="install-option">
+            <strong>npx (no install)</strong>
+            <code>npx sparkle-validator https://example.com/appcast.xml</code>
+          </div>
+        </div>
+        <p class="cli-features">
+          Features: <code>--check-urls</code> to verify download links,
+          <code>--strict</code> mode, JSON output, stdin support
+        </p>
+      </section>
+
+      <section class="xsd-section">
+        <h2>XSD Schema Validation</h2>
+        <p>Use our XSD schema with xmllint for quick validation:</p>
+        <code class="block-code">xmllint --schema https://sparklevalidator.com/appcast.xsd --noout your-appcast.xml</code>
+        <p>
+          <a href="/appcast.xsd">appcast.xsd</a> &middot;
+          <a href="/sparkle-appcast.xsd">sparkle-appcast.xsd</a>
+        </p>
+      </section>
+
       <footer>
         <p>
           <a href="https://github.com/dweekly/Sparkle-Validator">GitHub</a>
-          &middot; MIT License &middot; CLI:
-          <code>npm install -g sparkle-validator</code>
+          &middot;
+          <a href="https://www.npmjs.com/package/sparkle-validator">npm</a>
+          &middot; MIT License
         </p>
         <p class="disclaimer">
           This is an independent community project, not affiliated with the

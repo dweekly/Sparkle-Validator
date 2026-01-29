@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sparkle Appcast XML Schema Definition (XSD)
+
+  This is an UNOFFICIAL schema for validating Sparkle appcast.xml files.
+  Created by the Sparkle Validator project: https://sparklevalidator.com
+
+  Based on:
+  - RSS 2.0 Specification: https://www.rssboard.org/rss-specification
+  - Sparkle Documentation: https://sparkle-project.org/documentation/publishing/
+  - Sparkle Source Code: https://github.com/sparkle-project/Sparkle
+
+  Version: 1.0 (supports Sparkle 2.9+)
+
+  Usage with xmllint:
+    xmllint -schema appcast.xsd -noout yourfile.xml
+-->
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+
+  <xs:import namespace="http://www.andymatuschak.org/xml-namespaces/sparkle"
+             schemaLocation="sparkle-appcast.xsd"/>
+
+  <!-- ==================== RSS 2.0 BASE STRUCTURE ==================== -->
+
+  <!-- Root element: rss -->
+  <xs:element name="rss">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="channel"/>
+      </xs:sequence>
+      <xs:attribute name="version" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="2.0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <!-- Allow any namespace declarations -->
+      <xs:anyAttribute namespace="##other" processContents="lax"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- channel element -->
+  <!--
+    Note: Using xs:choice with unbounded allows elements in any order,
+    which matches real-world RSS feeds that don't follow strict ordering.
+  -->
+  <xs:element name="channel">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- Standard RSS channel elements -->
+        <xs:element ref="title"/>
+        <xs:element ref="link"/>
+        <xs:element ref="description"/>
+        <xs:element ref="language"/>
+        <xs:element ref="copyright"/>
+        <xs:element ref="managingEditor"/>
+        <xs:element ref="webMaster"/>
+        <xs:element ref="pubDate"/>
+        <xs:element ref="lastBuildDate"/>
+        <xs:element ref="category"/>
+        <xs:element ref="generator"/>
+        <xs:element ref="docs"/>
+        <xs:element ref="ttl"/>
+        <xs:element ref="image"/>
+        <!-- Items -->
+        <xs:element ref="item"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- item element - The core of an appcast -->
+  <xs:element name="item">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- Standard RSS item elements -->
+        <xs:element ref="title"/>
+        <xs:element ref="link"/>
+        <xs:element ref="description"/>
+        <xs:element ref="author"/>
+        <xs:element ref="category"/>
+        <xs:element ref="comments"/>
+        <xs:element ref="enclosure"/>
+        <xs:element ref="guid"/>
+        <xs:element ref="pubDate"/>
+        <xs:element ref="source"/>
+        <!-- Sparkle-specific elements -->
+        <xs:element ref="sparkle:version"/>
+        <xs:element ref="sparkle:shortVersionString"/>
+        <xs:element ref="sparkle:minimumSystemVersion"/>
+        <xs:element ref="sparkle:maximumSystemVersion"/>
+        <xs:element ref="sparkle:minimumUpdateVersion"/>
+        <xs:element ref="sparkle:minimumAutoupdateVersion"/>
+        <xs:element ref="sparkle:ignoreSkippedUpgradesBelowVersion"/>
+        <xs:element ref="sparkle:hardwareRequirements"/>
+        <xs:element ref="sparkle:channel"/>
+        <xs:element ref="sparkle:releaseNotesLink"/>
+        <xs:element ref="sparkle:fullReleaseNotesLink"/>
+        <xs:element ref="sparkle:phasedRolloutInterval"/>
+        <xs:element ref="sparkle:criticalUpdate"/>
+        <xs:element ref="sparkle:informationalUpdate"/>
+        <xs:element ref="sparkle:installationType"/>
+        <xs:element ref="sparkle:tags"/>
+        <xs:element ref="sparkle:deltas"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- enclosure element - Required for downloadable updates -->
+  <!-- enclosure element - Required for downloadable updates -->
+  <!--
+    Note: Only 'url' is truly required. Sparkle works without 'length' and 'type':
+    - length: Used for download progress display only
+    - type: Sparkle infers from URL/content
+  -->
+  <xs:element name="enclosure">
+    <xs:complexType>
+      <xs:attribute name="url" type="xs:anyURI" use="required"/>
+      <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+      <xs:attribute name="type" type="xs:string"/>
+      <!-- Sparkle attributes -->
+      <xs:attribute ref="sparkle:version"/>
+      <xs:attribute ref="sparkle:shortVersionString"/>
+      <xs:attribute ref="sparkle:edSignature"/>
+      <xs:attribute ref="sparkle:dsaSignature"/>
+      <xs:attribute ref="sparkle:os"/>
+      <xs:attribute ref="sparkle:installationType"/>
+      <xs:attribute ref="sparkle:deltaFrom"/>
+      <xs:attribute ref="sparkle:deltaFromSparkleExecutableSize"/>
+      <xs:attribute ref="sparkle:deltaFromSparkleLocales"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ==================== STANDARD RSS ELEMENTS ==================== -->
+
+  <xs:element name="title" type="xs:string"/>
+  <xs:element name="link" type="xs:anyURI"/>
+
+  <!-- description with optional sparkle:format attribute -->
+  <xs:element name="description">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+      <xs:attribute ref="sparkle:format"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="language" type="xs:language"/>
+  <xs:element name="copyright" type="xs:string"/>
+  <xs:element name="managingEditor" type="xs:string"/>
+  <xs:element name="webMaster" type="xs:string"/>
+  <xs:element name="pubDate" type="xs:string"/> <!-- RFC 2822 format, validated separately -->
+  <xs:element name="lastBuildDate" type="xs:string"/>
+  <xs:element name="category" type="xs:string"/>
+  <xs:element name="generator" type="xs:string"/>
+  <xs:element name="docs" type="xs:anyURI"/>
+  <xs:element name="ttl" type="xs:nonNegativeInteger"/>
+  <xs:element name="author" type="xs:string"/>
+  <xs:element name="comments" type="xs:anyURI"/>
+  <xs:element name="source" type="xs:string"/>
+
+  <!-- guid element -->
+  <xs:element name="guid">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="isPermaLink" type="xs:boolean"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- image element -->
+  <xs:element name="image">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="url" type="xs:anyURI"/>
+        <xs:element ref="title"/>
+        <xs:element ref="link"/>
+        <xs:element name="width" type="xs:positiveInteger" minOccurs="0"/>
+        <xs:element name="height" type="xs:positiveInteger" minOccurs="0"/>
+        <xs:element ref="description" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

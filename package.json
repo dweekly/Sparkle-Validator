@@ -11,6 +11,10 @@
   "bugs": {
     "url": "https://github.com/dweekly/Sparkle-Validator/issues"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "main": "dist/core/index.cjs",
   "module": "dist/core/index.js",
