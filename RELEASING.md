@@ -105,9 +105,10 @@ git push -f origin v1
 
 ```bash
 npm run build
-cp src/web/index.html src/web/style.css public/
 npx wrangler pages deploy public --project-name=sparkle-validator
 ```
+
+> **Note:** `src/web/` and `public/` HTML/CSS should be kept in sync. The build outputs JS to `public/`.
 
 Verify: https://sparklevalidator.com (check version in footer)
 

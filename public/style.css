@@ -865,6 +865,13 @@ footer {
   color: var(--accent);
 }
 
+.version {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
 .copyright {
   margin-top: 0.5rem;
   font-size: 0.75rem;

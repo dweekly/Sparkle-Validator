@@ -19,8 +19,10 @@
 ## Website Deployment
 - **Hosted on:** Cloudflare Pages
 - **URL:** https://sparklevalidator.com
-- **Deploy command:** `npx wrangler pages deploy public --project-name=sparkle-validator`
-- Build the web app first: `npm run build && cp src/web/index.html src/web/style.css public/`
+- **Deploy command:** `npm run build && npx wrangler pages deploy public --project-name=sparkle-validator`
+- `src/web/` contains source HTML/CSS/TS
+- `public/` contains production assets (HTML, CSS, built JS, icons, etc.)
+- Keep `src/web/index.html` and `public/index.html` in sync (same for style.css)
 
 ## Code Style
 - TypeScript with strict mode
