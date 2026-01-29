@@ -28,8 +28,8 @@ function isValidCriticalUpdateVersion(version: string): boolean {
 /**
  * W001: Missing <title> on channel
  * W002: Missing <title> on item
- * W014: Missing channel-level <link>
- * W017: informationalUpdate on item that also has enclosure
+ * I011: Missing channel-level <link> (not required by Sparkle)
+ * W017: informationalUpdate on item that also has enclosure (only if no version conditions)
  * W033: shortVersionString format unusual (not x.y.z)
  * W034: criticalUpdate has version attr that's not valid format
  * W037: releaseNotesLink missing xml:lang for localization
@@ -59,12 +59,12 @@ export function bestPracticeRules(
     });
   }
 
-  // W014: Channel missing <link>
+  // I011: Channel missing <link> (informational - not required by Sparkle)
   const channelLink = childElement(channel, "link");
   if (!channelLink || !textContent(channelLink).trim()) {
     diagnostics.push({
-      id: "W014",
-      severity: "warning",
+      id: "I011",
+      severity: "info",
       message: "Channel is missing a <link> element",
       line: channel.line,
       column: channel.column,
@@ -97,22 +97,50 @@ export function bestPracticeRules(
     }
 
     // W017: informationalUpdate on item that also has enclosure
+    // Only warn if there are NO version conditions (minimumSystemVersion, etc.)
+    // because informationalUpdate with enclosure is valid when targeting specific versions
     const informationalUpdate = sparkleChildElement(
       item,
       "informationalUpdate"
     );
     const enclosure = childElement(item, "enclosure");
     if (informationalUpdate && enclosure) {
-      diagnostics.push({
-        id: "W017",
-        severity: "warning",
-        message:
-          "Item has both <sparkle:informationalUpdate> and <enclosure>; informational updates typically should not include a download",
-        line: informationalUpdate.line,
-        column: informationalUpdate.column,
-        path: elementPath(informationalUpdate),
-        fix: "Remove <enclosure> if this is purely informational, or remove <sparkle:informationalUpdate> if a download is intended",
-      });
+      // Check for version conditions that would make this combination valid
+      const hasMinSystemVersion = sparkleChildElement(
+        item,
+        "minimumSystemVersion"
+      );
+      const hasMaxSystemVersion = sparkleChildElement(
+        item,
+        "maximumSystemVersion"
+      );
+      const hasMinAutoupdateVersion = sparkleChildElement(
+        item,
+        "minimumAutoupdateVersion"
+      );
+      const hasIgnoreSkippedUpgradesBelowVersion = sparkleChildElement(
+        item,
+        "ignoreSkippedUpgradesBelowVersion"
+      );
+
+      const hasVersionConditions =
+        hasMinSystemVersion ||
+        hasMaxSystemVersion ||
+        hasMinAutoupdateVersion ||
+        hasIgnoreSkippedUpgradesBelowVersion;
+
+      if (!hasVersionConditions) {
+        diagnostics.push({
+          id: "W017",
+          severity: "warning",
+          message:
+            "Item has both <sparkle:informationalUpdate> and <enclosure> without version conditions; informational updates typically should not include a download",
+          line: informationalUpdate.line,
+          column: informationalUpdate.column,
+          path: elementPath(informationalUpdate),
+          fix: "Remove <enclosure> if this is purely informational, add version conditions if targeting specific versions, or remove <sparkle:informationalUpdate> if a download is intended",
+        });
+      }
     }
 
     // W033: shortVersionString format unusual

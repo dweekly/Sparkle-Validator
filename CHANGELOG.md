@@ -5,7 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2025-01-28
+## [1.2.0] - 2026-01-28
+
+### Changed
+
+Based on feedback from [zorgiepoo](https://github.com/sparkle-project/Sparkle/discussions/2845#discussioncomment-15635499) (Sparkle maintainer):
+
+- **W014 → I011**: Channel missing `<link>` downgraded from warning to info
+  (not required by Sparkle)
+
+- **W031 → I012**: Delta referencing non-existent version downgraded to info
+  (normal when old versions are pruned from feed)
+
+- **W018**: Now checks version sort order instead of date sort order
+  (Sparkle sorts items by version, not by publication date)
+
+- **W028**: Now accounts for update branches/channels
+  (no longer warns when items on different channels have version/date mismatches)
+
+- **W017**: Only warns about `informationalUpdate` + `enclosure` when there are
+  no version conditions (having minimumSystemVersion, minimumAutoupdateVersion,
+  etc. makes this combination valid)
+
+- **W041**: Updated message to emphasize that filename-based version deduction
+  is undocumented and not officially supported by Sparkle
+
+### Added
+
+- **W042**: Warns when version is only specified as enclosure attribute
+  (prefer `<sparkle:version>` element for clarity)
+
+- **W043**: Warns when `sparkle:os` attribute is used
+  (deprecated; prefer separate appcast feeds per platform)
+
+- **GitHub Action** (`action.yml`) for easy CI/CD integration
+  - Use with `uses: dweekly/Sparkle-Validator@v1`
+  - Inputs: `file`, `strict`, `check-urls`, `timeout`, `quiet`, `format`
+  - Outputs: `valid`, `error-count`, `warning-count`, `info-count`, `json`
+
+- **Live feed validation script** (`scripts/validate-live-feeds.ts`)
+  - Tests against 500+ real-world appcasts
+  - Generates timestamped CSV reports with per-feed diagnostics
+
+- **README methodology section** documenting empirical approach:
+  - Analysis of 500+ production appcasts
+  - Feedback integration from Sparkle maintainer
+  - Real-world pattern identification
+
+### Testing
+
+- Added 10 new tests for rule changes (202 total tests)
+- Live validation of 84 active feeds (83 valid, 1 invalid)
+
+## [1.1.0] - 2026-01-28
 
 ### Added
 
@@ -124,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     carrier-grade NAT, cloud metadata 169.254.x.x, multicast, reserved)
   - Prevents SSRF attacks targeting internal services
 
-## [1.0.0] - 2025-01-27
+## [1.0.0] - 2026-01-27
 
 ### Added
 
@@ -144,5 +196,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - npm package: `sparkle-validator`
 - Homebrew tap: `brew install dweekly/sparkle-validator/sparkle-validator`
 
+[1.2.0]: https://github.com/dweekly/sparkle-validator/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/dweekly/sparkle-validator/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/dweekly/sparkle-validator/releases/tag/v1.0.0

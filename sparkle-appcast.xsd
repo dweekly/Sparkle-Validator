@@ -12,7 +12,7 @@
 
   Namespace: http://www.andymatuschak.org/xml-namespaces/sparkle
 
-  Version: 1.0 (supports Sparkle 2.9+)
+  Version: 1.2 (supports Sparkle 2.9+)
 -->
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"

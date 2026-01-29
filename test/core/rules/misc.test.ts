@@ -52,7 +52,7 @@ describe("best practice rules", () => {
     expect(result.diagnostics.some((d) => d.id === "W002")).toBe(true);
   });
 
-  it("W014: warns about missing channel link", () => {
+  it("I011: reports missing channel link as info", () => {
     const xml = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
@@ -67,13 +67,56 @@ describe("best practice rules", () => {
   </channel>
 </rss>`;
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W014")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "I011")).toBe(true);
+    expect(result.diagnostics.find((d) => d.id === "I011")?.severity).toBe(
+      "info"
+    );
   });
 
-  it("W017: warns about informationalUpdate with enclosure", () => {
+  it("W017: warns about informationalUpdate with enclosure (no version conditions)", () => {
     const xml = wrap(`<sparkle:informationalUpdate/>`);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W017")).toBe(true);
+  });
+
+  it("no W017 when informationalUpdate has version conditions", () => {
+    // With minimumSystemVersion - this is a valid use case for targeted informational updates
+    const xmlWithMinSystem = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <sparkle:informationalUpdate/>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    expect(
+      validate(xmlWithMinSystem).diagnostics.some((d) => d.id === "W017")
+    ).toBe(false);
+
+    // With minimumAutoupdateVersion
+    const xmlWithMinAutoupdate = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:minimumAutoupdateVersion>50</sparkle:minimumAutoupdateVersion>
+      <sparkle:informationalUpdate/>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    expect(
+      validate(xmlWithMinAutoupdate).diagnostics.some((d) => d.id === "W017")
+    ).toBe(false);
   });
 
   it("W009: warns about missing release notes", () => {

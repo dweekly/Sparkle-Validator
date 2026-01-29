@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W042: Version only specified as enclosure attribute, not as sparkle:version element -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <!-- Version is only on enclosure, not as sparkle:version element -->
+      <enclosure url="https://example.com/v2.zip" length="1234567" type="application/octet-stream"
+                 sparkle:version="200"
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      <description>Release notes here</description>
+    </item>
+  </channel>
+</rss>

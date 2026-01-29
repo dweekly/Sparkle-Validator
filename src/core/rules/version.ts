@@ -85,11 +85,12 @@ function compareVersions(v1: string, v2: string): number {
  * E029: Version string is empty or whitespace-only
  * W007: Redundant version - both element and enclosure attribute with same value
  * W008: Redundant shortVersionString - both element and enclosure attribute with same value
- * (W015 removed - enclosure attribute is actually primary location in Sparkle)
+ * W018: Items not sorted by version descending (Sparkle sorts by version, not date)
  * W020: Duplicate version without differing os/channel
  * W027: Version string is non-numeric (contains letters/symbols)
- * W028: Version decreases while pubDate increases
+ * W028: Version decreases while pubDate increases (accounting for update branches)
  * W041: Version missing but can be deduced from filename (undocumented Sparkle fallback)
+ * W042: Version only in enclosure attribute, not as sparkle:version element
  */
 export function versionRules(
   doc: XmlDocument,
@@ -108,6 +109,12 @@ export function versionRules(
     item: XmlElement;
     version: string;
     date: Date;
+  }[] = [];
+  // Track items with versions for W018 (version sort check)
+  const itemsWithVersions: {
+    item: XmlElement;
+    version: string;
+    channel: string | undefined;
   }[] = [];
 
   for (const item of items) {
@@ -163,15 +170,15 @@ export function versionRules(
     // E008/W041: No explicit version - check filename fallback
     if (!explicitVersion) {
       if (filenameVersion) {
-        // W041: Version can be deduced from filename (undocumented Sparkle behavior)
+        // W041: Version can be deduced from filename (undocumented, unsupported Sparkle behavior)
         diagnostics.push({
           id: "W041",
           severity: "warning",
-          message: `Item has no sparkle:version but Sparkle may deduce "${filenameVersion}" from filename`,
+          message: `Item has no sparkle:version; Sparkle may deduce "${filenameVersion}" from filename, but this is undocumented and not officially supported`,
           line: item.line,
           column: item.column,
           path: elementPath(item),
-          fix: `Add <sparkle:version>${filenameVersion}</sparkle:version> explicitly instead of relying on filename parsing`,
+          fix: `Add <sparkle:version>${filenameVersion}</sparkle:version> explicitly; do not rely on undocumented filename parsing behavior`,
         });
         // Continue processing with the deduced version for other checks
       } else {
@@ -192,6 +199,20 @@ export function versionRules(
 
     // Effective version for subsequent checks (explicit takes precedence)
     const version = explicitVersion || filenameVersion!;
+
+    // W042: Version only in enclosure attribute, not as sparkle:version element
+    // While valid, the element form is preferred for clarity and consistency
+    if (!versionElText && enclosureVersion) {
+      diagnostics.push({
+        id: "W042",
+        severity: "warning",
+        message: `Version "${enclosureVersion}" is only specified as enclosure attribute, not as <sparkle:version> element`,
+        line: enclosure!.line,
+        column: enclosure!.column,
+        path: elementPath(enclosure!),
+        fix: `Add <sparkle:version>${enclosureVersion}</sparkle:version> element for clarity`,
+      });
+    }
 
     // W027: Non-numeric version string
     if (!isNumericVersion(version)) {
@@ -264,6 +285,11 @@ export function versionRules(
       versionMap.set(key, []);
     }
     versionMap.get(key)!.push(item);
+
+    // Track for W018 (version sort check)
+    if (isNumericVersion(version)) {
+      itemsWithVersions.push({ item, version, channel: channelName });
+    }
   }
 
   // W020: Duplicate version without differing os/channel
@@ -285,26 +311,90 @@ export function versionRules(
   }
 
   // W028: Version decreases while pubDate increases
-  // Sort by date ascending and check if versions are also ascending
+  // Now accounts for update branches - only check within same channel
   if (itemsWithDateAndVersion.length >= 2) {
-    const sortedByDate = [...itemsWithDateAndVersion].sort(
-      (a, b) => a.date.getTime() - b.date.getTime()
-    );
+    // Group by channel to account for update branches
+    const byChannel = new Map<string, typeof itemsWithDateAndVersion>();
+    for (const entry of itemsWithDateAndVersion) {
+      const channelEl = sparkleChildElement(entry.item, "channel");
+      const channel = channelEl ? textContent(channelEl).trim() : "";
+      if (!byChannel.has(channel)) {
+        byChannel.set(channel, []);
+      }
+      byChannel.get(channel)!.push(entry);
+    }
 
-    for (let i = 1; i < sortedByDate.length; i++) {
-      const prev = sortedByDate[i - 1];
-      const curr = sortedByDate[i];
+    // Check within each channel
+    for (const [, channelItems] of byChannel) {
+      if (channelItems.length < 2) continue;
 
-      // If current date is later but version is lower, that's suspicious
-      if (compareVersions(curr.version, prev.version) < 0) {
+      const sortedByDate = [...channelItems].sort(
+        (a, b) => a.date.getTime() - b.date.getTime()
+      );
+
+      for (let i = 1; i < sortedByDate.length; i++) {
+        const prev = sortedByDate[i - 1];
+        const curr = sortedByDate[i];
+
+        // If current date is later but version is lower, that's suspicious
+        if (compareVersions(curr.version, prev.version) < 0) {
+          diagnostics.push({
+            id: "W028",
+            severity: "warning",
+            message: `Version "${curr.version}" is older than "${prev.version}" but has a newer pubDate`,
+            line: curr.item.line,
+            column: curr.item.column,
+            path: elementPath(curr.item),
+            fix: "Verify that the version and pubDate are correct; newer dates should have newer versions (within the same channel)",
+          });
+        }
+      }
+    }
+  }
+
+  // W018: Check version sort order (should be highest version first)
+  // Only check items on the same channel
+  if (itemsWithVersions.length >= 2) {
+    // Group by channel
+    const byChannel = new Map<
+      string,
+      { item: XmlElement; version: string }[]
+    >();
+    for (const entry of itemsWithVersions) {
+      const ch = entry.channel || "";
+      if (!byChannel.has(ch)) {
+        byChannel.set(ch, []);
+      }
+      byChannel.get(ch)!.push(entry);
+    }
+
+    // Check sort order within each channel
+    for (const [, channelItems] of byChannel) {
+      if (channelItems.length < 2) continue;
+
+      let sorted = true;
+      for (let i = 1; i < channelItems.length; i++) {
+        if (
+          compareVersions(
+            channelItems[i].version,
+            channelItems[i - 1].version
+          ) > 0
+        ) {
+          sorted = false;
+          break;
+        }
+      }
+
+      if (!sorted) {
         diagnostics.push({
-          id: "W028",
+          id: "W018",
           severity: "warning",
-          message: `Version "${curr.version}" is older than "${prev.version}" but has a newer pubDate`,
-          line: curr.item.line,
-          column: curr.item.column,
-          path: elementPath(curr.item),
-          fix: "Verify that the version and pubDate are correct; newer dates should have newer versions",
+          message:
+            "Items are not sorted by version in descending order (highest version first)",
+          line: channelItems[0].item.line,
+          column: channelItems[0].item.column,
+          path: elementPath(channelItems[0].item),
+          fix: "Sort <item> elements so the highest version appears first (Sparkle sorts by version, not date)",
         });
       }
     }

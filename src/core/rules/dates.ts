@@ -1,4 +1,4 @@
-import type { Diagnostic, XmlDocument, XmlElement } from "../types.js";
+import type { Diagnostic, XmlDocument } from "../types.js";
 import {
   childElements,
   childElement,
@@ -17,9 +17,9 @@ const FUTURE_GRACE_MS = 24 * 60 * 60 * 1000;
 /**
  * W003: Item missing <pubDate>
  * W004: <pubDate> not RFC 2822 format
- * W018: Items not sorted by pubDate descending
  * W025: <pubDate> is in the future
  * W026: <pubDate> is unreasonably old
+ * (W018 moved to version.ts - now checks version sort, not date sort)
  */
 export function dateRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   const { root } = doc;
@@ -29,7 +29,6 @@ export function dateRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   if (!channel) return;
 
   const items = childElements(channel, "item");
-  const dates: { item: XmlElement; date: Date }[] = [];
 
   for (const item of items) {
     const pubDateEl = childElement(item, "pubDate");
@@ -103,31 +102,6 @@ export function dateRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
           fix: "Verify the publication date is correct",
         });
       }
-
-      dates.push({ item, date: parsedDate });
-    }
-  }
-
-  // W018: Check sort order (should be newest first)
-  if (dates.length >= 2) {
-    let sorted = true;
-    for (let i = 1; i < dates.length; i++) {
-      if (dates[i].date.getTime() > dates[i - 1].date.getTime()) {
-        sorted = false;
-        break;
-      }
-    }
-    if (!sorted) {
-      diagnostics.push({
-        id: "W018",
-        severity: "warning",
-        message:
-          "Items are not sorted by pubDate in descending order (newest first)",
-        line: items[0].line,
-        column: items[0].column,
-        path: elementPath(items[0]),
-        fix: "Sort <item> elements so the newest release appears first",
-      });
     }
   }
 }

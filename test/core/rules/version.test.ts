@@ -219,4 +219,103 @@ describe("version rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W028")).toBe(false);
   });
+
+  it("W028: no warning for different channels (update branches)", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>Stable release</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>99</sparkle:version>
+      <sparkle:channel>stable</sparkle:channel>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Beta release (older date but higher version)</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:channel>beta</sparkle:channel>
+      <description>x</description>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    // No W028 because items are on different channels
+    expect(result.diagnostics.some((d) => d.id === "W028")).toBe(false);
+  });
+
+  it("W042: warns when version only in enclosure attribute", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
+                 sparkle:version="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
+  });
+
+  it("no W042 when version is in sparkle:version element", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(false);
+  });
+
+  it("W018: warns when items not sorted by version", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>Lower version first</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>99</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Higher version second (wrong order)</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W018")).toBe(true);
+  });
+
+  it("no W018 when items properly sorted by version descending", () => {
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>Higher version first</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Lower version second</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>99</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W018")).toBe(false);
+  });
 });

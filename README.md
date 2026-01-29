@@ -17,12 +17,27 @@
 
 > **Note:** This is an independent community project. It is not affiliated with, endorsed by, or sponsored by the official Sparkle project or its maintainers.
 
+## Methodology
+
+This validator was developed by analyzing **500+ real-world appcasts** from production macOS applications including iTerm2, VLC, Cyberduck, Brave Browser, Dash, Transmission, and many others. Our validation rules are grounded in:
+
+1. **Sparkle Source Code** — Direct analysis of version comparison logic, signature verification, and parsing behavior in the [Sparkle 2.x codebase](https://github.com/sparkle-project/Sparkle)
+2. **Maintainer Feedback** — Rule refinements based on feedback from Sparkle maintainer [@zorgiepoo](https://github.com/zorgiepoo)
+3. **Real-World Patterns** — Identifying common issues that cause silent failures (missing versions, malformed signatures, date/version ordering mismatches)
+
+The test corpus includes apps that are:
+- **Perfect** (zero warnings): LowProfile, Scroll Reverser, SourceTree, Skim
+- **Real-world valid** (minor warnings): iTerm2, Dash, Cyberduck, Tunnelblick
+- **Edge cases**: Large feeds (200+ items), delta-heavy feeds, multi-channel feeds
+
+This empirical approach ensures the validator catches issues that actually matter in production while minimizing false positives.
+
 ## Features
 
 - Validates Sparkle appcast.xml feeds against all known requirements
 - Reports errors, warnings, and informational messages with line numbers
 - Provides fix suggestions for common issues
-- Works as CLI, library, or web app
+- Works as CLI, library, web app, or GitHub Action
 - Checks:
   - XML structure (RSS 2.0 + Sparkle namespace)
   - Version declarations
@@ -111,20 +126,18 @@ sparkle-validator --check-urls --timeout 30000 appcast.xml
 
 ## CI/CD Integration
 
-### GitHub Actions
+### GitHub Action
 
-Add appcast validation to your release workflow:
+Use the official GitHub Action for the simplest integration:
 
 ```yaml
 name: Validate Appcast
 
 on:
   push:
-    paths:
-      - 'appcast.xml'
+    paths: ['appcast.xml']
   pull_request:
-    paths:
-      - 'appcast.xml'
+    paths: ['appcast.xml']
 
 jobs:
   validate:
@@ -133,13 +146,51 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate appcast.xml
+        uses: dweekly/Sparkle-Validator@v1
+        with:
+          file: appcast.xml
+
+      # With options
+      - name: Validate with URL checking
+        uses: dweekly/Sparkle-Validator@v1
+        with:
+          file: appcast.xml
+          strict: true
+          check-urls: true
+```
+
+#### Action Inputs
+
+| Input | Description | Default |
+|-------|-------------|---------|
+| `file` | Path or URL to appcast.xml | (required) |
+| `strict` | Treat warnings as errors | `false` |
+| `check-urls` | Verify enclosure URLs exist | `false` |
+| `timeout` | URL check timeout (ms) | `10000` |
+| `quiet` | Only show errors | `false` |
+| `format` | Output format: `text` or `json` | `text` |
+
+#### Action Outputs
+
+| Output | Description |
+|--------|-------------|
+| `valid` | `true` if no errors |
+| `error-count` | Number of errors |
+| `warning-count` | Number of warnings |
+| `info-count` | Number of info messages |
+| `json` | Full result as JSON |
+
+### npx Alternative
+
+```yaml
+      - name: Validate appcast.xml
         run: npx sparkle-validator appcast.xml
 
-      # Or with strict mode (warnings fail the build)
+      # Strict mode (warnings fail the build)
       - name: Validate appcast.xml (strict)
         run: npx sparkle-validator --strict appcast.xml
 
-      # Or output JSON for further processing
+      # JSON output for further processing
       - name: Validate and capture results
         run: |
           npx sparkle-validator --format json appcast.xml > validation.json
@@ -150,7 +201,9 @@ jobs:
 
 ```yaml
       - name: Validate published appcast
-        run: npx sparkle-validator https://example.com/appcast.xml
+        uses: dweekly/Sparkle-Validator@v1
+        with:
+          file: https://example.com/appcast.xml
 ```
 
 ### Pre-commit Hook
@@ -240,7 +293,7 @@ interface Diagnostic {
 | E030 | Invalid `sparkle:os` value (must be "macos" or "windows") |
 | E031 | Invalid Ed25519/DSA signature (malformed base64 or wrong length) |
 
-### Warnings (W001-W042)
+### Warnings (W001-W043)
 
 | ID | Description |
 |----|-------------|
@@ -251,10 +304,10 @@ interface Diagnostic {
 | W009 | No release notes |
 | W010 | Non-standard MIME type |
 | W011-W013 | System version format issues |
-| W014 | Missing channel link |
+| W014 | (Moved to I011) |
 | W016 | Unencoded URL characters |
 | W017 | informationalUpdate with enclosure |
-| W018 | Items not sorted by date |
+| W018 | Items not sorted by version (newest first) |
 | W019 | Enclosure length is 0 |
 | W020 | Duplicate version |
 | W021 | URL redirects to different location (`--check-urls`) |
@@ -266,7 +319,7 @@ interface Diagnostic {
 | W027 | Version string is non-numeric (may cause comparison failures) |
 | W028 | Version decreases while pubDate increases |
 | W030 | URL file extension doesn't match expected type |
-| W031 | Delta `deltaFrom` version not found in feed |
+| W031 | (Moved to I012) |
 | W032 | Multiple delta enclosures for same `deltaFrom` |
 | W033 | `shortVersionString` format unusual (not x.y.z) |
 | W034 | `criticalUpdate` version attribute not valid format |
@@ -277,9 +330,10 @@ interface Diagnostic {
 | W039 | XML declaration missing encoding attribute |
 | W040 | Channel has language but items have different lang |
 | W041 | Version missing but deducible from filename (Sparkle fallback) |
-| W042 | Non-canonical Sparkle namespace URI (old format or HTTPS variant) |
+| W042 | Version only as enclosure attribute (prefer `<sparkle:version>` element) |
+| W043 | `sparkle:os` deprecated (prefer separate feeds per platform) |
 
-### Info (I001-I010)
+### Info (I001-I012)
 
 | ID | Description |
 |----|-------------|
@@ -293,6 +347,8 @@ interface Diagnostic {
 | I008 | Feed contains >50 items (performance consideration) |
 | I009 | Summary of OS support range across all items |
 | I010 | Enclosure has no signature (signatures are optional) |
+| I011 | Missing channel link (informational) |
+| I012 | Delta references version not in feed (old versions may be pruned) |
 
 ## Development
 

@@ -1,0 +1,124 @@
+name: 'Sparkle Validator'
+description: 'Validate Sparkle appcast.xml feeds for errors, warnings, and best practices'
+author: 'David E. Weekly'
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  file:
+    description: 'Path to appcast.xml file or URL to validate'
+    required: true
+  strict:
+    description: 'Treat warnings as errors (exit code 1 if any warnings)'
+    required: false
+    default: 'false'
+  check-urls:
+    description: 'Verify that enclosure URLs exist and sizes match'
+    required: false
+    default: 'false'
+  timeout:
+    description: 'Timeout for URL checks in milliseconds'
+    required: false
+    default: '10000'
+  quiet:
+    description: 'Only show errors (suppress warnings and info)'
+    required: false
+    default: 'false'
+  no-info:
+    description: 'Suppress informational messages'
+    required: false
+    default: 'false'
+  format:
+    description: 'Output format: text or json'
+    required: false
+    default: 'text'
+
+outputs:
+  valid:
+    description: 'Whether the appcast is valid (true/false)'
+    value: ${{ steps.validate.outputs.valid }}
+  error-count:
+    description: 'Number of errors found'
+    value: ${{ steps.validate.outputs.error_count }}
+  warning-count:
+    description: 'Number of warnings found'
+    value: ${{ steps.validate.outputs.warning_count }}
+  info-count:
+    description: 'Number of informational messages'
+    value: ${{ steps.validate.outputs.info_count }}
+  json:
+    description: 'Full validation result as JSON (when format=json)'
+    value: ${{ steps.validate.outputs.json }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Validate appcast
+      id: validate
+      shell: bash
+      run: |
+        # Build command with options
+        CMD="npx sparkle-validator@1.2.0"
+
+        if [ "${{ inputs.strict }}" = "true" ]; then
+          CMD="$CMD --strict"
+        fi
+
+        if [ "${{ inputs.check-urls }}" = "true" ]; then
+          CMD="$CMD --check-urls --timeout ${{ inputs.timeout }}"
+        fi
+
+        if [ "${{ inputs.quiet }}" = "true" ]; then
+          CMD="$CMD --quiet"
+        fi
+
+        if [ "${{ inputs.no-info }}" = "true" ]; then
+          CMD="$CMD --no-info"
+        fi
+
+        # Always get JSON for parsing outputs
+        JSON_RESULT=$($CMD --format json "${{ inputs.file }}" 2>&1) || true
+
+        # Parse results
+        VALID=$(echo "$JSON_RESULT" | jq -r '.valid // false')
+        ERROR_COUNT=$(echo "$JSON_RESULT" | jq -r '.errorCount // 0')
+        WARNING_COUNT=$(echo "$JSON_RESULT" | jq -r '.warningCount // 0')
+        INFO_COUNT=$(echo "$JSON_RESULT" | jq -r '.infoCount // 0')
+
+        # Set outputs
+        echo "valid=$VALID" >> $GITHUB_OUTPUT
+        echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
+        echo "warning_count=$WARNING_COUNT" >> $GITHUB_OUTPUT
+        echo "info_count=$INFO_COUNT" >> $GITHUB_OUTPUT
+
+        # Store full JSON (escape for multiline)
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "json<<$EOF" >> $GITHUB_OUTPUT
+        echo "$JSON_RESULT" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+
+        # Display human-readable output if format is text
+        if [ "${{ inputs.format }}" = "text" ]; then
+          $CMD "${{ inputs.file }}"
+          EXIT_CODE=$?
+        else
+          echo "$JSON_RESULT" | jq .
+          EXIT_CODE=$?
+        fi
+
+        # Exit with appropriate code
+        if [ "$VALID" = "false" ]; then
+          exit 1
+        fi
+
+        if [ "${{ inputs.strict }}" = "true" ] && [ "$WARNING_COUNT" -gt 0 ]; then
+          exit 1
+        fi
+
+        exit 0

@@ -77,13 +77,14 @@ function validateSignature(
  * E023-E025: Delta update structure errors
  * E030: sparkle:os attribute has invalid value
  * I010: Enclosure has no signature (optional but recommended)
+ * I012: Delta deltaFrom version not found in feed (info - old versions may be pruned)
  * W006: Only DSA signature, no EdDSA
  * W010: Enclosure type not application/octet-stream
  * W011: <enclosure> missing length attribute (Sparkle works without it)
  * W012: <enclosure> missing type attribute (Sparkle works without it)
  * W019: Enclosure length is 0
+ * W043: sparkle:os attribute present (deprecated - prefer separate feeds)
  * E031: Signature is malformed (Sparkle will reject)
- * W031: Delta deltaFrom version not found in feed
  * W032: Multiple delta enclosures for same deltaFrom
  */
 export function enclosureRules(
@@ -138,21 +139,34 @@ export function enclosureRules(
     if (enclosure) {
       validateEnclosure(enclosure, diagnostics);
 
-      // E030: Check sparkle:os attribute
+      // Check sparkle:os attribute
       const os = sparkleAttr(enclosure, "os");
-      if (
-        os &&
-        !(VALID_OS_VALUES as readonly string[]).includes(os.toLowerCase())
-      ) {
+      if (os) {
+        // W043: Warn that sparkle:os is deprecated, prefer separate feeds
         diagnostics.push({
-          id: "E030",
-          severity: "error",
-          message: `Invalid sparkle:os value "${os}"; must be "macos" or "windows"`,
+          id: "W043",
+          severity: "warning",
+          message: `sparkle:os attribute is deprecated; prefer using separate appcast feeds per platform`,
           line: enclosure.line,
           column: enclosure.column,
           path: elementPath(enclosure),
-          fix: 'Set sparkle:os to "macos" or "windows"',
+          fix: "Create separate appcast.xml files for each platform instead of using sparkle:os",
         });
+
+        // E030: Also check for invalid values
+        if (
+          !(VALID_OS_VALUES as readonly string[]).includes(os.toLowerCase())
+        ) {
+          diagnostics.push({
+            id: "E030",
+            severity: "error",
+            message: `Invalid sparkle:os value "${os}"; must be "macos" or "windows"`,
+            line: enclosure.line,
+            column: enclosure.column,
+            path: elementPath(enclosure),
+            fix: 'Set sparkle:os to "macos" or "windows"',
+          });
+        }
       }
     }
 
@@ -384,16 +398,16 @@ function validateDeltas(
         fix: 'Add sparkle:deltaFrom="<previousVersion>" to the delta enclosure',
       });
     } else {
-      // W031: Check if deltaFrom version exists in feed
+      // I012: Check if deltaFrom version exists in feed (info - old versions may be pruned)
       if (!feedVersions.has(deltaFrom)) {
         diagnostics.push({
-          id: "W031",
-          severity: "warning",
+          id: "I012",
+          severity: "info",
           message: `Delta references version "${deltaFrom}" which does not exist in the feed`,
           line: deltaEnc.line,
           column: deltaEnc.column,
           path: elementPath(deltaEnc),
-          fix: "Ensure the deltaFrom version matches a version that exists in the feed",
+          fix: "This is normal if the deltaFrom version has been pruned from the feed",
         });
       }
 

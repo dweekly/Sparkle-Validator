@@ -96,7 +96,7 @@ https://github.com/gbammc/Thor/raw/master/Releases/appcast.xml # Thor (36w)
 https://raw.githubusercontent.com/kasper/phoenix/master/sparkle.xml # Phoenix (32w)
 https://obsproject.com/osx_update/updates_arm64_v2.xml # OBS Studio ARM (55w)
 https://obsproject.com/osx_update/updates_x86_64_v2.xml # OBS Studio x86 (55w)
-https://iina.io/appcast.xml # IINA (7w consolidated from 67w - W037 xml:lang, W031 delta refs, W033 versions)
+https://iina.io/appcast.xml # IINA (7w consolidated from 67w - W037 xml:lang, I012 delta refs, W033 versions)
 http://manytricks.com/moom/appcast.xml # Moom (66w)
 http://macdown.uranusjr.com/sparkle/macdown/appcast.xml # MacDown (72w)
 http://www.macbartender.com/updates/updates.php # Bartender (93w)
@@ -175,13 +175,14 @@ https://updates.bravesoftware.com/sparkle/Brave-Browser/stable/appcast.xml # Bra
 # Common validation issues in real-world appcasts:
 #
 # 1. DSA signatures (W006) - Most older feeds still use DSA, not EdDSA
-# 2. Missing <sparkle:version> element (W015) - Many use only enclosure attr
+# 2. Version only on enclosure (W042) - Many use only enclosure attr, not element
 # 3. RFC 2822 date format issues (W004) - Various non-standard date formats
 # 4. Missing length attribute (W011) - Some feeds omit file size
 # 5. Missing xml:lang (W037) - Localized release notes without lang tags
-# 6. Items not sorted by date (W018) - Several feeds have oldest-first ordering
-# 7. Missing signatures (W005) - Some open source apps don't sign updates
+# 6. Items not sorted by version (W018) - Several feeds have oldest-first ordering
+# 7. Missing signatures (I010) - Some open source apps don't sign updates
 # 8. Mixed HTTP/HTTPS URLs (W035) - VLC notably mixes protocols
+# 9. sparkle:os usage (W043) - Some feeds use deprecated sparkle:os attribute
 #
 # Best examples to study:
 # - LowProfile: https://raw.githubusercontent.com/ninxsoft/LowProfile/main/appcast.xml

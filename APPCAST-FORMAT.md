@@ -188,20 +188,22 @@ The `<enclosure>` element specifies the downloadable update archive.
 
 | Attribute | Description | Added |
 |-----------|-------------|-------|
-| `sparkle:version` | Build number (prefer element) | 1.x |
+| `sparkle:version` | Build number (prefer `<sparkle:version>` element) | 1.x |
 | `sparkle:shortVersionString` | Marketing version (prefer element) | 1.x |
 | `sparkle:dsaSignature` | DSA signature (deprecated, use EdDSA) | 1.x |
-| `sparkle:osType` | Target OS (default: "macos") | 1.x |
+| `sparkle:os` | Target OS (deprecated; prefer separate feeds) | 1.x |
 | `sparkle:installationType` | "application" or "package" | 2.0 |
 
-**OS Type** enables multi-platform appcasts:
+**OS Type** (deprecated) enables multi-platform appcasts:
 
 ```xml
-<enclosure sparkle:osType="macos" ... />
-<enclosure sparkle:osType="windows" ... />
+<enclosure sparkle:os="macos" ... />
+<enclosure sparkle:os="windows" ... />
 ```
 
 If omitted, defaults to macOS. Non-macOS items are ignored by Sparkle.
+
+> **Note:** Using `sparkle:os` is deprecated. Sparkle recommends maintaining separate appcast feeds per platform instead of combining platforms in a single feed.
 
 **Installation Type** specifies the archive contents:
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W043: sparkle:os attribute is deprecated; prefer separate feeds per platform -->
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <!-- sparkle:os is deprecated - use separate appcast feeds per platform -->
+      <enclosure url="https://example.com/v2-mac.zip" length="1234567" type="application/octet-stream"
+                 sparkle:os="macos"
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      <description>Release notes here</description>
+    </item>
+  </channel>
+</rss>

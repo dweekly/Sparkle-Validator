@@ -219,11 +219,14 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "W030")).toBe(true);
   });
 
-  it("delta-missing-version.xml produces W031", () => {
+  it("delta-missing-version.xml produces I012", () => {
     const result = validate(
       readFixture("invalid", "delta-missing-version.xml")
     );
-    expect(result.diagnostics.some((d) => d.id === "W031")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "I012")).toBe(true);
+    expect(result.diagnostics.find((d) => d.id === "I012")?.severity).toBe(
+      "info"
+    );
   });
 
   it("duplicate-deltas.xml produces W032", () => {
@@ -273,5 +276,19 @@ describe("invalid fixtures", () => {
       readFixture("invalid", "inconsistent-language.xml")
     );
     expect(result.diagnostics.some((d) => d.id === "W040")).toBe(true);
+  });
+
+  it("version-enclosure-only.xml produces W042", () => {
+    const result = validate(
+      readFixture("invalid", "version-enclosure-only.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
+  });
+
+  it("deprecated-sparkle-os.xml produces W043", () => {
+    const result = validate(
+      readFixture("invalid", "deprecated-sparkle-os.xml")
+    );
+    expect(result.diagnostics.some((d) => d.id === "W043")).toBe(true);
   });
 });

@@ -5,13 +5,12 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-  id-token: write
-
 jobs:
-  release:
+  publish-npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -31,9 +30,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Generate SBOM
-        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json
-
       - name: Check if version already published
         id: check-npm
         run: |
@@ -45,11 +41,29 @@ jobs:
             echo "already_published=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm with provenance
+      - name: Publish to npm
         if: steps.check-npm.outputs.already_published == 'false'
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs: publish-npm
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate SBOM
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -64,19 +78,15 @@ jobs:
           VERSION_TAG: ${{ github.ref_name }}
         run: |
           VERSION="${VERSION_TAG#v}"
-          # Download file first, then calculate checksum (never pipe to shasum)
           curl -sL -o /tmp/sparkle-validator.tgz "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz"
           SHA256=$(shasum -a 256 /tmp/sparkle-validator.tgz | cut -d' ' -f1)
 
-          # Clone homebrew tap
           git clone "https://x-access-token:${GH_TOKEN}@github.com/dweekly/homebrew-sparkle-validator.git" tap
           cd tap
 
-          # Update formula
           sed -i "s|url \"https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-.*\.tgz\"|url \"https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz\"|" Formula/sparkle-validator.rb
           sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" Formula/sparkle-validator.rb
 
-          # Commit and push
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/sparkle-validator.rb

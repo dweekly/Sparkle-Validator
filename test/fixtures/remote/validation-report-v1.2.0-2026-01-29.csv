@@ -1,0 +1,85 @@
+URL,Name,Status,Errors,Warnings,Info,Error IDs,Warning IDs,Fetch Time (ms),Version,Date
+"http://abyss.designheresy.com/marked/marked.xml","Marked",VALID,0,4,3,"","W042;W010;W006;W035",455,1.2.0,2026-01-29
+"http://skim-app.sourceforge.net/skim.xml","Skim PDF",VALID,0,7,4,"","W042;W010;W006;W004;W028;W035;W020",545,1.2.0,2026-01-29
+"http://softwareupdate.pilotmoon.com/update/scrollreverser/appcast.xml","Scroll Reverser",VALID,0,0,2,"","",807,1.2.0,2026-01-29
+"http://www.soma-zone.com/LaunchControl/a/appcast.xml","LaunchControl",VALID,0,4,3,"","W018;W004;W042;W006",989,1.2.0,2026-01-29
+"https://product-downloads.atlassian.com/software/sourcetree/Appcast/SparkleAppcast.xml","SourceTree",VALID,0,5,3,"","W039;W018;W042;W006;W020",60,1.2.0,2026-01-29
+"https://raw.githubusercontent.com/ninxsoft/LowProfile/main/appcast.xml","LowProfile",VALID,0,0,1,"","",156,1.2.0,2026-01-29
+"https://www.texpadapp.com/static-collected/upgrades/texpadappcast.xml","Texpad",VALID,0,5,4,"","W004;W042;W006;W028;W035",1338,1.2.0,2026-01-29
+"http://jumpcut.sf.net/jumpcut.appcast.xml","Jumpcut",VALID,0,2,3,"","W042;W035",281,1.2.0,2026-01-29
+"http://hyperswitch.bahoom.com/appcast.xml","HyperSwitch",VALID,0,1,2,"","W042",1547,1.2.0,2026-01-29
+"http://moneymoney-app.com/update/appcast.xml","MoneyMoney",VALID,0,1,2,"","W042",2471,1.2.0,2026-01-29
+"http://update.menial.co.uk/software/base/","Base",VALID,0,1,1,"","W004",842,1.2.0,2026-01-29
+"http://www.pocketsoap.com/osx/soqlx/appcast.xml","SoqlXplorer",VALID,0,1,2,"","W042",76,1.2.0,2026-01-29
+"http://www.scummvm.org/appcasts/macosx/release.xml","ScummVM",VALID,0,1,1,"","W042",959,1.2.0,2026-01-29
+"http://handbrake.fr/appcast.x86_64.xml","HandBrake",VALID,0,2,2,"","W004;W042",944,1.2.0,2026-01-29
+"http://www.cleverfiles.com/releases/auto-update/dd2-newestr.xml","Disk Drill",VALID,0,2,2,"","W003;W042",197,1.2.0,2026-01-29
+"http://www.irradiatedsoftware.com/updates/profiles/tickets.php","Tickets",VALID,0,2,1,"","W042;W006",408,1.2.0,2026-01-29
+"http://www.maintain.se/downloads/sparkle/mavericks/mavericks.xml","Cocktail",VALID,0,2,1,"","W042;W006",267,1.2.0,2026-01-29
+"http://www.orange-carb.org/SBM/updates/sbm.xml","SlimBatteryMonitor",VALID,0,2,1,"","W042;W006",633,1.2.0,2026-01-29
+"http://www.repetier.com/updates/rhm/rhm-appcast.xml","Repetier-Host",VALID,0,2,2,"","W042;W006",1610,1.2.0,2026-01-29
+"https://iterm2.com/appcasts/final_modern.xml","iTerm2",VALID,0,2,2,"","W035;W042",195,1.2.0,2026-01-29
+"https://kapeli.com/Dash7.xml","Dash",VALID,0,2,1,"","W004;W042",247,1.2.0,2026-01-29
+"https://raw.github.com/marcw/soundcleod/master/appcast.xml","TwentyTwo",VALID,0,2,1,"","W042;W006",477,1.2.0,2026-01-29
+"https://s3.amazonaws.com/tunnelbear/downloads/mac/appcast.xml","TunnelBear",VALID,0,1,3,"","W039",282,1.2.0,2026-01-29
+"https://updates.expandrive.com/appcast/expandrive.xml?version=3","ExpanDrive",VALID,0,2,1,"","W003;W042",348,1.2.0,2026-01-29
+"https://version.cyberduck.io/changelog.rss","Cyberduck",VALID,0,3,2,"","W004;W042;W011",628,1.2.0,2026-01-29
+"https://www.tunnelblick.net/appcast.rss","Tunnelblick",VALID,0,2,1,"","W042;W006",237,1.2.0,2026-01-29
+"http://appgineers.de/mountain/files/mountaincast.xml","Mountain",VALID,0,3,1,"","W009;W042;W006",936,1.2.0,2026-01-29
+"http://cord.sourceforge.net/sparkle.xml","CoRD",VALID,0,3,2,"","W004;W042;W006",143,1.2.0,2026-01-29
+"http://collect3.com.au/hiss/appcast.xml","Hiss",VALID,0,3,1,"","W042;W010;W006",129,1.2.0,2026-01-29
+"http://downloads.nulana.com/flexiglass/appcast.xml","Flexiglass",VALID,0,2,1,"","W042;W006",355,1.2.0,2026-01-29
+"http://gitx.frim.nl/Downloads/appcast.xml","GitX",VALID,0,3,1,"","W004;W042;W006",425,1.2.0,2026-01-29
+"http://imageoptim.com/appcast.xml","ImageOptim",VALID,0,2,3,"","W039;W042",1133,1.2.0,2026-01-29
+"http://macfusionapp.org/appcast.xml","Macfusion",VALID,0,3,1,"","W042;W010;W006",351,1.2.0,2026-01-29
+"http://mizage.com/updates/profiles/divvy.php","Divvy",VALID,0,2,3,"","W042;W006",410,1.2.0,2026-01-29
+"http://www.irradiatedsoftware.com/updates/profiles/sizeup.php","SizeUp",VALID,0,2,2,"","W042;W006",335,1.2.0,2026-01-29
+"https://raw.githubusercontent.com/intitni/CopilotForXcode/main/appcast.xml","Copilot for Xcode",VALID,0,1,3,"","W039",133,1.2.0,2026-01-29
+"https://raw.githubusercontent.com/Ef-Steroid/ef_steroid/gh-pages/macos-appcast.xml","Ef-Steroid",VALID,0,2,3,"","W039;W009",257,1.2.0,2026-01-29
+"http://neat.io/appcasts/bee-appcast.xml","Bee",VALID,0,2,2,"","W004;W042",108,1.2.0,2026-01-29
+"http://cocoaholic.com/sparkle/snippet_edit/sparkle.xml","Snippet Edit",VALID,0,3,1,"","W004;W042;W006",1071,1.2.0,2026-01-29
+"http://secure.goldenhillsoftware.com/updates/cloudpull/appcast.xml","CloudPull",VALID,0,3,2,"","W042;W006;W035",400,1.2.0,2026-01-29
+"http://silverback.s3.amazonaws.com/release/appcast.xml","Silverback",VALID,0,3,2,"","W004;W042;W006",241,1.2.0,2026-01-29
+"http://spotdox.herokuapp.com/downloads/appcast.xml","Spotdox",VALID,0,2,3,"","W004;W042",181,1.2.0,2026-01-29
+"http://pages.uoregon.edu/koch/texshop/texshop-64/texshopappcast.xml","TeXShop",VALID,0,2,3,"","W039;W042",209,1.2.0,2026-01-29
+"http://peterborgapps.com/updates/lingonx-appcast.xml","Lingon X",VALID,0,3,1,"","W035;W042;W006",502,1.2.0,2026-01-29
+"http://sublimetext.com/updates/2/stable/appcast_osx.xml","Sublime Text",VALID,0,3,1,"","W042;W006;W016",459,1.2.0,2026-01-29
+"http://trankynam.com/atext/aText-Appcast.xml","aText",VALID,0,3,1,"","W042;W011;W006",147,1.2.0,2026-01-29
+"http://tresrrr.com/All2MP3/Appcast.xml","All2MP3",VALID,0,3,1,"","W004;W042;W006",118,1.2.0,2026-01-29
+"http://www.lynapp.com/lyn/update.xml","Lyn",VALID,0,3,2,"","W035;W042;W006",525,1.2.0,2026-01-29
+"http://zqueue.com/servetome/stm3_mac_appcast.xml","ServeToMe",VALID,0,3,1,"","W004;W042;W006",318,1.2.0,2026-01-29
+"http://cidian.youdao.com/apps/macupdate/update.xml","Youdao",VALID,0,2,2,"","W042;W006",345,1.2.0,2026-01-29
+"https://raw.github.com/OpenEmu/OpenEmu-Update/master/appcast.xml","OpenEmu",VALID,0,3,2,"","W042;W035;W006",409,1.2.0,2026-01-29
+"https://raw.githubusercontent.com/p0deje/Maccy/master/appcast.xml","Maccy",VALID,0,3,3,"","W004;W042;W019",8,1.2.0,2026-01-29
+"https://iterm2.com/appcasts/final.xml","iTerm2 legacy",VALID,0,4,2,"","W035;W018;W042;W006",134,1.2.0,2026-01-29
+"http://www.adium.im/sparkle/update.php","Adium",VALID,0,3,3,"","W004;W042;W035",1269,1.2.0,2026-01-29
+"http://www.publicspace.net/app/signed_abfa5.xml","A Better Finder Attributes",VALID,0,4,2,"","W018;W004;W042;W006",468,1.2.0,2026-01-29
+"http://www.publicspace.net/app/signed_abfr9.xml","A Better Finder Rename",VALID,0,4,2,"","W018;W004;W042;W006",375,1.2.0,2026-01-29
+"https://freemacsoft.net/appcleaner/Updates.xml","AppCleaner",VALID,0,4,2,"","W018;W004;W042;W006",321,1.2.0,2026-01-29
+"http://www.clamxav.com/sparkle/profileInfo.php","ClamXav",VALID,0,4,2,"","W004;W042;W006;W035",1163,1.2.0,2026-01-29
+"http://update.kekaosx.com","Keka",VALID,0,2,5,"","W004;W042",1838,1.2.0,2026-01-29
+"http://www.publicspace.net/app/signed_mb5.xml","MacBreakZ",VALID,0,4,2,"","W018;W004;W042;W006",376,1.2.0,2026-01-29
+"http://dl.apparentsoft.com/trickster.rss","Trickster",VALID,0,2,5,"","W039;W028",204,1.2.0,2026-01-29
+"http://update.transmissionbt.com/appcast.xml","Transmission",VALID,0,4,2,"","W042;W011;W006;W004",121,1.2.0,2026-01-29
+"http://manytricks.com/keycodes/appcast.xml","Key Codes",VALID,0,2,2,"","W042;W006",1568,1.2.0,2026-01-29
+"https://raw.github.com/ryanmaxwell/uncrustifyx/appcast/uncrustifyx-appcast.xml","UncrustifyX",VALID,0,4,1,"","W018;W009;W042;W006",422,1.2.0,2026-01-29
+"http://ianyh.github.io/Amethyst/appcast.xml","Amethyst",VALID,0,2,3,"","W018;W042",455,1.2.0,2026-01-29
+"http://weiboformac.sinaapp.com/appcast/wm2.xml","Weibox",VALID,0,3,2,"","W003;W042;W011",3041,1.2.0,2026-01-29
+"https://flexibits.com/chatology/appcast.php","Chatology",VALID,0,2,4,"","W042;W006",155,1.2.0,2026-01-29
+"https://github.com/ProfileCreator/ProfileCreator/raw/master/appcast.xml","ProfileCreator",VALID,0,1,4,"","W042",395,1.2.0,2026-01-29
+"https://github.com/gbammc/Thor/raw/master/Releases/appcast.xml","Thor",VALID,0,4,6,"","W039;W018;W009;W004",263,1.2.0,2026-01-29
+"https://raw.githubusercontent.com/kasper/phoenix/master/sparkle.xml","Phoenix",VALID,0,2,2,"","W042;W006",157,1.2.0,2026-01-29
+"https://obsproject.com/osx_update/updates_arm64_v2.xml","OBS Studio ARM",VALID,0,3,5,"","W009;W042;W006",468,1.2.0,2026-01-29
+"https://obsproject.com/osx_update/updates_x86_64_v2.xml","OBS Studio x86",VALID,0,3,5,"","W009;W042;W006",163,1.2.0,2026-01-29
+"https://iina.io/appcast.xml","IINA",VALID,0,6,5,"","W039;W018;W037;W006;W033;W042",90,1.2.0,2026-01-29
+"http://manytricks.com/moom/appcast.xml","Moom",VALID,0,2,2,"","W042;W006",1690,1.2.0,2026-01-29
+"http://macdown.uranusjr.com/sparkle/macdown/appcast.xml","MacDown",INVALID,1,2,2,"E031","W042;W006",237,1.2.0,2026-01-29
+"http://www.macbartender.com/updates/updates.php","Bartender",VALID,0,4,1,"","W018;W042;W006;W004",790,1.2.0,2026-01-29
+"http://www.sourcetreeapp.com/update/SparkleAppcast.xml","SourceTree",VALID,0,4,3,"","W039;W018;W042;W006",171,1.2.0,2026-01-29
+"http://bibdesk.sourceforge.net/bibdesk.xml","BibDesk",VALID,0,3,3,"","W042;W010;W006",263,1.2.0,2026-01-29
+"http://update.videolan.org/vlc/sparkle/vlc-intel64.xml","VLC",VALID,0,6,2,"","W018;W042;W010;W006;W035;W004",473,1.2.0,2026-01-29
+"http://hobbyistsoftware.com/Downloads/VLCStreamer/vlcStreamerVersions.xml","VLC Streamer",VALID,0,6,3,"","W004;W042;W006;W035;W009;W028",347,1.2.0,2026-01-29
+"https://updates.devmate.com/com.macpaw.site.theunarchiver.xml","TheUnarchiver DevMate",VALID,0,3,5,"","W040;W037;W042",141,1.2.0,2026-01-29
+"https://services.ctmdev.com/cgi-bin/sparkle?appcast=FTProfessional_appcast","FoxTrot Pro CGI",VALID,0,3,4,"","W003;W006;W035",961,1.2.0,2026-01-29
+"https://github.com/skpm/sketch-dev-tools/raw/master/.appcast.xml","Sketch Dev Tools",VALID,0,7,3,"","W001;W003;W009;W002;W042;W011;W012",362,1.2.0,2026-01-29
+"https://updates.bravesoftware.com/sparkle/Brave-Browser/stable/appcast.xml","Brave Browser",VALID,0,2,4,"","W018;W042",72,1.2.0,2026-01-29
