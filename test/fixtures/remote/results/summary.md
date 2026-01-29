@@ -1,15 +1,17 @@
 # Appcast URL Validation Results - 2026-01-28
 
 ## Summary
-| Status | Count |
-|--------|-------|
-| VALID | 209 |
-| FETCH_ERR | 127 |
-| 404 | 96 |
-| INVALID | 65 |
-| TIMEOUT | 2 |
+
+| Status    | Count |
+| --------- | ----- |
+| VALID     | 209   |
+| FETCH_ERR | 127   |
+| 404       | 96    |
+| INVALID   | 65    |
+| TIMEOUT   | 2     |
 
 ## VALID URLs with most warnings (top 20)
+
 274 VALID http://hobbyistsoftware.com/Downloads/VLCStreamer/vlcStreamerVersions.xml
 236 VALID http://www.littlefin.com/downloads/chronicle3.xml
 232 VALID http://update.videolan.org/vlc/sparkle/vlc-intel64.xml
@@ -32,6 +34,7 @@
 99 VALID http://wedge.natestedman.com/appcast.xml
 
 ## Zero-warning URLs
+
 VALID(0w) https://raw.githubusercontent.com/ninxsoft/LowProfile/main/appcast.xml
 VALID(0w) https://product-downloads.atlassian.com/software/sourcetree/Appcast/SparkleAppcast.xml
 VALID(0w) http://www.soma-zone.com/LaunchControl/a/appcast.xml

@@ -85,7 +85,7 @@ function compareVersions(v1: string, v2: string): number {
  * E029: Version string is empty or whitespace-only
  * W007: Redundant version - both element and enclosure attribute with same value
  * W008: Redundant shortVersionString - both element and enclosure attribute with same value
- * W015: Version on enclosure attribute instead of top-level element
+ * (W015 removed - enclosure attribute is actually primary location in Sparkle)
  * W020: Duplicate version without differing os/channel
  * W027: Version string is non-numeric (contains letters/symbols)
  * W028: Version decreases while pubDate increases
@@ -217,18 +217,8 @@ export function versionRules(
       }
     }
 
-    // W015: Version only on enclosure attribute, not as top-level element
-    if (!versionElText && enclosureVersion) {
-      diagnostics.push({
-        id: "W015",
-        severity: "warning",
-        message: `Version "${enclosureVersion}" is only specified as an enclosure attribute; prefer a <sparkle:version> element`,
-        line: enclosure!.line,
-        column: enclosure!.column,
-        path: elementPath(enclosure!),
-        fix: `Add <sparkle:version>${enclosureVersion}</sparkle:version> as a child of <item>`,
-      });
-    }
+    // Note: W015 removed - Sparkle actually checks enclosure attribute FIRST,
+    // then falls back to element. Both are valid; enclosure attr is primary location.
 
     // W007: Redundant version
     if (

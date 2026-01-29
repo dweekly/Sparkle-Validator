@@ -13,7 +13,7 @@
       <enclosure url="https://example.com/downloads/MyApp_2.5.zip"
                  length="12345"
                  type="application/octet-stream"
-                 sparkle:edSignature="validSig123"/>
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>Version 2.4.1</title>
@@ -23,7 +23,7 @@
       <enclosure url="https://example.com/downloads/MyApp_2.4.1.dmg"
                  length="12000"
                  type="application/octet-stream"
-                 sparkle:edSignature="validSig456"/>
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>Version 100</title>
@@ -32,7 +32,7 @@
       <enclosure url="https://example.com/downloads/MyApp_100.zip"
                  length="11000"
                  type="application/octet-stream"
-                 sparkle:edSignature="validSig789"/>
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>

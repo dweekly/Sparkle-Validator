@@ -13,7 +13,7 @@
         url="http://httpbin.org/status/200"
         length="0"
         type="application/octet-stream"
-        sparkle:edSignature="ABC123="
+        sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
       />
     </item>
   </channel>

@@ -12,18 +12,18 @@
       <enclosure url="https://deltaapp.example.com/DeltaApp-2.0.zip"
                  length="20971520"
                  type="application/octet-stream"
-                 sparkle:edSignature="ZGVsdGEtZnVsbC1zaWc=" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
       <sparkle:deltas>
         <enclosure url="https://deltaapp.example.com/DeltaApp-1.5-to-2.0.delta"
                    length="2097152"
                    type="application/octet-stream"
                    sparkle:deltaFrom="150"
-                   sparkle:edSignature="ZGVsdGEtMTUtc2ln" />
+                   sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
         <enclosure url="https://deltaapp.example.com/DeltaApp-1.9-to-2.0.delta"
                    length="1048576"
                    type="application/octet-stream"
                    sparkle:deltaFrom="190"
-                   sparkle:edSignature="ZGVsdGEtMTktc2ln" />
+                   sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
       </sparkle:deltas>
     </item>
     <item>
@@ -35,7 +35,7 @@
       <enclosure url="https://deltaapp.example.com/DeltaApp-1.9.zip"
                  length="19922944"
                  type="application/octet-stream"
-                 sparkle:edSignature="djEuOS1zaWc=" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>

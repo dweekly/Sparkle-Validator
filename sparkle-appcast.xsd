@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sparkle Appcast XML Schema Definition (XSD)
+
+  This is an UNOFFICIAL schema for validating Sparkle appcast.xml files.
+  Created by the Sparkle Validator project: https://sparklevalidator.com
+
+  Based on:
+  - RSS 2.0 Specification: https://www.rssboard.org/rss-specification
+  - Sparkle Documentation: https://sparkle-project.org/documentation/publishing/
+  - Sparkle Source Code: https://github.com/sparkle-project/Sparkle
+
+  Namespace: http://www.andymatuschak.org/xml-namespaces/sparkle
+
+  Version: 1.0 (supports Sparkle 2.9+)
+-->
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+  xmlns:xml="http://www.w3.org/XML/1998/namespace"
+  targetNamespace="http://www.andymatuschak.org/xml-namespaces/sparkle"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified">
+
+  <!-- Import XML namespace for xml:lang attribute -->
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+             schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+
+  <!-- ==================== SIMPLE TYPES ==================== -->
+
+  <!-- Version string (build number) -->
+  <xs:simpleType name="versionType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- macOS version format (e.g., "12.0", "14.0.1") -->
+  <xs:simpleType name="systemVersionType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d+(\.\d+)*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Channel name: alphanumeric, hyphens, underscores, dots -->
+  <xs:simpleType name="channelNameType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9._-]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Installation type -->
+  <xs:simpleType name="installationType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="application"/>
+      <xs:enumeration value="package"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- OS type -->
+  <xs:simpleType name="osType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="macos"/>
+      <xs:enumeration value="windows"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Hardware requirements (comma-separated architectures) -->
+  <xs:simpleType name="hardwareRequirementsType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z0-9_,]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Description format -->
+  <xs:simpleType name="descriptionFormatType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="html"/>
+      <xs:enumeration value="plain-text"/>
+      <xs:enumeration value="markdown"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Non-negative integer for intervals, lengths, etc. -->
+  <xs:simpleType name="nonNegativeIntegerType">
+    <xs:restriction base="xs:nonNegativeInteger"/>
+  </xs:simpleType>
+
+  <!-- Base64 signature -->
+  <xs:simpleType name="signatureType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ==================== SPARKLE ELEMENTS ==================== -->
+
+  <!-- sparkle:version - Build number -->
+  <xs:element name="version" type="sparkle:versionType"/>
+
+  <!-- sparkle:shortVersionString - Marketing version -->
+  <xs:element name="shortVersionString" type="xs:string"/>
+
+  <!-- sparkle:minimumSystemVersion -->
+  <xs:element name="minimumSystemVersion" type="sparkle:systemVersionType"/>
+
+  <!-- sparkle:maximumSystemVersion -->
+  <xs:element name="maximumSystemVersion" type="sparkle:systemVersionType"/>
+
+  <!-- sparkle:minimumUpdateVersion (Sparkle 2.9+) -->
+  <xs:element name="minimumUpdateVersion" type="sparkle:versionType"/>
+
+  <!-- sparkle:minimumAutoupdateVersion -->
+  <xs:element name="minimumAutoupdateVersion" type="sparkle:versionType"/>
+
+  <!-- sparkle:ignoreSkippedUpgradesBelowVersion -->
+  <xs:element name="ignoreSkippedUpgradesBelowVersion" type="sparkle:versionType"/>
+
+  <!-- sparkle:hardwareRequirements (Sparkle 2.9+) -->
+  <xs:element name="hardwareRequirements" type="sparkle:hardwareRequirementsType"/>
+
+  <!-- sparkle:channel -->
+  <xs:element name="channel" type="sparkle:channelNameType"/>
+
+  <!-- sparkle:releaseNotesLink -->
+  <xs:element name="releaseNotesLink">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:anyURI">
+          <xs:attribute ref="xml:lang"/>
+          <xs:attribute name="edSignature" type="sparkle:signatureType"/>
+          <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- sparkle:fullReleaseNotesLink -->
+  <xs:element name="fullReleaseNotesLink">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:anyURI">
+          <xs:attribute ref="xml:lang"/>
+          <xs:attribute name="edSignature" type="sparkle:signatureType"/>
+          <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- sparkle:phasedRolloutInterval -->
+  <xs:element name="phasedRolloutInterval" type="sparkle:nonNegativeIntegerType"/>
+
+  <!-- sparkle:criticalUpdate -->
+  <xs:element name="criticalUpdate">
+    <xs:complexType mixed="true">
+      <xs:attribute name="version" type="sparkle:versionType"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- sparkle:informationalUpdate -->
+  <xs:element name="informationalUpdate">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="sparkle:version" minOccurs="0"/>
+        <xs:element ref="sparkle:belowVersion" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- sparkle:belowVersion (used inside informationalUpdate) -->
+  <xs:element name="belowVersion" type="sparkle:versionType"/>
+
+  <!-- sparkle:installationType -->
+  <xs:element name="installationType" type="sparkle:installationType"/>
+
+  <!-- sparkle:tags -->
+  <xs:element name="tags">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sparkle:criticalUpdate" minOccurs="0"/>
+        <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- sparkle:deltas - Contains delta update enclosures -->
+  <xs:element name="deltas">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any namespace="##any" minOccurs="1" maxOccurs="unbounded" processContents="lax"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ==================== SPARKLE ATTRIBUTES (for enclosure) ==================== -->
+
+  <xs:attribute name="version" type="sparkle:versionType"/>
+  <xs:attribute name="shortVersionString" type="xs:string"/>
+  <xs:attribute name="edSignature" type="sparkle:signatureType"/>
+  <xs:attribute name="dsaSignature" type="sparkle:signatureType"/>
+  <xs:attribute name="os" type="sparkle:osType"/>
+  <xs:attribute name="installationType" type="sparkle:installationType"/>
+  <xs:attribute name="deltaFrom" type="sparkle:versionType"/>
+  <xs:attribute name="deltaFromSparkleExecutableSize" type="xs:nonNegativeInteger"/>
+  <xs:attribute name="deltaFromSparkleLocales" type="xs:string"/>
+  <xs:attribute name="format" type="sparkle:descriptionFormatType"/>
+
+</xs:schema>

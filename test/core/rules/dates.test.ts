@@ -9,7 +9,7 @@ const wrap = (itemContent: string) => `<?xml version="1.0"?>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
       ${itemContent}
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -43,14 +43,14 @@ describe("date rules", () => {
       <pubDate>Mon, 01 Jan 2024 10:00:00 -0800</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>New</title>
       <pubDate>Fri, 15 Mar 2024 10:00:00 -0800</pubDate>
       <sparkle:version>200</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;

@@ -16,7 +16,7 @@
       <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_2.zip"
                  length="29358080"
                  type="application/octet-stream"
-                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
 
     <item>
@@ -29,7 +29,7 @@
       <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_1.zip"
                  length="29200000"
                  type="application/octet-stream"
-                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
 
     <item>
@@ -42,7 +42,7 @@
       <enclosure url="https://iterm2.com/downloads/stable/iTerm2-3_5_0.zip"
                  length="29000000"
                  type="application/octet-stream"
-                 sparkle:edSignature="aXRlcm0yLWVkc2ln" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>

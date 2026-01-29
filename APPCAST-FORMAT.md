@@ -175,9 +175,14 @@ The `<enclosure>` element specifies the downloadable update archive.
 | Attribute | Description | Example |
 |-----------|-------------|---------|
 | `url` | Download URL (HTTPS recommended) | `https://example.com/MyApp-2.0.zip` |
+
+### Recommended Attributes
+
+| Attribute | Description | Example |
+|-----------|-------------|---------|
+| `sparkle:edSignature` | EdDSA signature (88-char Base64) | `eHh4eHh4eHh4...eA==` |
 | `length` | File size in bytes | `12345678` |
 | `type` | MIME type | `application/octet-stream` |
-| `sparkle:edSignature` | EdDSA signature (Base64) | `ABC123...` |
 
 ### Optional Attributes
 
@@ -254,12 +259,16 @@ If delta application fails, Sparkle falls back to the full download.
 
 ## Signatures
 
-All updates **must** be signed. EdDSA (Ed25519) is strongly recommended.
+Signatures are **recommended** but not strictly required. If your app is configured
+to require signatures (the default for apps distributed outside the Mac App Store),
+Sparkle will reject unsigned or malformed updates. EdDSA (Ed25519) is strongly recommended.
 
 ### EdDSA (Recommended)
 
+Ed25519 signatures are exactly 64 bytes, encoded as 88 base64 characters (with padding).
+
 ```xml
-<enclosure sparkle:edSignature="BASE64_SIGNATURE_HERE" ... />
+<enclosure sparkle:edSignature="BASE64_ED25519_SIGNATURE_HERE==" ... />
 ```
 
 Generate with:

@@ -12,7 +12,7 @@
       <enclosure url="https://example.com/MyApp-2.0.zip"
                  length="12345678"
                  type="application/octet-stream"
-                 sparkle:edSignature="ABC123DEF456=" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>

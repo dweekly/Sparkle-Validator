@@ -13,7 +13,7 @@
       <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
       <sparkle:minimumUpdateVersion>200</sparkle:minimumUpdateVersion>
 
-      <!-- Missing signature - W005 -->
+      <!-- Missing signature - I010 (info, not warning) -->
       <enclosure
         url="https://example.com/downloads/App-3.0.zip"
         length="15000000"

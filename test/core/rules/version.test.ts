@@ -14,7 +14,7 @@ describe("version rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
-      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
@@ -26,7 +26,7 @@ describe("version rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
-      <enclosure url="https://example.com/MyApp_2.5.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/MyApp_2.5.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W041")).toBe(true);
@@ -42,7 +42,7 @@ describe("version rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
-      <enclosure url="https://example.com/My_Cool_App_1.2.3.dmg" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/My_Cool_App_1.2.3.dmg" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W041")).toBe(true);
@@ -55,7 +55,7 @@ describe("version rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
-      <enclosure url="https://example.com/MyApp-v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/MyApp-v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
@@ -68,7 +68,7 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(false);
@@ -80,12 +80,11 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
-                 sparkle:version="100" sparkle:edSignature="s"/>
+                 sparkle:version="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(false);
-    // Should warn W015 about version only on enclosure
-    expect(result.diagnostics.some((d) => d.id === "W015")).toBe(true);
+    // W015 was removed - enclosure attribute is actually the primary location Sparkle checks
   });
 
   it("W007: warns about redundant version", () => {
@@ -95,7 +94,7 @@ describe("version rules", () => {
       <sparkle:version>100</sparkle:version>
       <description>x</description>
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
-                 sparkle:version="100" sparkle:edSignature="s"/>
+                 sparkle:version="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W007")).toBe(true);
@@ -110,14 +109,14 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>V1 dup</title>
       <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -131,7 +130,7 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>   </sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E029")).toBe(true);
@@ -143,7 +142,7 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <description>x</description>
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
-                 sparkle:version="" sparkle:edSignature="s"/>
+                 sparkle:version="" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E029")).toBe(true);
@@ -155,7 +154,7 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>1.0-beta</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W027")).toBe(true);
@@ -167,7 +166,7 @@ describe("version rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>1.0.1</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W027")).toBe(false);
@@ -182,14 +181,14 @@ describe("version rules", () => {
       <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>99</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>Newer version with older date</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -206,14 +205,14 @@ describe("version rules", () => {
       <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>101</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
     <item>
       <title>Older version with older date</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;

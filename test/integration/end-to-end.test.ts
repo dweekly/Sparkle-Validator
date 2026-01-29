@@ -143,7 +143,9 @@ describe("invalid fixtures", () => {
   });
 
   it("no-version-no-fallback.xml produces E008", () => {
-    const result = validate(readFixture("invalid", "no-version-no-fallback.xml"));
+    const result = validate(
+      readFixture("invalid", "no-version-no-fallback.xml")
+    );
     expect(result.valid).toBe(false);
     expect(result.diagnostics.some((d) => d.id === "E008")).toBe(true);
   });
@@ -173,8 +175,8 @@ describe("invalid fixtures", () => {
     const result = validate(readFixture("invalid", "sparkle-2.9-errors.xml"));
     // W003: Missing pubDate
     expect(result.diagnostics.some((d) => d.id === "W003")).toBe(true);
-    // W005: Missing signature
-    expect(result.diagnostics.some((d) => d.id === "W005")).toBe(true);
+    // I010: Missing signature (now info, not warning)
+    expect(result.diagnostics.some((d) => d.id === "I010")).toBe(true);
     // E021: Phased rollout without pubDate
     expect(result.diagnostics.some((d) => d.id === "E021")).toBe(true);
     // Should still report I006/I007 for the 2.9 features
@@ -204,9 +206,10 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "E030")).toBe(true);
   });
 
-  it("invalid-signature.xml produces W029", () => {
+  it("invalid-signature.xml produces E031", () => {
     const result = validate(readFixture("invalid", "invalid-signature.xml"));
-    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "E031")).toBe(true);
+    expect(result.valid).toBe(false); // Invalid signature is now an error
   });
 
   it("suspicious-url-extension.xml produces W030", () => {

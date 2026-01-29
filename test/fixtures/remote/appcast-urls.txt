@@ -3,8 +3,11 @@
 # Used for integration testing and validation benchmarking
 #
 # Last verified: 2026-01-28
-# Total tested: 499 URLs
-# Results: 209 VALID, 65 INVALID, 96 404, 127 FETCH_ERR, 2 TIMEOUT
+# Total tested: 512 URLs (+13 from Finding Sparkle Appcast URLs research)
+# Results: 223 VALID, 64 INVALID, 96 404, 127 FETCH_ERR, 2 TIMEOUT
+#
+# NOTE: v1.2+ uses diagnostic consolidation - warning counts shown are consolidated
+# (e.g., "7w" means 7 unique warning types, not total occurrences)
 
 # ============================================================================
 # VERIFIED VALID - Zero Warnings (Perfect appcasts!)
@@ -20,6 +23,7 @@ https://www.texpadapp.com/static-collected/upgrades/texpadappcast.xml # Texpad
 # ============================================================================
 # VERIFIED VALID - Low Warnings (1-5 warnings)
 # ============================================================================
+http://jumpcut.sf.net/jumpcut.appcast.xml # Jumpcut (2w) - was marked as error, now valid after W042 downgrade
 http://hyperswitch.bahoom.com/appcast.xml # HyperSwitch (1w)
 http://moneymoney-app.com/update/appcast.xml # MoneyMoney (1w)
 http://update.menial.co.uk/software/base/ # Base (1w)
@@ -46,6 +50,9 @@ http://gitx.frim.nl/Downloads/appcast.xml # GitX (3w)
 http://imageoptim.com/appcast.xml # ImageOptim (3w)
 http://macfusionapp.org/appcast.xml # Macfusion (3w)
 http://mizage.com/updates/profiles/divvy.php # Divvy (3w)
+http://www.irradiatedsoftware.com/updates/profiles/sizeup.php # SizeUp (4w)
+https://raw.githubusercontent.com/intitni/CopilotForXcode/main/appcast.xml # Copilot for Xcode (2w)
+https://raw.githubusercontent.com/Ef-Steroid/ef_steroid/gh-pages/macos-appcast.xml # Ef-Steroid (3w)
 http://neat.io/appcasts/bee-appcast.xml # Bee (3w)
 http://cocoaholic.com/sparkle/snippet_edit/sparkle.xml # Snippet Edit (3w)
 http://secure.goldenhillsoftware.com/updates/cloudpull/appcast.xml # CloudPull (3w)
@@ -65,6 +72,7 @@ https://raw.githubusercontent.com/p0deje/Maccy/master/appcast.xml # Maccy (4w)
 # ============================================================================
 # VERIFIED VALID - Moderate Warnings (5-30 warnings)
 # ============================================================================
+https://iterm2.com/appcasts/final.xml # iTerm2 legacy (10w)
 http://www.adium.im/sparkle/update.php # Adium (5w)
 http://www.publicspace.net/app/signed_abfa5.xml # A Better Finder Attributes (6w)
 http://www.publicspace.net/app/signed_abfr9.xml # A Better Finder Rename (6w)
@@ -79,18 +87,27 @@ https://raw.github.com/ryanmaxwell/uncrustifyx/appcast/uncrustifyx-appcast.xml #
 http://ianyh.github.io/Amethyst/appcast.xml # Amethyst (27w)
 http://weiboformac.sinaapp.com/appcast/wm2.xml # Weibox (28w)
 https://flexibits.com/chatology/appcast.php # Chatology (30w)
+https://github.com/ProfileCreator/ProfileCreator/raw/master/appcast.xml # ProfileCreator (13w)
 
 # ============================================================================
 # VERIFIED VALID - Many Warnings (30+ warnings, but still valid XML)
 # ============================================================================
-https://iina.io/appcast.xml # IINA (67w - many W037 xml:lang)
+https://github.com/gbammc/Thor/raw/master/Releases/appcast.xml # Thor (36w)
+https://raw.githubusercontent.com/kasper/phoenix/master/sparkle.xml # Phoenix (32w)
+https://obsproject.com/osx_update/updates_arm64_v2.xml # OBS Studio ARM (55w)
+https://obsproject.com/osx_update/updates_x86_64_v2.xml # OBS Studio x86 (55w)
+https://iina.io/appcast.xml # IINA (7w consolidated from 67w - W037 xml:lang, W031 delta refs, W033 versions)
 http://manytricks.com/moom/appcast.xml # Moom (66w)
 http://macdown.uranusjr.com/sparkle/macdown/appcast.xml # MacDown (72w)
 http://www.macbartender.com/updates/updates.php # Bartender (93w)
 http://www.sourcetreeapp.com/update/SparkleAppcast.xml # SourceTree (170w)
 http://bibdesk.sourceforge.net/bibdesk.xml # BibDesk (229w)
-http://update.videolan.org/vlc/sparkle/vlc-intel64.xml # VLC (232w)
+http://update.videolan.org/vlc/sparkle/vlc-intel64.xml # VLC (5w consolidated from 232w - W035 mixed HTTP/HTTPS)
 http://hobbyistsoftware.com/Downloads/VLCStreamer/vlcStreamerVersions.xml # VLC Streamer (274w)
+https://updates.devmate.com/com.macpaw.site.theunarchiver.xml # TheUnarchiver DevMate (80w)
+https://services.ctmdev.com/cgi-bin/sparkle?appcast=FTProfessional_appcast # FoxTrot Pro CGI (152w)
+https://github.com/skpm/sketch-dev-tools/raw/master/.appcast.xml # Sketch Dev Tools (205w)
+https://updates.bravesoftware.com/sparkle/Brave-Browser/stable/appcast.xml # Brave Browser (227w)
 
 # ============================================================================
 # INVALID - Parse or validation errors (65 URLs)
@@ -107,7 +124,7 @@ http://hobbyistsoftware.com/Downloads/VLCStreamer/vlcStreamerVersions.xml # VLC 
 # https://versioncheck.barebones.com/BBEdit.xml # 1 error
 # http://macitbetter.com/BetterZip2.rss # 1 error
 # http://www.bombich.com/software/updates/ccc.php # 1 error (CCC)
-# http://jumpcut.sf.net/jumpcut.appcast.xml # 1 error
+# Note: Jumpcut now VALID - moved to Low Warnings section (W042 namespace, W035 mixed HTTP/HTTPS)
 # http://update.evernote.com/public/ENMac/EvernoteMacUpdate.xml # 1 error
 
 # ============================================================================

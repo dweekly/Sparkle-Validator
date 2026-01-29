@@ -10,7 +10,7 @@ describe("structure rules", () => {
   it("E003: reports missing version attribute", () => {
     const xml = `<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
       <channel><title>T</title><item><sparkle:version>1</sparkle:version>
-      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="s"/></item></channel></rss>`;
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E003")).toBe(true);
   });
@@ -18,7 +18,7 @@ describe("structure rules", () => {
   it("E003: reports wrong version value", () => {
     const xml = `<rss version="1.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
       <channel><title>T</title><item><sparkle:version>1</sparkle:version>
-      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="s"/></item></channel></rss>`;
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E003")).toBe(true);
   });
@@ -38,9 +38,9 @@ describe("structure rules", () => {
   it("E006: reports multiple channels", () => {
     const xml = `<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
       <channel><title>T</title><item><sparkle:version>1</sparkle:version>
-      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="s"/></item></channel>
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel>
       <channel><title>T2</title><item><sparkle:version>2</sparkle:version>
-      <enclosure url="https://x.com/b" length="1" type="application/octet-stream" sparkle:edSignature="s"/></item></channel></rss>`;
+      <enclosure url="https://x.com/b" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E006")).toBe(true);
   });
@@ -52,13 +52,13 @@ describe("structure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "E007")).toBe(true);
   });
 
-  it("W026: warns about non-canonical sparkle namespace URI", () => {
+  it("W042: warns about non-canonical sparkle namespace URI", () => {
     // Use the old namespace format (missing www.) - a known variant that works with Sparkle
     const xml = `<rss version="2.0" xmlns:sparkle="http://andymatuschak.org/xml-namespaces/sparkle">
       <channel><title>T</title><item><sparkle:version>1</sparkle:version>
-      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="sig"/></item></channel></rss>`;
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W026")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
     expect(result.valid).toBe(true); // Should still be valid (warning, not error)
   });
 });

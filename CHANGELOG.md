@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Diagnostic consolidation** — Multiple diagnostics of the same type are now
+  consolidated into a single entry with a count (e.g., "message (and 109 more similar issues)").
+  This prevents output spam when validating large feeds with repeated issues.
+
+- **Ed25519 signature validation** — E031 now properly validates Ed25519 signatures:
+  - Must be exactly 64 bytes (88 base64 characters with padding)
+  - Strips whitespace before validation (line-wrapped base64 is valid)
+  - Invalid signatures are errors (not warnings) since Sparkle rejects them
+
+- **Website prefill** — The web app now prefills with iTerm2's appcast URL as a working demo
+
 - **Version fallback detection**
   - W041: Warns when version is missing but can be deduced from filename
     (Sparkle's undocumented fallback: splits URL by underscore, e.g., `MyApp_2.5.zip` → `2.5`)
@@ -20,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - W028: Warns when version decreases while pubDate increases
 
 - **Data integrity rules**
-  - W029: Warns about signatures that don't look like valid base64
+  - E031: Errors on invalid Ed25519/DSA signatures (Sparkle will reject malformed signatures)
   - W030: Warns about suspicious URL file extensions (.html, .jpg, etc. for downloads)
   - W031: Warns when delta `deltaFrom` version doesn't exist in feed
   - W032: Warns about duplicate delta enclosures for same `deltaFrom`
@@ -44,8 +55,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Missing signature is now informational** (signatures are optional in Sparkle)
+  - W005 → I010: "Enclosure has no signature" is now info, not warning
+
+- **Removed W015** — Version on enclosure attribute is actually the primary location
+  Sparkle checks (it checks enclosure attribute first, then falls back to element).
+  This is not a concern, so the warning was removed.
+
 - **Downgraded namespace check to warning** (Sparkle accepts variants)
-  - E026 → W026: Non-canonical Sparkle namespace URI (old format without "www.", HTTPS variant)
+  - E026 → W042: Non-canonical Sparkle namespace URI (old format without "www.", HTTPS variant)
   - Known variants are now accepted; elements are still recognized correctly
 
 - **Improved URL scheme support**

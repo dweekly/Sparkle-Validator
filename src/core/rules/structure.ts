@@ -9,7 +9,7 @@ import { childElements, elementPath } from "./utils.js";
  * E005: Missing <channel> inside <rss>
  * E006: More than one <channel> element
  * E007: No <item> elements in <channel>
- * W026: Sparkle namespace URI variant (old format or HTTPS)
+ * W042: Sparkle namespace URI variant (old format or HTTPS)
  */
 export function structureRules(
   doc: XmlDocument,
@@ -61,10 +61,10 @@ export function structureRules(
       fix: `Add xmlns:sparkle="${SPARKLE_NS}" to the <rss> element`,
     });
   } else if (sparkleNsUri !== SPARKLE_NS) {
-    // W026: Namespace variant - old format or HTTPS version
+    // W042: Namespace variant - old format or HTTPS version
     // These work fine with Sparkle; the URI is just an identifier, not fetched
     diagnostics.push({
-      id: "W026",
+      id: "W042",
       severity: "warning",
       message: `Sparkle namespace URI "${sparkleNsUri}" differs from canonical "${SPARKLE_NS}"`,
       line: root.line,

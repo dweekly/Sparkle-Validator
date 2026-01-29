@@ -15,21 +15,58 @@ import {
 const VALID_OS_VALUES = ["macos", "windows"] as const;
 
 /**
- * Check if a string looks like valid base64.
- * Base64 should only contain A-Z, a-z, 0-9, +, /, and = for padding.
- * Also checks length is reasonable for EdDSA/DSA signatures.
+ * Validate a base64-encoded signature.
+ * Returns { valid: true } or { valid: false, reason: string }.
+ *
+ * Checks:
+ * 1. Valid base64 characters (after stripping whitespace)
+ * 2. Proper padding (length % 4 === 0 after padding)
+ * 3. EdDSA (Ed25519) signatures must be exactly 64 bytes (88 base64 chars)
+ * 4. DSA signatures are typically 46-48 bytes (DER-encoded)
  */
-function isValidBase64Signature(sig: string): boolean {
-  // Base64 pattern: alphanumeric + and / with optional = padding
-  const base64Pattern = /^[A-Za-z0-9+/]+=*$/;
-  if (!base64Pattern.test(sig)) return false;
+function validateSignature(
+  sig: string,
+  type: "ed" | "dsa"
+): { valid: true } | { valid: false; reason: string } {
+  // Strip whitespace - base64 often contains line breaks for readability
+  const cleanSig = sig.replace(/\s/g, "");
 
-  // EdDSA signatures (Ed25519) are 64 bytes = 88 base64 chars (with padding)
-  // DSA signatures are typically 40-48 bytes = ~54-64 base64 chars
-  // Allow reasonable range: 20-500 characters
-  if (sig.length < 20 || sig.length > 500) return false;
+  // Check for valid base64 characters
+  const base64Pattern = /^[A-Za-z0-9+/]*=*$/;
+  if (!base64Pattern.test(cleanSig)) {
+    return { valid: false, reason: "contains invalid base64 characters" };
+  }
 
-  return true;
+  // Check padding is correct (length should be multiple of 4)
+  if (cleanSig.length % 4 !== 0) {
+    return { valid: false, reason: "base64 padding is incorrect" };
+  }
+
+  // Try to calculate decoded byte length
+  // Formula: (base64Length * 3/4) - padding
+  const paddingCount = (cleanSig.match(/=+$/) || [""])[0].length;
+  const decodedBytes = (cleanSig.length * 3) / 4 - paddingCount;
+
+  if (type === "ed") {
+    // Ed25519 signatures are EXACTLY 64 bytes
+    if (decodedBytes !== 64) {
+      return {
+        valid: false,
+        reason: `Ed25519 signature must be 64 bytes, got ${decodedBytes}`,
+      };
+    }
+  } else {
+    // DSA signatures are DER-encoded, typically 46-48 bytes
+    // but can vary based on r and s values (40-50 bytes is reasonable)
+    if (decodedBytes < 40 || decodedBytes > 150) {
+      return {
+        valid: false,
+        reason: `DSA signature length ${decodedBytes} bytes is unusual`,
+      };
+    }
+  }
+
+  return { valid: true };
 }
 
 /**
@@ -39,13 +76,13 @@ function isValidBase64Signature(sig: string): boolean {
  * E022: sparkle:installationType not "application" or "package"
  * E023-E025: Delta update structure errors
  * E030: sparkle:os attribute has invalid value
- * W005: Enclosure has no signature at all
+ * I010: Enclosure has no signature (optional but recommended)
  * W006: Only DSA signature, no EdDSA
  * W010: Enclosure type not application/octet-stream
  * W011: <enclosure> missing length attribute (Sparkle works without it)
  * W012: <enclosure> missing type attribute (Sparkle works without it)
  * W019: Enclosure length is 0
- * W029: Signature doesn't look like valid base64
+ * E031: Signature is malformed (Sparkle will reject)
  * W031: Delta deltaFrom version not found in feed
  * W032: Multiple delta enclosures for same deltaFrom
  */
@@ -249,19 +286,21 @@ function validateEnclosure(
     });
   }
 
-  // W005/W006: Signature checks
+  // I010/W006: Signature checks
+  // Signatures are optional in Sparkle but recommended for security
   const edSig = sparkleAttr(enclosure, "edSignature");
   const dsaSig = sparkleAttr(enclosure, "dsaSignature");
 
   if (!edSig && !dsaSig) {
     diagnostics.push({
-      id: "W005",
-      severity: "warning",
-      message: "Enclosure has no signature (no edSignature or dsaSignature)",
+      id: "I010",
+      severity: "info",
+      message:
+        "Enclosure has no signature (signatures are optional but recommended)",
       line: enclosure.line,
       column: enclosure.column,
       path: elementPath(enclosure),
-      fix: "Add a sparkle:edSignature attribute for EdDSA signing",
+      fix: "Consider adding a sparkle:edSignature attribute for EdDSA signing",
     });
   } else if (dsaSig && !edSig) {
     diagnostics.push({
@@ -276,28 +315,34 @@ function validateEnclosure(
     });
   }
 
-  // W029: Check if signatures look like valid base64
-  if (edSig && !isValidBase64Signature(edSig)) {
-    diagnostics.push({
-      id: "W029",
-      severity: "warning",
-      message: "edSignature doesn't appear to be valid base64",
-      line: enclosure.line,
-      column: enclosure.column,
-      path: elementPath(enclosure),
-      fix: "Ensure the signature is a valid base64-encoded EdDSA signature",
-    });
+  // E031: Check if signatures are valid (error because Sparkle will reject malformed signatures)
+  if (edSig) {
+    const result = validateSignature(edSig, "ed");
+    if (!result.valid) {
+      diagnostics.push({
+        id: "E031",
+        severity: "error",
+        message: `edSignature is invalid: ${result.reason}`,
+        line: enclosure.line,
+        column: enclosure.column,
+        path: elementPath(enclosure),
+        fix: "Ed25519 signatures must be exactly 64 bytes encoded as base64 (88 characters)",
+      });
+    }
   }
-  if (dsaSig && !isValidBase64Signature(dsaSig)) {
-    diagnostics.push({
-      id: "W029",
-      severity: "warning",
-      message: "dsaSignature doesn't appear to be valid base64",
-      line: enclosure.line,
-      column: enclosure.column,
-      path: elementPath(enclosure),
-      fix: "Ensure the signature is a valid base64-encoded DSA signature",
-    });
+  if (dsaSig) {
+    const result = validateSignature(dsaSig, "dsa");
+    if (!result.valid) {
+      diagnostics.push({
+        id: "E031",
+        severity: "error",
+        message: `dsaSignature is invalid: ${result.reason}`,
+        line: enclosure.line,
+        column: enclosure.column,
+        path: elementPath(enclosure),
+        fix: "Ensure the signature is a valid base64-encoded DSA signature",
+      });
+    }
   }
 }
 

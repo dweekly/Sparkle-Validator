@@ -15,7 +15,7 @@ describe("validate", () => {
       <enclosure url="https://example.com/app.zip"
                  length="12345"
                  type="application/octet-stream"
-                 sparkle:edSignature="c2ln" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>`;

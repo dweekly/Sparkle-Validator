@@ -32,7 +32,7 @@
 
       <enclosure
         url="https://example.com/downloads/App-3.0-arm64.zip"
-        sparkle:edSignature="ABC123..."
+        sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
         length="15000000"
         type="application/octet-stream"
       />
@@ -50,7 +50,7 @@
 
       <enclosure
         url="https://example.com/downloads/App-2.5-Universal.zip"
-        sparkle:edSignature="DEF456..."
+        sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
         length="20000000"
         type="application/octet-stream"
       />

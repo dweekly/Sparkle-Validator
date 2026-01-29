@@ -17,7 +17,7 @@ const wrap = (itemContent: string) => `<?xml version="1.0"?>
 describe("URL rules", () => {
   it("E014: reports invalid enclosure URL", () => {
     const xml = wrap(
-      `<enclosure url="not-a-url" length="1" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="not-a-url" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E014")).toBe(true);
@@ -25,7 +25,7 @@ describe("URL rules", () => {
 
   it("E014: reports relative enclosure URL", () => {
     const xml = wrap(
-      `<enclosure url="downloads/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="downloads/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E014")).toBe(true);
@@ -33,7 +33,7 @@ describe("URL rules", () => {
 
   it("accepts valid https URL", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E014")).toBe(false);
@@ -42,7 +42,7 @@ describe("URL rules", () => {
   it("E016: reports invalid releaseNotesLink URL", () => {
     const xml = wrap(`
       <sparkle:releaseNotesLink>not a url</sparkle:releaseNotesLink>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E016")).toBe(true);
@@ -50,7 +50,7 @@ describe("URL rules", () => {
 
   it("W016: warns about unencoded special characters in URL", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/app with spaces.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/app with spaces.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W016")).toBe(true);
@@ -58,7 +58,7 @@ describe("URL rules", () => {
 
   it("W030: warns about suspicious .html extension on enclosure URL", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/download.html" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+      `<enclosure url="https://example.com/download.html" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W030")).toBe(true);
@@ -66,7 +66,7 @@ describe("URL rules", () => {
 
   it("W030: warns about suspicious .jpg extension on enclosure URL", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/image.jpg" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+      `<enclosure url="https://example.com/image.jpg" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W030")).toBe(true);
@@ -76,7 +76,7 @@ describe("URL rules", () => {
     const extensions = [".zip", ".dmg", ".pkg", ".tar.gz"];
     for (const ext of extensions) {
       const xml = wrap(
-        `<enclosure url="https://example.com/app${ext}" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+        `<enclosure url="https://example.com/app${ext}" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
       );
       const result = validate(xml);
       expect(result.diagnostics.some((d) => d.id === "W030")).toBe(false);
@@ -91,7 +91,7 @@ describe("URL rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       <sparkle:releaseNotesLink>http://example.com/notes.html</sparkle:releaseNotesLink>
     </item>
   </channel>
@@ -108,7 +108,7 @@ describe("URL rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       <sparkle:releaseNotesLink>https://example.com/notes.html</sparkle:releaseNotesLink>
     </item>
   </channel>

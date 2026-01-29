@@ -9,7 +9,7 @@ const wrap = (itemContent: string) => `<?xml version="1.0"?>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       ${itemContent}
     </item>
   </channel>
@@ -26,7 +26,7 @@ describe("best practice rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -44,7 +44,7 @@ describe("best practice rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -62,7 +62,7 @@ describe("best practice rules", () => {
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -84,7 +84,7 @@ describe("best practice rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -125,7 +125,7 @@ describe("rollout rules", () => {
       <sparkle:version>100</sparkle:version>
       <sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>
       <description>x</description>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -215,7 +215,7 @@ describe("info rules", () => {
           <title>V${i}</title>
           <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
           <sparkle:version>${100 + i}</sparkle:version>
-          <enclosure url="https://example.com/${i}.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+          <enclosure url="https://example.com/${i}.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
         </item>
       `
       )
@@ -313,7 +313,7 @@ describe("XML format rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -329,7 +329,7 @@ describe("XML format rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -345,7 +345,7 @@ describe("XML format rules", () => {
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version><![CDATA[100]]></sparkle:version>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;

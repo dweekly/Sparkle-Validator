@@ -179,7 +179,7 @@ const xml = `<?xml version="1.0" encoding="utf-8"?>
       <enclosure url="https://example.com/app.zip"
                  length="12345678"
                  type="application/octet-stream"
-                 sparkle:edSignature="ABC123=" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>`;
@@ -215,7 +215,7 @@ interface Diagnostic {
 
 ## Validation Rules
 
-### Errors (E001-E030, excluding E026)
+### Errors (E001-E031, excluding E026)
 
 | ID | Description |
 |----|-------------|
@@ -238,20 +238,20 @@ interface Diagnostic {
 | E028 | Content-Length doesn't match declared length (`--check-urls`) |
 | E029 | Version string is empty or whitespace-only |
 | E030 | Invalid `sparkle:os` value (must be "macos" or "windows") |
+| E031 | Invalid Ed25519/DSA signature (malformed base64 or wrong length) |
 
-### Warnings (W001-W041)
+### Warnings (W001-W042)
 
 | ID | Description |
 |----|-------------|
 | W001-W002 | Missing title on channel/item |
 | W003-W004 | Missing or invalid pubDate |
-| W005-W006 | Missing/deprecated signatures |
+| W006 | DSA-only signature (deprecated, use EdDSA) |
 | W007-W008 | Redundant version declarations |
 | W009 | No release notes |
 | W010 | Non-standard MIME type |
 | W011-W013 | System version format issues |
 | W014 | Missing channel link |
-| W015 | Version only on enclosure attribute |
 | W016 | Unencoded URL characters |
 | W017 | informationalUpdate with enclosure |
 | W018 | Items not sorted by date |
@@ -262,10 +262,9 @@ interface Diagnostic {
 | W023 | Local/private URL skipped (`--check-urls`) |
 | W024 | URL uses insecure HTTP instead of HTTPS (`--check-urls`) |
 | W025 | pubDate is in the future |
-| W026 | Non-canonical Sparkle namespace URI (old format or HTTPS variant) |
+| W026 | pubDate is implausibly old (before 2001/Mac OS X era) |
 | W027 | Version string is non-numeric (may cause comparison failures) |
 | W028 | Version decreases while pubDate increases |
-| W029 | Signature doesn't look like valid base64 |
 | W030 | URL file extension doesn't match expected type |
 | W031 | Delta `deltaFrom` version not found in feed |
 | W032 | Multiple delta enclosures for same `deltaFrom` |
@@ -278,8 +277,9 @@ interface Diagnostic {
 | W039 | XML declaration missing encoding attribute |
 | W040 | Channel has language but items have different lang |
 | W041 | Version missing but deducible from filename (Sparkle fallback) |
+| W042 | Non-canonical Sparkle namespace URI (old format or HTTPS variant) |
 
-### Info (I001-I009)
+### Info (I001-I010)
 
 | ID | Description |
 |----|-------------|
@@ -292,6 +292,7 @@ interface Diagnostic {
 | I007 | Item requires minimum app version to update (Sparkle 2.9+) |
 | I008 | Feed contains >50 items (performance consideration) |
 | I009 | Summary of OS support range across all items |
+| I010 | Enclosure has no signature (signatures are optional) |
 
 ## Development
 

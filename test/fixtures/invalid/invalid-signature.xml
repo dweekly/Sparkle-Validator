@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- W029: Invalid base64 signature -->
+<!-- E031: Invalid base64 signature (Sparkle will reject) -->
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
     <title>Test App</title>

@@ -35,7 +35,7 @@ describe("enclosure rules", () => {
 
   it("W011: warns about missing length on enclosure", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/a.zip" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true);
@@ -43,7 +43,7 @@ describe("enclosure rules", () => {
 
   it("W012: warns about missing type on enclosure", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/a.zip" length="1" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W012")).toBe(true);
@@ -51,18 +51,21 @@ describe("enclosure rules", () => {
 
   it("E013: reports non-numeric length", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="abc" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/a.zip" length="abc" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E013")).toBe(true);
   });
 
-  it("W005: warns about missing signature", () => {
+  it("I010: reports missing signature as info (signatures are optional)", () => {
     const xml = wrap(
       `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W005")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "I010")).toBe(true);
+    // Should be info, not warning
+    const diag = result.diagnostics.find((d) => d.id === "I010");
+    expect(diag?.severity).toBe("info");
   });
 
   it("W006: warns about DSA-only signature", () => {
@@ -75,7 +78,7 @@ describe("enclosure rules", () => {
 
   it("W010: warns about non-standard MIME type", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" type="application/zip" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/zip" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W010")).toBe(true);
@@ -83,7 +86,7 @@ describe("enclosure rules", () => {
 
   it("W019: warns about zero length", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="0" type="application/octet-stream" sparkle:edSignature="s"/>`
+      `<enclosure url="https://example.com/a.zip" length="0" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W019")).toBe(true);
@@ -92,7 +95,7 @@ describe("enclosure rules", () => {
   it("E022: reports invalid installationType", () => {
     const xml = wrap(`
       <sparkle:installationType>invalid-type</sparkle:installationType>
-      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E022")).toBe(true);
@@ -101,7 +104,7 @@ describe("enclosure rules", () => {
   it("accepts valid installationType", () => {
     const xml = wrap(`
       <sparkle:installationType>package</sparkle:installationType>
-      <enclosure url="https://example.com/a.pkg" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+      <enclosure url="https://example.com/a.pkg" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E022")).toBe(false);
@@ -109,7 +112,7 @@ describe("enclosure rules", () => {
 
   it("E030: reports invalid sparkle:os value", () => {
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="linux" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="linux" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "E030")).toBe(true);
@@ -117,10 +120,10 @@ describe("enclosure rules", () => {
 
   it("accepts valid sparkle:os values", () => {
     const xmlMacos = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="macos" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="macos" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     const xmlWindows = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="windows" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>`
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:os="windows" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
     );
     expect(validate(xmlMacos).diagnostics.some((d) => d.id === "E030")).toBe(
       false
@@ -130,31 +133,35 @@ describe("enclosure rules", () => {
     );
   });
 
-  it("W029: warns about invalid base64 signature", () => {
+  it("E031: errors on invalid base64 signature", () => {
     const xml = wrap(
       `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="not-valid-base64!!!"/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "E031")).toBe(true);
+    expect(result.valid).toBe(false); // Should be error, not warning
   });
 
-  it("W029: warns about too-short signature", () => {
+  it("E031: errors on wrong-length Ed25519 signature", () => {
+    // Ed25519 must be exactly 64 bytes; this is too short
     const xml = wrap(
-      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="abc"/>`
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="YWJjZGVmZ2hpamtsbW5vcA=="/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "E031")).toBe(true);
+    const diag = result.diagnostics.find((d) => d.id === "E031");
+    expect(diag?.message).toContain("64 bytes");
   });
 
-  it("accepts valid base64 signature", () => {
-    // A valid-looking EdDSA signature (88 chars is typical for Ed25519)
+  it("accepts valid Ed25519 signature (exactly 64 bytes)", () => {
+    // Ed25519 signatures are exactly 64 bytes = 88 base64 chars with == padding
     const validSig =
-      "dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmdoZXJlaXNtb3JlY29udGVudHRvbWFrZWl0bG9uZ2Vu";
+      "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==";
     const xml = wrap(
       `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="${validSig}"/>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W029")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "E031")).toBe(false);
   });
 
   it("W031: warns about delta referencing non-existent version", () => {
@@ -165,17 +172,17 @@ describe("enclosure rules", () => {
       <title>V2</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>200</sparkle:version>
-      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       <sparkle:deltas>
         <enclosure url="https://example.com/delta.zip" length="1" type="application/octet-stream"
-                   sparkle:deltaFrom="150" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+                   sparkle:deltaFrom="150" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       </sparkle:deltas>
     </item>
     <item>
       <title>V1</title>
       <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -191,17 +198,17 @@ describe("enclosure rules", () => {
       <title>V2</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>200</sparkle:version>
-      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       <sparkle:deltas>
         <enclosure url="https://example.com/delta.zip" length="1" type="application/octet-stream"
-                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+                   sparkle:deltaFrom="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       </sparkle:deltas>
     </item>
     <item>
       <title>V1</title>
       <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
@@ -217,19 +224,19 @@ describe("enclosure rules", () => {
       <title>V2</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>200</sparkle:version>
-      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       <sparkle:deltas>
         <enclosure url="https://example.com/delta1.zip" length="1" type="application/octet-stream"
-                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+                   sparkle:deltaFrom="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
         <enclosure url="https://example.com/delta2.zip" length="1" type="application/octet-stream"
-                   sparkle:deltaFrom="100" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+                   sparkle:deltaFrom="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
       </sparkle:deltas>
     </item>
     <item>
       <title>V1</title>
       <pubDate>Wed, 12 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="dGVzdHNpZ25hdHVyZWJhc2U2NGVuY29kZWRzdHJpbmc="/>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;

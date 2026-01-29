@@ -16,7 +16,7 @@
       <enclosure url="https://multiapp.example.com/beta/MultiApp-4.0b1.zip"
                  length="30000000"
                  type="application/octet-stream"
-                 sparkle:edSignature="YmV0YS1zaWc=" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
 
     <!-- Stable channel (default) -->
@@ -30,7 +30,7 @@
       <enclosure url="https://multiapp.example.com/releases/MultiApp-3.5.2.zip"
                  length="25000000"
                  type="application/octet-stream"
-                 sparkle:edSignature="c3RhYmxlLXNpZw==" />
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
     </item>
   </channel>
 </rss>
