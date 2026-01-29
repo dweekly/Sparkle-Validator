@@ -45,27 +45,31 @@
   </xs:element>
 
   <!-- channel element -->
+  <!--
+    Note: Using xs:choice with unbounded allows elements in any order,
+    which matches real-world RSS feeds that don't follow strict ordering.
+  -->
   <xs:element name="channel">
     <xs:complexType>
-      <xs:sequence>
-        <!-- Standard RSS channel elements (all optional for flexibility) -->
-        <xs:element ref="title" minOccurs="0"/>
-        <xs:element ref="link" minOccurs="0"/>
-        <xs:element ref="description" minOccurs="0"/>
-        <xs:element ref="language" minOccurs="0"/>
-        <xs:element ref="copyright" minOccurs="0"/>
-        <xs:element ref="managingEditor" minOccurs="0"/>
-        <xs:element ref="webMaster" minOccurs="0"/>
-        <xs:element ref="pubDate" minOccurs="0"/>
-        <xs:element ref="lastBuildDate" minOccurs="0"/>
-        <xs:element ref="category" minOccurs="0" maxOccurs="unbounded"/>
-        <xs:element ref="generator" minOccurs="0"/>
-        <xs:element ref="docs" minOccurs="0"/>
-        <xs:element ref="ttl" minOccurs="0"/>
-        <xs:element ref="image" minOccurs="0"/>
-        <!-- Items (at least one required for valid appcast) -->
-        <xs:element ref="item" minOccurs="1" maxOccurs="unbounded"/>
-      </xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- Standard RSS channel elements -->
+        <xs:element ref="title"/>
+        <xs:element ref="link"/>
+        <xs:element ref="description"/>
+        <xs:element ref="language"/>
+        <xs:element ref="copyright"/>
+        <xs:element ref="managingEditor"/>
+        <xs:element ref="webMaster"/>
+        <xs:element ref="pubDate"/>
+        <xs:element ref="lastBuildDate"/>
+        <xs:element ref="category"/>
+        <xs:element ref="generator"/>
+        <xs:element ref="docs"/>
+        <xs:element ref="ttl"/>
+        <xs:element ref="image"/>
+        <!-- Items -->
+        <xs:element ref="item"/>
+      </xs:choice>
     </xs:complexType>
   </xs:element>
 
