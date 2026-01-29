@@ -20,9 +20,9 @@
 - **Hosted on:** Cloudflare Pages
 - **URL:** https://sparklevalidator.com
 - **Deploy command:** `npm run build && npx wrangler pages deploy public --project-name=sparkle-validator`
-- `src/web/` contains source HTML/CSS/TS
-- `public/` contains production assets (HTML, CSS, built JS, icons, etc.)
-- Keep `src/web/index.html` and `public/index.html` in sync (same for style.css)
+- **Source of truth:** `src/web/` (index.html, style.css, app.ts)
+- **Generated:** `public/index.html` and `public/style.css` are auto-copied by build
+- **NEVER edit public/index.html or public/style.css directly** — edit src/web/ instead
 
 ## Code Style
 - TypeScript with strict mode
