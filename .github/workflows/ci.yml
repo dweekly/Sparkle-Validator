@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -59,6 +60,7 @@ jobs:
           node dist/cli/index.js --format json test/fixtures/valid/minimal.xml
 
   build-web:
+    name: Build Web App
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
