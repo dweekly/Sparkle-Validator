@@ -12,12 +12,18 @@ tabButtons.forEach((btn) => {
       b.classList.remove("active");
       b.setAttribute("aria-selected", "false");
     });
-    tabPanels.forEach((p) => p.classList.remove("active"));
+    tabPanels.forEach((p) => {
+      p.classList.remove("active");
+      p.setAttribute("hidden", "");
+    });
 
     btn.classList.add("active");
     btn.setAttribute("aria-selected", "true");
-    const panel = document.getElementById(`tab-${btn.dataset.tab}`);
-    panel?.classList.add("active");
+    const panel = document.getElementById(`panel-${btn.dataset.tab}`);
+    if (panel) {
+      panel.classList.add("active");
+      panel.removeAttribute("hidden");
+    }
   });
 });
 

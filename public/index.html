@@ -6,8 +6,9 @@
     <title>Sparkle Validator — Validate appcast.xml feeds</title>
     <meta
       name="description"
-      content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices."
+      content="Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices. Free CLI tool, library, and web app."
     />
+    <link rel="canonical" href="https://sparklevalidator.com/" />
 
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -25,7 +26,7 @@
     />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#0071e3" />
+    <meta name="theme-color" content="#0a0a0b" />
 
     <!-- Open Graph / Social -->
     <meta property="og:type" content="website" />
@@ -58,144 +59,334 @@
       content="https://sparklevalidator.com/og-image.jpg"
     />
 
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Sparkle Validator",
+      "description": "Validate Sparkle appcast.xml feeds for macOS app updates. Check for errors, warnings, and best practices.",
+      "url": "https://sparklevalidator.com",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "David E. Weekly",
+        "url": "https://david.weekly.org"
+      }
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <div class="gradient-bg" aria-hidden="true"></div>
     <div class="container">
       <header>
-        <img
-          src="/icons/android-chrome-192x192.png"
-          alt="Sparkle Validator logo"
-          class="logo"
-          width="80"
-          height="80"
-        />
+        <div class="logo-wrapper">
+          <img
+            src="/icons/android-chrome-192x192.png"
+            alt=""
+            class="logo"
+            width="72"
+            height="72"
+          />
+          <div class="logo-glow" aria-hidden="true"></div>
+        </div>
         <h1>Sparkle Validator</h1>
-        <p>
-          Validate your Sparkle appcast.xml feed for errors, warnings, and best
-          practices
+        <p class="tagline">
+          Validate your <code>appcast.xml</code> feed for errors, warnings, and best practices
+        </p>
+        <p class="description">
+          <a href="https://sparkle-project.org/">Sparkle</a> is the standard framework for delivering software updates to macOS apps.
+          It reads an <code>appcast.xml</code> feed to discover new versions. This tool helps you catch mistakes
+          before your users do—checking signatures, versions, URLs, and 60+ other rules.
         </p>
       </header>
 
       <main>
-        <div class="tabs" role="tablist">
-          <button
-            class="tab-btn active"
-            role="tab"
-            data-tab="url"
-            aria-selected="true"
-          >
-            From URL
-          </button>
-          <button
-            class="tab-btn"
-            role="tab"
-            data-tab="upload"
-            aria-selected="false"
-          >
-            Upload File
-          </button>
-          <button
-            class="tab-btn"
-            role="tab"
-            data-tab="paste"
-            aria-selected="false"
-          >
-            Paste XML
-          </button>
-        </div>
-
-        <div id="tab-url" class="tab-panel active" role="tabpanel">
-          <div class="input-row">
-            <input
-              type="text"
-              id="url-input"
-              placeholder="https://example.com/appcast.xml"
-            />
-            <button id="btn-validate-url" class="btn">
-              Fetch &amp; Validate
+        <div class="card validator-card">
+          <div class="tabs" role="tablist" aria-label="Input method">
+            <button
+              class="tab-btn active"
+              role="tab"
+              id="tab-url"
+              data-tab="url"
+              aria-selected="true"
+              aria-controls="panel-url"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              From URL
+            </button>
+            <button
+              class="tab-btn"
+              role="tab"
+              id="tab-upload"
+              data-tab="upload"
+              aria-selected="false"
+              aria-controls="panel-upload"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Upload File
+            </button>
+            <button
+              class="tab-btn"
+              role="tab"
+              id="tab-paste"
+              data-tab="paste"
+              aria-selected="false"
+              aria-controls="panel-paste"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Paste XML
             </button>
           </div>
-          <p class="cors-note">
-            Enter the URL to your appcast.xml file. We'll fetch and validate it
-            for you.
-          </p>
+
+          <div id="panel-url" class="tab-panel active" role="tabpanel" aria-labelledby="tab-url">
+            <div class="input-row">
+              <label for="url-input" class="sr-only">Appcast URL</label>
+              <input
+                type="url"
+                id="url-input"
+                placeholder="https://example.com/appcast.xml"
+                autocomplete="url"
+              />
+              <button id="btn-validate-url" class="btn btn-primary">
+                <span>Validate</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+            <p class="helper-text">
+              Enter the URL to your appcast.xml file. We'll fetch and validate it for you.
+            </p>
+          </div>
+
+          <div id="panel-upload" class="tab-panel" role="tabpanel" aria-labelledby="tab-upload" hidden>
+            <div class="upload-zone" role="button" tabindex="0" aria-label="Click or drag to upload file">
+              <input type="file" id="file-input" accept=".xml,.rss,.atom" class="sr-only" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Drop your appcast.xml here or <span class="link">browse</span></p>
+            </div>
+            <div class="actions">
+              <button id="btn-validate-upload" class="btn btn-primary" disabled>
+                <span>Validate</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div id="panel-paste" class="tab-panel" role="tabpanel" aria-labelledby="tab-paste" hidden>
+            <label for="xml-input" class="sr-only">XML content</label>
+            <textarea
+              id="xml-input"
+              placeholder="Paste your appcast.xml content here..."
+              spellcheck="false"
+              aria-describedby="paste-hint"
+            ></textarea>
+            <p id="paste-hint" class="helper-text">Paste the full XML content of your appcast feed.</p>
+            <div class="actions">
+              <button id="btn-validate-paste" class="btn btn-primary">
+                <span>Validate</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div id="results" aria-live="polite"></div>
         </div>
 
-        <div id="tab-upload" class="tab-panel" role="tabpanel">
-          <input type="file" id="file-input" accept=".xml,.rss,.atom" />
-          <div class="actions">
-            <button id="btn-validate-upload" class="btn" disabled>
-              Validate
+        <section class="card cli-section" aria-labelledby="cli-heading">
+          <div class="section-header">
+            <div class="section-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"/>
+                <line x1="12" y1="19" x2="20" y2="19"/>
+              </svg>
+            </div>
+            <div>
+              <h2 id="cli-heading">Command Line Interface</h2>
+              <p>Install the CLI for local validation and CI/CD integration</p>
+            </div>
+          </div>
+
+          <div class="install-options">
+            <div class="install-option">
+              <span class="install-label">npm</span>
+              <code class="install-code">npm install -g sparkle-validator</code>
+              <button class="copy-btn" aria-label="Copy npm install command" data-copy="npm install -g sparkle-validator">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+            <div class="install-option">
+              <span class="install-label">Homebrew</span>
+              <code class="install-code">brew install dweekly/sparkle-validator/sparkle-validator</code>
+              <button class="copy-btn" aria-label="Copy Homebrew install command" data-copy="brew install dweekly/sparkle-validator/sparkle-validator">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+            <div class="install-option">
+              <span class="install-label">npx</span>
+              <code class="install-code">npx sparkle-validator https://example.com/appcast.xml</code>
+              <button class="copy-btn" aria-label="Copy npx command" data-copy="npx sparkle-validator https://example.com/appcast.xml">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="features-list">
+            <span class="feature-tag"><code>--check-urls</code> verify links</span>
+            <span class="feature-tag"><code>--strict</code> mode</span>
+            <span class="feature-tag">JSON output</span>
+            <span class="feature-tag">stdin support</span>
+          </div>
+        </section>
+
+        <section class="card xsd-section" aria-labelledby="xsd-heading">
+          <div class="section-header">
+            <div class="section-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div>
+              <h2 id="xsd-heading">XSD Schema Validation</h2>
+              <p>Use our XSD schema with xmllint for quick validation</p>
+            </div>
+          </div>
+
+          <div class="code-block">
+            <code>xmllint --schema https://sparklevalidator.com/appcast.xsd --noout your-appcast.xml</code>
+            <button class="copy-btn" aria-label="Copy xmllint command" data-copy="xmllint --schema https://sparklevalidator.com/appcast.xsd --noout your-appcast.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
             </button>
           </div>
-        </div>
 
-        <div id="tab-paste" class="tab-panel" role="tabpanel">
-          <textarea
-            id="xml-input"
-            placeholder="Paste your appcast.xml content here..."
-            spellcheck="false"
-          ></textarea>
-          <div class="actions">
-            <button id="btn-validate-paste" class="btn">Validate</button>
+          <div class="schema-links">
+            <a href="/appcast.xsd" class="schema-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              appcast.xsd
+            </a>
+            <a href="/sparkle-appcast.xsd" class="schema-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              sparkle-appcast.xsd
+            </a>
           </div>
-        </div>
-
-        <div id="results"></div>
+        </section>
       </main>
 
-      <section class="cli-section">
-        <h2>Command Line Interface</h2>
-        <p>Install the CLI for local validation and CI/CD integration:</p>
-        <div class="install-options">
-          <div class="install-option">
-            <strong>npm</strong>
-            <code>npm install -g sparkle-validator</code>
-          </div>
-          <div class="install-option">
-            <strong>Homebrew</strong>
-            <code>brew install dweekly/sparkle-validator/sparkle-validator</code>
-          </div>
-          <div class="install-option">
-            <strong>npx (no install)</strong>
-            <code>npx sparkle-validator https://example.com/appcast.xml</code>
-          </div>
-        </div>
-        <p class="cli-features">
-          Features: <code>--check-urls</code> to verify download links,
-          <code>--strict</code> mode, JSON output, stdin support
-        </p>
-      </section>
-
-      <section class="xsd-section">
-        <h2>XSD Schema Validation</h2>
-        <p>Use our XSD schema with xmllint for quick validation:</p>
-        <code class="block-code">xmllint --schema https://sparklevalidator.com/appcast.xsd --noout your-appcast.xml</code>
-        <p>
-          <a href="/appcast.xsd">appcast.xsd</a> &middot;
-          <a href="/sparkle-appcast.xsd">sparkle-appcast.xsd</a>
-        </p>
-      </section>
-
       <footer>
-        <p>
+        <nav class="footer-links" aria-label="Footer navigation">
           <a href="https://github.com/dweekly/Sparkle-Validator">GitHub</a>
-          &middot;
+          <span aria-hidden="true">·</span>
           <a href="https://www.npmjs.com/package/sparkle-validator">npm</a>
-          &middot; MIT License
-        </p>
+          <span aria-hidden="true">·</span>
+          <span>MIT License</span>
+        </nav>
         <p class="disclaimer">
-          This is an independent community project, not affiliated with the
-          official <a href="https://sparkle-project.org/">Sparkle</a> project.
+          Independent community project, not affiliated with
+          <a href="https://sparkle-project.org/">Sparkle</a>.
         </p>
         <p class="copyright">
-          Copyright 2026 <a href="https://david.weekly.org">David E. Weekly</a>.
-          Made with love in California.
+          © 2026 <a href="https://david.weekly.org">David E. Weekly</a>. Made with love in California.
         </p>
       </footer>
     </div>
 
     <script src="app.global.js"></script>
+    <script>
+      // Copy button functionality
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const text = btn.dataset.copy;
+          await navigator.clipboard.writeText(text);
+          btn.classList.add('copied');
+          setTimeout(() => btn.classList.remove('copied'), 2000);
+        });
+      });
+
+      // Upload zone interaction
+      const uploadZone = document.querySelector('.upload-zone');
+      const fileInput = document.getElementById('file-input');
+      if (uploadZone && fileInput) {
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+          }
+        });
+        uploadZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => {
+          uploadZone.classList.remove('dragover');
+        });
+        uploadZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadZone.classList.remove('dragover');
+          if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            fileInput.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+    </script>
   </body>
 </html>
