@@ -101,6 +101,16 @@ git tag -f v1 vX.Y.Z
 git push -f origin v1
 ```
 
+## Deploy Website
+
+```bash
+npm run build
+cp src/web/index.html src/web/style.css public/
+npx wrangler pages deploy public --project-name=sparkle-validator
+```
+
+Verify: https://sparklevalidator.com (check version in footer)
+
 ## Post-Release Verification
 
 - [ ] npm package accessible: `npx sparkle-validator@X.Y.Z --version`
