@@ -1,6 +1,12 @@
 import { validate } from "../core/validator.js";
 import type { Diagnostic, ValidationResult } from "../core/types.js";
 
+declare const __VERSION__: string;
+
+// Set version in footer
+const versionEl = document.getElementById("version");
+if (versionEl) versionEl.textContent = __VERSION__;
+
 // --- Tab switching ---
 
 const tabButtons = document.querySelectorAll<HTMLButtonElement>(".tab-btn");

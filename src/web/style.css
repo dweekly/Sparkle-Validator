@@ -363,6 +363,13 @@ footer code {
   font-size: 0.75rem;
 }
 
+footer .version {
+  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
 footer .disclaimer {
   margin-top: 0.5rem;
   font-size: 0.7rem;

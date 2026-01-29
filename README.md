@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml"><img src="https://github.com/dweekly/Sparkle-Validator/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://codecov.io/gh/dweekly/Sparkle-Validator"><img src="https://codecov.io/gh/dweekly/Sparkle-Validator/graph/badge.svg" alt="codecov"></a>
   <a href="https://www.npmjs.com/package/sparkle-validator"><img src="https://badge.fury.io/js/sparkle-validator.svg" alt="npm version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
 </p>

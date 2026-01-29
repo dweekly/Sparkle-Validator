@@ -35,5 +35,8 @@ export default defineConfig([
     globalName: "SparkleValidator",
     sourcemap: false,
     noExternal: [/(.*)/],
+    define: {
+      __VERSION__: JSON.stringify(pkg.version),
+    },
   },
 ]);

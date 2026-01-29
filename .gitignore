@@ -33,3 +33,4 @@ Thumbs.db
 # npm pack artifacts
 *.tgz
 test/fixtures/remote/cache/
+sbom.json
