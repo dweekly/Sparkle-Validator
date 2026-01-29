@@ -6,7 +6,7 @@
   "homepage": "https://sparklevalidator.com",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dweekly/Sparkle-Validator.git"
+    "url": "git+https://github.com/dweekly/Sparkle-Validator.git"
   },
   "bugs": {
     "url": "https://github.com/dweekly/Sparkle-Validator/issues"
