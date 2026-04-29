@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.1] - 2026-04-29
 
-Maintenance release. No user-facing behavior changes.
+Maintenance release. No user-facing validator behavior changes.
 
 ### Fixed
 
@@ -20,8 +20,11 @@ Maintenance release. No user-facing behavior changes.
 
 ### Changed
 
+- **Minimum Node.js bumped from 18 to 20.** Node 18 went EOL in
+  April 2025 and the new vitest/rolldown toolchain requires Node 20+
 - TypeScript 5.9.3 → 6.0.3
 - ESLint 9 → 10
+- CI matrix now tests Node 20, 22, 24
 - All other devDependencies updated to latest minor/patch
 
 ## [1.2.0] - 2026-01-28
