@@ -3,7 +3,11 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      # Only fire for full semver tags (e.g. v1.2.0).
+      # Excludes the `v1` major-version pointer used by the GitHub Action,
+      # which previously re-fired this workflow with VERSION=1 and corrupted
+      # the Homebrew tap (sparkle-validator-1.tgz returns 404 from npm).
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   publish-npm:
@@ -79,8 +83,11 @@ jobs:
           GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           VERSION_TAG: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
           VERSION="${VERSION_TAG#v}"
-          curl -sL -o /tmp/sparkle-validator.tgz "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz"
+          # -f makes curl exit non-zero on HTTP errors so a missing tarball
+          # cannot silently produce a sha256 of an npm 404 page.
+          curl -fsSL -o /tmp/sparkle-validator.tgz "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz"
           SHA256=$(shasum -a 256 /tmp/sparkle-validator.tgz | cut -d' ' -f1)
 
           git clone "https://x-access-token:${GH_TOKEN}@github.com/dweekly/homebrew-sparkle-validator.git" tap
@@ -94,3 +101,26 @@ jobs:
           git add Formula/sparkle-validator.rb
           git commit -m "Update sparkle-validator to ${VERSION}"
           git push
+
+  verify-homebrew:
+    name: Verify Homebrew tap install
+    runs-on: macos-latest
+    needs: github-release
+    steps:
+      - name: Tap, install, and assert version
+        env:
+          VERSION_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION="${VERSION_TAG#v}"
+          # Fresh runners may not have the tap; brew update ensures we read
+          # the just-pushed formula commit rather than a cached copy.
+          brew update
+          brew tap dweekly/sparkle-validator
+          brew install sparkle-validator
+          INSTALLED="$(sparkle-validator --version)"
+          echo "Installed version: ${INSTALLED}"
+          if [ "${INSTALLED}" != "${VERSION}" ]; then
+            echo "::error::Expected ${VERSION} but brew installed ${INSTALLED}"
+            exit 1
+          fi
