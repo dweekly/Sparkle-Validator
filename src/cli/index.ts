@@ -111,10 +111,10 @@ async function readSource(source: string): Promise<string> {
   } catch (err) {
     const code = (err as { code?: string }).code;
     if (code === "ENOENT") {
-      throw new Error(`File not found: ${filePath}`);
+      throw new Error(`File not found: ${filePath}`, { cause: err });
     }
     if (code === "EISDIR") {
-      throw new Error(`Path is a directory: ${filePath}`);
+      throw new Error(`Path is a directory: ${filePath}`, { cause: err });
     }
     throw err;
   }

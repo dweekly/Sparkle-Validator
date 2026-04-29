@@ -38,16 +38,23 @@ function hasXmllint(): boolean {
   }
 }
 
+// xmllint subprocess fan-out can exceed the default 5s timeout under parallel load
+const XSD_TEST_TIMEOUT = 30000;
+
 describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
   describe("Valid fixtures should pass XSD", () => {
     const validFixtures = readdirSync(join(FIXTURES_DIR, "valid")).filter((f) =>
       f.endsWith(".xml")
     );
 
-    it.each(validFixtures)("%s", (filename) => {
-      const result = validateWithXsd(join(FIXTURES_DIR, "valid", filename));
-      expect(result.valid, result.error).toBe(true);
-    });
+    it.each(validFixtures)(
+      "%s",
+      (filename) => {
+        const result = validateWithXsd(join(FIXTURES_DIR, "valid", filename));
+        expect(result.valid, result.error).toBe(true);
+      },
+      XSD_TEST_TIMEOUT
+    );
   });
 
   describe("Structurally invalid fixtures should fail XSD", () => {
@@ -59,10 +66,14 @@ describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
       "bad-namespace.xml", // Wrong namespace
     ];
 
-    it.each(structurallyInvalid)("%s should be rejected", (filename) => {
-      const result = validateWithXsd(join(FIXTURES_DIR, "invalid", filename));
-      expect(result.valid).toBe(false);
-    });
+    it.each(structurallyInvalid)(
+      "%s should be rejected",
+      (filename) => {
+        const result = validateWithXsd(join(FIXTURES_DIR, "invalid", filename));
+        expect(result.valid).toBe(false);
+      },
+      XSD_TEST_TIMEOUT
+    );
   });
 
   describe("Type-invalid fixtures should fail XSD", () => {
@@ -73,10 +84,14 @@ describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
       "real-world-broken.xml", // Invalid version format, channel name
     ];
 
-    it.each(typeInvalid)("%s should be rejected", (filename) => {
-      const result = validateWithXsd(join(FIXTURES_DIR, "invalid", filename));
-      expect(result.valid).toBe(false);
-    });
+    it.each(typeInvalid)(
+      "%s should be rejected",
+      (filename) => {
+        const result = validateWithXsd(join(FIXTURES_DIR, "invalid", filename));
+        expect(result.valid).toBe(false);
+      },
+      XSD_TEST_TIMEOUT
+    );
   });
 
   describe("Semantically invalid fixtures should pass XSD", () => {
@@ -98,7 +113,8 @@ describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
       (filename) => {
         const result = validateWithXsd(join(FIXTURES_DIR, "invalid", filename));
         expect(result.valid, `Expected to pass: ${result.error}`).toBe(true);
-      }
+      },
+      XSD_TEST_TIMEOUT
     );
   });
 });

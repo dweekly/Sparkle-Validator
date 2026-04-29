@@ -74,23 +74,33 @@ Verify publication: https://www.npmjs.com/package/sparkle-validator
 
 ## Update Homebrew Formula
 
-```bash
-# Get the SHA256 of the npm tarball
-VERSION="X.Y.Z"
-curl -sL "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz" | shasum -a 256
+The `Release` workflow updates `dweekly/homebrew-sparkle-validator`
+automatically when a `vX.Y.Z` tag is pushed, then runs a `verify-homebrew`
+job that taps, installs, and asserts the installed version matches the tag.
+No manual steps are required in the normal path.
 
-# Clone and update the tap
+If the workflow's tap-update step fails (e.g. `HOMEBREW_TAP_TOKEN` revoked,
+npm tarball not yet propagated), update the tap by hand:
+
+```bash
+VERSION="X.Y.Z"
+curl -fsSL -o /tmp/sparkle-validator.tgz \
+  "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-${VERSION}.tgz"
+SHA256=$(shasum -a 256 /tmp/sparkle-validator.tgz | cut -d' ' -f1)
+
 git clone https://github.com/dweekly/homebrew-sparkle-validator.git
 cd homebrew-sparkle-validator
 
 # Edit Formula/sparkle-validator.rb:
-# - Update url to new version
-# - Update sha256 to new hash
+# - Update url to sparkle-validator-${VERSION}.tgz
+# - Update sha256 to ${SHA256}
 
 git add Formula/sparkle-validator.rb
 git commit -m "Update sparkle-validator to ${VERSION}"
 git push
 ```
+
+Then verify locally: `brew update && brew upgrade sparkle-validator && sparkle-validator --version`.
 
 ## Update GitHub Action v1 Tag
 

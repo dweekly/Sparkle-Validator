@@ -64,7 +64,7 @@ runs:
       shell: bash
       run: |
         # Build command with options
-        CMD="npx sparkle-validator@1.2.0"
+        CMD="npx sparkle-validator@1.2.1"
 
         if [ "${{ inputs.strict }}" = "true" ]; then
           CMD="$CMD --strict"
