@@ -4,6 +4,15 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    // Silences TS5101 from tsup's bundled rollup-plugin-dts, which still injects
+    // the deprecated `baseUrl` compiler option. Remove once tsup ships a fix.
+    // See: https://github.com/egoist/tsup/issues/1388
+    //      https://github.com/egoist/tsup/issues/1389
+    //      https://github.com/egoist/tsup/pull/1390
+    // Mastra patched tsup directly via pnpm patches as an alternative:
+    //      https://github.com/mastra-ai/mastra/commit/8a70f90
+    "ignoreDeprecations": "6.0",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
