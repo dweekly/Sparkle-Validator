@@ -37,18 +37,36 @@ git push origin main --tags
 ```
 
 This triggers CI which will:
-- Run tests on Node 18, 20, 22
+- Run tests on Node 20, 22, 24
 - Upload coverage to Codecov
 - Build the web app artifact
 
+A semver tag (`vX.Y.Z`) also fires `release.yml`, which publishes
+to npm, creates the GitHub Release, updates the Homebrew tap, and
+verifies `brew install` end-to-end. The `v1` major-version pointer
+is excluded from this trigger.
+
 ## Publish to npm
 
-> **Note:** Trusted Publishing via OIDC is configured but may have issues.
-> If the automated release fails, publish manually:
+The release workflow publishes via Trusted Publishing (OIDC). The
+package's trusted publisher policy on npmjs.com authorizes
+`dweekly/Sparkle-Validator` workflow `release.yml` to publish with
+provenance — no NPM_TOKEN secret is required.
+
+> **npm version requirement:** OIDC publish needs npm >= 11.5.1.
+> The release workflow runs on Node 24, which ships npm 11.x. Node
+> 20 ships npm 10.x and will fail with a 404 on PUT during publish
+> (see npm/cli#8730, #8976). If you ever bump the workflow's Node
+> version, keep it at 24 or higher.
+
+If the workflow's publish step fails for some other reason and you
+need to publish manually:
 
 ```bash
-npm publish --provenance false --access public
-# Enter OTP when prompted
+npm publish --access public
+# Enter OTP when prompted. Local publishes can't generate provenance
+# attestations (no OIDC token outside CI), so the version on npm
+# will be missing the SLSA attestation until the next release.
 ```
 
 Verify publication: https://www.npmjs.com/package/sparkle-validator
