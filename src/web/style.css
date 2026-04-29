@@ -906,12 +906,7 @@ body {
   left: 0;
   width: 33.3333%;
   height: 2px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--cyan),
-    transparent
-  );
+  background: linear-gradient(to right, transparent, var(--cyan), transparent);
   box-shadow: 0 0 12px var(--cyan-glow);
   transition: transform 0.4s var(--ease);
   pointer-events: none;
@@ -1352,12 +1347,11 @@ textarea::placeholder {
 
 .code-block {
   position: relative;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(11, 10, 26, 0.8) 0%,
-      rgba(11, 10, 26, 0.95) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(11, 10, 26, 0.8) 0%,
+    rgba(11, 10, 26, 0.95) 100%
+  );
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
   overflow: hidden;
