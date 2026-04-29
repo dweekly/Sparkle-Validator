@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://sparklevalidator.com/icons/android-chrome-192x192.png" alt="Sparkle Validator logo" width="128" height="128">
+  <img src="public/og-image.jpg" alt="Sparkle Validator — A field instrument for inspecting appcast.xml" width="900">
 </p>
 
 <h1 align="center">Sparkle Validator</h1>
