@@ -1,6 +1,13 @@
 # Release Process
 
-This document outlines the steps to release a new version of Sparkle Validator.
+Releases are **published from GitHub Actions, not from your local machine.**
+Pushing a `vX.Y.Z` tag fires `.github/workflows/release.yml`, which is the
+sole source of truth for publishes. You never run `npm publish` locally in
+the normal path; the workflow is what owns the npm package, the GitHub
+Release, and the Homebrew tap update.
+
+What you do locally is bump the version, update the changelog, and push
+the tag. The workflow does the rest.
 
 ## Pre-Release Checklist
 
@@ -36,69 +43,110 @@ git tag vX.Y.Z
 git push origin main --tags
 ```
 
-This triggers CI which will:
-- Run tests on Node 20, 22, 24
-- Upload coverage to Codecov
-- Build the web app artifact
+The tag push fires two workflows:
 
-A semver tag (`vX.Y.Z`) also fires `release.yml`, which publishes
-to npm, creates the GitHub Release, updates the Homebrew tap, and
-verifies `brew install` end-to-end. The `v1` major-version pointer
-is excluded from this trigger.
+- **`ci.yml`** — runs tests on Node 20/22/24, uploads coverage to
+  Codecov, builds the web app artifact.
+- **`release.yml`** — runs only on `vX.Y.Z` tags (the `v1` major-version
+  pointer is deliberately excluded). This is the workflow that ships
+  the release.
 
-## Publish to npm
+### What `release.yml` does
 
-The release workflow publishes via Trusted Publishing (OIDC). The
-package's trusted publisher policy on npmjs.com authorizes
-`dweekly/Sparkle-Validator` workflow `release.yml` to publish with
-provenance — no NPM_TOKEN secret is required.
+1. **`publish-npm`** — Publishes `sparkle-validator@X.Y.Z` to npm via
+   **Trusted Publishing (OIDC)**, with full SLSA v1 provenance. No
+   `NPM_TOKEN` secret is used; the package's trusted publisher policy
+   on npmjs.com authorizes `dweekly/Sparkle-Validator` running
+   `release.yml` to publish.
 
-> **npm version requirement:** OIDC publish needs npm >= 11.5.1.
-> The release workflow runs on Node 24, which ships npm 11.x. Node
-> 20 ships npm 10.x and will fail with a 404 on PUT during publish
-> (see npm/cli#8730, #8976). If you ever bump the workflow's Node
-> version, keep it at 24 or higher.
+   > **npm version requirement:** OIDC publish needs npm >= 11.5.1.
+   > The workflow runs on Node 24, which ships npm 11.x. Node 20 ships
+   > npm 10.x and will fail with a 404 on PUT (see [npm/cli#8730](https://github.com/npm/cli/issues/8730),
+   > [#8976](https://github.com/npm/cli/issues/8976)). If you ever bump
+   > the workflow's Node version, keep it at 24 or higher.
 
-If the workflow's publish step fails for some other reason and you
-need to publish manually:
+   Has a `Check if version already published` guard, so re-running the
+   workflow on a tag whose version already exists on npm is a no-op
+   for the publish step (the rest of the workflow still runs).
+
+2. **`github-release`** — Generates an SBOM (`@cyclonedx/cyclonedx-npm`),
+   creates the GitHub Release with auto-generated notes and the SBOM as
+   an asset, then updates `dweekly/homebrew-sparkle-validator` to point
+   at the new tarball and SHA256.
+
+3. **`verify-homebrew`** — Runs on a fresh macOS runner, taps, installs
+   via `brew install sparkle-validator`, and asserts the installed
+   version matches the tag. Fails the release if the tap update is
+   inconsistent.
+
+After the workflow goes green, only two steps remain locally: the `v1`
+pointer bump and the website deploy.
+
+## After the workflow succeeds
+
+### Update GitHub Action `v1` tag
+
+Users reference `@v1` for automatic minor/patch updates. Re-point it
+at the just-released commit:
+
+```bash
+git tag -f v1 vX.Y.Z
+git push -f origin v1
+```
+
+The `v1` tag is excluded from `release.yml`'s trigger, so this
+push does not re-fire the release workflow.
+
+### Deploy the website
+
+The release workflow does **not** deploy https://sparklevalidator.com.
+Do this manually:
+
+```bash
+npm run build
+npx wrangler pages deploy public --project-name=sparkle-validator
+```
+
+> **Note:** `src/web/` is the source of truth for the website's HTML
+> and CSS; `npm run build` copies them into `public/` and produces
+> the bundled `app.global.js`. Never edit `public/index.html` or
+> `public/style.css` directly.
+
+Verify: https://sparklevalidator.com (check version in footer)
+
+## Post-Release Verification
+
+- [ ] npm package accessible: `npx sparkle-validator@X.Y.Z --version`
+- [ ] Homebrew installs: `brew upgrade sparkle-validator`
+- [ ] GitHub Action works: test in a workflow
+- [ ] Web app updated: check version at https://sparklevalidator.com
+
+## Marketplace (Major Releases Only)
+
+For major version bumps, update the GitHub Marketplace listing:
+1. Go to https://github.com/marketplace/actions/sparkle-validator
+2. Edit the listing if description/categories need updating
+
+## Manual fallback (workflow broken)
+
+This is **not** the normal release path. Use it only when
+`release.yml` is broken in a way you can't fix quickly and the
+release needs to ship anyway.
+
+### Manual npm publish
 
 ```bash
 npm publish --access public
-# Enter OTP when prompted. Local publishes can't generate provenance
-# attestations (no OIDC token outside CI), so the version on npm
-# will be missing the SLSA attestation until the next release.
+# Enter OTP when prompted.
 ```
 
-Verify publication: https://www.npmjs.com/package/sparkle-validator
+A local publish cannot generate SLSA provenance — there's no OIDC
+token outside CI — so the version on npm will be missing the
+attestation until the next CI-driven release. Consumers verifying
+provenance with `npm audit signatures` or similar tooling will see
+that one version's attestation gap.
 
-## Create GitHub Release
-
-1. **Generate SBOM:**
-   ```bash
-   npx @cyclonedx/cyclonedx-npm --output-file sbom.json
-   ```
-
-2. **Create release via CLI:**
-   ```bash
-   gh release create vX.Y.Z \
-     --title "vX.Y.Z" \
-     --generate-notes \
-     sbom.json
-   ```
-
-3. **Edit release notes** to be user-friendly (see v1.2.0 as example)
-
-4. **Verify:** https://github.com/dweekly/Sparkle-Validator/releases
-
-## Update Homebrew Formula
-
-The `Release` workflow updates `dweekly/homebrew-sparkle-validator`
-automatically when a `vX.Y.Z` tag is pushed, then runs a `verify-homebrew`
-job that taps, installs, and asserts the installed version matches the tag.
-No manual steps are required in the normal path.
-
-If the workflow's tap-update step fails (e.g. `HOMEBREW_TAP_TOKEN` revoked,
-npm tarball not yet propagated), update the tap by hand:
+### Manual Homebrew tap update
 
 ```bash
 VERSION="X.Y.Z"
@@ -120,38 +168,12 @@ git push
 
 Then verify locally: `brew update && brew upgrade sparkle-validator && sparkle-validator --version`.
 
-## Update GitHub Action v1 Tag
-
-Users reference `@v1` for automatic minor/patch updates:
+### Manual GitHub Release
 
 ```bash
-git tag -f v1 vX.Y.Z
-git push -f origin v1
+npx @cyclonedx/cyclonedx-npm --output-file sbom.json
+gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes sbom.json
 ```
-
-## Deploy Website
-
-```bash
-npm run build
-npx wrangler pages deploy public --project-name=sparkle-validator
-```
-
-> **Note:** `src/web/` and `public/` HTML/CSS should be kept in sync. The build outputs JS to `public/`.
-
-Verify: https://sparklevalidator.com (check version in footer)
-
-## Post-Release Verification
-
-- [ ] npm package accessible: `npx sparkle-validator@X.Y.Z --version`
-- [ ] Homebrew installs: `brew upgrade sparkle-validator`
-- [ ] GitHub Action works: test in a workflow
-- [ ] Web app updated: check version at https://sparklevalidator.com
-
-## Marketplace (Major Releases Only)
-
-For major version bumps, update the GitHub Marketplace listing:
-1. Go to https://github.com/marketplace/actions/sparkle-validator
-2. Edit the listing if description/categories need updating
 
 ## Rollback
 
