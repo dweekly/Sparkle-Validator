@@ -74,7 +74,8 @@ Or with Homebrew:
 
 ```bash
 brew tap dweekly/sparkle-validator
-brew install sparkle-validator
+brew trust --formula dweekly/sparkle-validator/sparkle-validator
+brew install dweekly/sparkle-validator/sparkle-validator
 ```
 
 ## CLI Usage

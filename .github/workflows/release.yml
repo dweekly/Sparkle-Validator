@@ -116,23 +116,7 @@ jobs:
 
   verify-homebrew:
     name: Verify Homebrew tap install
-    runs-on: macos-latest
     needs: github-release
-    steps:
-      - name: Tap, install, and assert version
-        env:
-          VERSION_TAG: ${{ github.ref_name }}
-        run: |
-          set -euo pipefail
-          VERSION="${VERSION_TAG#v}"
-          # Fresh runners may not have the tap; brew update ensures we read
-          # the just-pushed formula commit rather than a cached copy.
-          brew update
-          brew tap dweekly/sparkle-validator
-          brew install sparkle-validator
-          INSTALLED="$(sparkle-validator --version)"
-          echo "Installed version: ${INSTALLED}"
-          if [ "${INSTALLED}" != "${VERSION}" ]; then
-            echo "::error::Expected ${VERSION} but brew installed ${INSTALLED}"
-            exit 1
-          fi
+    uses: ./.github/workflows/verify-homebrew.yml
+    with:
+      version: ${{ github.ref_name }}

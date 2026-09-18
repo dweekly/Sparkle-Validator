@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Wait for npm tarball availability before updating Homebrew, and make tap
   updates safe to retry after a partial release failure.
+- Explicitly trust the Sparkle Validator formula for Homebrew 6 installations;
+  add independently runnable verification for published releases.
 
 ## [1.3.0] - 2026-09-18
 

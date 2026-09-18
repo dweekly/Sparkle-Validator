@@ -3,6 +3,8 @@
 Install the published release with:
 
 ```bash
+brew tap dweekly/sparkle-validator
+brew trust --formula dweekly/sparkle-validator/sparkle-validator
 brew install dweekly/sparkle-validator/sparkle-validator
 ```
 

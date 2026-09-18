@@ -1,0 +1,44 @@
+name: Verify Homebrew
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Release version or tag to verify
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version or tag to verify (e.g. v1.3.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Install published formula on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Tap, trust formula, install, and assert version
+        env:
+          VERSION_TAG: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="${VERSION_TAG#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Expected a release version such as v1.3.0"
+            exit 1
+          fi
+          brew update
+          brew tap dweekly/sparkle-validator
+          brew trust --formula dweekly/sparkle-validator/sparkle-validator
+          brew install dweekly/sparkle-validator/sparkle-validator
+          INSTALLED="$(sparkle-validator --version)"
+          echo "Installed version: ${INSTALLED}"
+          if [ "${INSTALLED}" != "${VERSION}" ]; then
+            echo "::error::Expected ${VERSION} but brew installed ${INSTALLED}"
+            exit 1
+          fi
