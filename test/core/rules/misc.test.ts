@@ -272,6 +272,108 @@ describe("system requirement rules", () => {
     expect(result.diagnostics.some((d) => d.id === "W046")).toBe(false);
     expect(result.diagnostics.some((d) => d.id === "W013")).toBe(false);
   });
+
+  describe("Sparkle 2.10 update context (E036, E037)", () => {
+    it("E036: errors when an update bundling Sparkle 2.10 lacks minimumSystemVersion", () => {
+      const xml = wrap(`
+        <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { targetSparkleVersion: "2.10.0" });
+      expect(result.diagnostics.some((d) => d.id === "E036")).toBe(true);
+      expect(result.valid).toBe(false);
+    });
+
+    it("E036: errors when an update bundling Sparkle 2.10 has minimumSystemVersion < 12.0", () => {
+      const xml = wrap(`
+        <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+        <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { targetSparkleVersion: "2.10.0" });
+      expect(result.diagnostics.some((d) => d.id === "E036")).toBe(true);
+      expect(
+        result.diagnostics.find((d) => d.id === "E036")?.message
+      ).toContain("12.0");
+    });
+
+    it("passes when an update bundling Sparkle 2.10 has minimumSystemVersion >= 12.0", () => {
+      const xml = wrap(`
+        <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+        <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { targetSparkleVersion: "2.10.0" });
+      expect(result.diagnostics.some((d) => d.id === "E036")).toBe(false);
+    });
+
+    it("mixed history: diagnoses only targeted 2.10 update while preserving older pre-12 release", () => {
+      const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>App</title><link>https://example.com</link>
+    <item>
+      <title>Version 2.0 (Bundling Sparkle 2.10)</title>
+      <pubDate>Thu, 15 Aug 2026 12:00:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
+      <description>Update notes</description>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Version 1.0 (Historical release)</title>
+      <pubDate>Wed, 10 May 2023 12:00:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:minimumSystemVersion>10.13</sparkle:minimumSystemVersion>
+      <description>Old notes</description>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+      // Target only version 200 as bundling Sparkle 2.10
+      const result = validate(xml, { targetSparkleVersion: "200=2.10.0" });
+      const e036s = result.diagnostics.filter((d) => d.id === "E036");
+      expect(e036s.length).toBe(1);
+      expect(e036s[0].message).toContain("200");
+      // Version 100 must NOT have E036
+      expect(
+        result.diagnostics.some(
+          (d) => d.id === "E036" && d.message.includes("100")
+        )
+      ).toBe(false);
+    });
+
+    it("E037: errors when targetSparkleVersion is ambiguous on multi-item feed without item selector", () => {
+      const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>App</title><link>https://example.com</link>
+    <item>
+      <title>V2</title><pubDate>Thu, 15 Aug 2026 12:00:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version><description>x</description>
+      <enclosure url="https://example.com/v2.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>V1</title><pubDate>Wed, 10 May 2023 12:00:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version><description>x</description>
+      <enclosure url="https://example.com/v1.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+      const result = validate(xml, { targetSparkleVersion: "2.10.0" });
+      expect(result.diagnostics.some((d) => d.id === "E037")).toBe(true);
+      expect(
+        result.diagnostics.find((d) => d.id === "E037")?.message
+      ).toContain("Ambiguous");
+    });
+
+    it("E037: errors when selector does not match any item in feed", () => {
+      const xml = wrap(`
+        <sparkle:version>100</sparkle:version>
+        <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { targetSparkleVersion: "999=2.10.0" });
+      expect(result.diagnostics.some((d) => d.id === "E037")).toBe(true);
+      expect(
+        result.diagnostics.find((d) => d.id === "E037")?.message
+      ).toContain("No item in feed matches");
+    });
+  });
 });
 
 describe("info rules", () => {

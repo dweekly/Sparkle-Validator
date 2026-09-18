@@ -33,6 +33,16 @@ inputs:
     description: 'Output format: text or json'
     required: false
     default: 'text'
+  base-url:
+    description: 'Base URL for resolving relative links'
+    required: false
+  require-signed-feed:
+    description: 'Require valid Ed25519 signatures for enclosures and release notes'
+    required: false
+    default: 'false'
+  target-sparkle-version:
+    description: 'Target Sparkle version bundled in update (e.g. 2.10.0 or 300=2.10.0)'
+    required: false
 
 outputs:
   valid:
@@ -70,6 +80,9 @@ runs:
         INPUT_QUIET: ${{ inputs.quiet }}
         INPUT_NO_INFO: ${{ inputs.no-info }}
         INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_BASE_URL: ${{ inputs.base-url }}
+        INPUT_REQUIRE_SIGNED_FEED: ${{ inputs.require-signed-feed }}
+        INPUT_TARGET_SPARKLE_VERSION: ${{ inputs.target-sparkle-version }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
         node "${ACTION_PATH:-.}/scripts/run-action.mjs"

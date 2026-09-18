@@ -269,7 +269,7 @@ interface Diagnostic {
 
 ## Validation Rules
 
-### Errors (E001-E035, excluding E026)
+### Errors (E001-E037, excluding E026)
 
 | ID | Description |
 |----|-------------|
@@ -297,6 +297,8 @@ interface Diagnostic {
 | E033 | Release note link signature is malformed |
 | E034 | Release note link `sparkle:length` is not a valid non-negative integer |
 | E035 | Release note link missing required signature or length in signed-feed mode |
+| E036 | Item bundling Sparkle 2.10+ requires `minimumSystemVersion` >= 12.0 |
+| E037 | Unmatched or ambiguous target Sparkle version configuration |
 
 > **Note on Signature Verification Scope:**
 > Signature format validation (`E031`, `E033`, `E035`) checks base64 encoding integrity, padding, and exact decoded byte sizes (e.g. exactly 64 bytes for Ed25519). Offline validation does not cryptographically authenticate payloads against private/public keys, which requires out-of-band key distribution.

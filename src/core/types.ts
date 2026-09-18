@@ -94,6 +94,15 @@ export interface XmlDocument {
   namespaces: Record<string, string>;
 }
 
+export interface SparkleItemTarget {
+  /** Effective item build version (e.g. "300" or "2.0") */
+  itemVersion?: string;
+  /** Optional enclosure URL to disambiguate items */
+  enclosureUrl?: string;
+  /** Sparkle version bundled in this update (e.g. "2.10.0", "2.10") */
+  sparkleVersion: string;
+}
+
 /**
  * Configuration options for validation.
  */
@@ -111,10 +120,15 @@ export interface ValidationOptions {
   baseUrl?: string;
 
   /**
-   * Target Sparkle version bundled in an update (e.g., "2.10.0").
+   * Target Sparkle version bundled in an update (e.g. "2.10.0" or "300=2.10.0").
    * Used for item-specific compatibility checks.
    */
   targetSparkleVersion?: string;
+
+  /**
+   * Explicit item targets mapping updates to the Sparkle version they bundle.
+   */
+  sparkleItemTargets?: SparkleItemTarget[];
 }
 
 /** A validation rule function */

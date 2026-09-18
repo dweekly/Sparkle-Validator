@@ -65,6 +65,13 @@ describe("valid fixtures", () => {
     expect(minUpdateDiag).toBeDefined();
     expect(minUpdateDiag!.message).toContain("200");
   });
+
+  it("sparkle-2.10-mixed-history.xml is valid and passes Sparkle 2.10 target context", () => {
+    const xml = readFixture("valid", "sparkle-2.10-mixed-history.xml");
+    const result = validate(xml, { targetSparkleVersion: "200=2.10.0" });
+    expect(result.valid).toBe(true);
+    expect(result.errorCount).toBe(0);
+  });
 });
 
 describe("invalid fixtures", () => {

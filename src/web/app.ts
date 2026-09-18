@@ -1,11 +1,32 @@
 import { validate } from "../core/validator.js";
-import type { Diagnostic, ValidationResult } from "../core/types.js";
+import type {
+  Diagnostic,
+  ValidationResult,
+  ValidationOptions,
+} from "../core/types.js";
 
 declare const __VERSION__: string;
 
 // Set version in footer
 const versionEl = document.getElementById("version");
 if (versionEl) versionEl.textContent = __VERSION__;
+
+// --- Options reading ---
+
+function getValidationOptions(baseUrl?: string): ValidationOptions {
+  const versionInput = document.getElementById(
+    "target-sparkle-version-input"
+  ) as HTMLInputElement | null;
+  const signedCheckbox = document.getElementById(
+    "require-signed-feed-checkbox"
+  ) as HTMLInputElement | null;
+
+  return {
+    baseUrl,
+    targetSparkleVersion: versionInput?.value.trim() || undefined,
+    requireSignedFeed: signedCheckbox?.checked || undefined,
+  };
+}
 
 // --- Tab switching ---
 
@@ -43,7 +64,7 @@ const btnPaste = document.getElementById(
 btnPaste.addEventListener("click", () => {
   const xml = xmlInput.value.trim();
   if (!xml) return;
-  showResults(validate(xml));
+  showResults(validate(xml, getValidationOptions()));
 });
 
 // --- Validate: Upload ---
@@ -64,7 +85,7 @@ btnUpload.addEventListener("click", () => {
   const reader = new FileReader();
   reader.onload = () => {
     const xml = reader.result as string;
-    showResults(validate(xml));
+    showResults(validate(xml, getValidationOptions()));
   };
   reader.readAsText(file);
 });
@@ -92,7 +113,7 @@ btnUrl.addEventListener("click", async () => {
       return;
     }
 
-    showResults(validate(data.xml, { baseUrl: data.finalUrl || url }));
+    showResults(validate(data.xml, getValidationOptions(data.finalUrl || url)));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     showError(`Failed to fetch URL: ${msg}`);
@@ -129,6 +150,9 @@ function showError(message: string): void {
   const msg = el("p", undefined, message);
   resultsEl.appendChild(banner);
   resultsEl.appendChild(msg);
+
+  resultsEl.tabIndex = -1;
+  resultsEl.focus();
 }
 
 function showResults(result: ValidationResult): void {
@@ -168,6 +192,10 @@ function showResults(result: ValidationResult): void {
   if (infos.length > 0) {
     resultsEl.appendChild(renderSection("Info", "infos", infos, false));
   }
+
+  // Predictable keyboard focus on results
+  resultsEl.tabIndex = -1;
+  resultsEl.focus();
 }
 
 function renderSection(
@@ -177,25 +205,40 @@ function renderSection(
   startOpen: boolean
 ): HTMLElement {
   const section = el("div", "section");
+  const sectionId = `section-${cssClass}-${Math.random().toString(36).substring(2, 8)}`;
 
-  const header = el(
-    "div",
-    `section-header ${cssClass}${startOpen ? " open" : ""}`,
-    `${title} (${diagnostics.length})`
-  );
+  // Native button for accessibility, keyboard navigation, and aria-expanded
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `section-header ${cssClass}${startOpen ? " open" : ""}`;
+  button.setAttribute("aria-expanded", startOpen ? "true" : "false");
+  button.setAttribute("aria-controls", sectionId);
+  button.textContent = `${title} (${diagnostics.length})`;
 
   const body = el("div", `section-body${startOpen ? " open" : ""}`);
+  body.id = sectionId;
+  body.setAttribute("role", "region");
+  body.setAttribute("aria-label", `${title} details`);
+  if (!startOpen) {
+    body.setAttribute("hidden", "");
+  }
 
   for (const d of diagnostics) {
     body.appendChild(renderDiagnostic(d));
   }
 
-  header.addEventListener("click", () => {
-    header.classList.toggle("open");
+  button.addEventListener("click", () => {
+    const isOpen = button.classList.toggle("open");
     body.classList.toggle("open");
+    button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    if (isOpen) {
+      body.removeAttribute("hidden");
+    } else {
+      body.setAttribute("hidden", "");
+    }
   });
 
-  section.appendChild(header);
+  section.appendChild(button);
   section.appendChild(body);
   return section;
 }

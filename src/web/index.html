@@ -417,6 +417,40 @@
             </div>
           </div>
 
+          <div
+            class="validation-options"
+            role="group"
+            aria-label="Validation Options"
+          >
+            <div class="option-row">
+              <div class="option-item">
+                <label for="target-sparkle-version-input" class="option-label">
+                  Bundled Sparkle version:
+                </label>
+                <input
+                  type="text"
+                  id="target-sparkle-version-input"
+                  class="option-input"
+                  placeholder="e.g. 2.10.0 or 200=2.10.0"
+                  aria-describedby="sparkle-version-help"
+                />
+                <span id="sparkle-version-help" class="option-help">
+                  Optional: checks macOS 12+ OS floor for Sparkle 2.10 updates
+                </span>
+              </div>
+              <div class="option-item option-item-check">
+                <label class="option-checkbox-label">
+                  <input
+                    type="checkbox"
+                    id="require-signed-feed-checkbox"
+                    class="option-checkbox"
+                  />
+                  <span>Require signed feed (Ed25519)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div id="results" aria-live="polite"></div>
         </section>
 

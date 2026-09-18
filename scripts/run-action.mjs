@@ -34,14 +34,18 @@ const strict = process.env.INPUT_STRICT ?? "false";
 const checkUrls = process.env.INPUT_CHECK_URLS ?? "false";
 const quiet = process.env.INPUT_QUIET ?? "false";
 const noInfo = process.env.INPUT_NO_INFO ?? "false";
+const requireSignedFeed = process.env.INPUT_REQUIRE_SIGNED_FEED ?? "false";
 const format = process.env.INPUT_FORMAT ?? "text";
 const timeout = process.env.INPUT_TIMEOUT ?? "10000";
+const targetSparkleVersion = process.env.INPUT_TARGET_SPARKLE_VERSION;
+const baseUrl = process.env.INPUT_BASE_URL;
 
 for (const [name, val] of [
   ["strict", strict],
   ["check-urls", checkUrls],
   ["quiet", quiet],
   ["no-info", noInfo],
+  ["require-signed-feed", requireSignedFeed],
 ]) {
   if (val !== "true" && val !== "false") {
     fail(`Invalid boolean value for '${name}': '${val}'. Expected 'true' or 'false'.`);
@@ -66,6 +70,13 @@ if (strict === "true") cmdArgs.push("--strict");
 if (checkUrls === "true") cmdArgs.push("--check-urls", "--timeout", timeout);
 if (quiet === "true") cmdArgs.push("--quiet");
 if (noInfo === "true") cmdArgs.push("--no-info");
+if (requireSignedFeed === "true") cmdArgs.push("--require-signed-feed");
+if (targetSparkleVersion && targetSparkleVersion.trim() !== "") {
+  cmdArgs.push("--target-sparkle-version", targetSparkleVersion.trim());
+}
+if (baseUrl && baseUrl.trim() !== "") {
+  cmdArgs.push("--base-url", baseUrl.trim());
+}
 cmdArgs.push("--format", "json");
 cmdArgs.push("--", file);
 
