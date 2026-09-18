@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { validate } from "../../src/core/validator.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -297,5 +298,41 @@ describe("invalid fixtures", () => {
       readFixture("invalid", "deprecated-sparkle-os.xml")
     );
     expect(result.diagnostics.some((d) => d.id === "W043")).toBe(true);
+  });
+
+  it("CLI accepts --target-sparkle-version and enforces E036 when missing macOS 12+", () => {
+    const cliPath = resolve(process.cwd(), "dist/cli/index.js");
+    const fixturePath = resolve(
+      process.cwd(),
+      "test/fixtures/valid/minimal.xml"
+    );
+
+    try {
+      execFileSync(
+        "node",
+        [cliPath, "--target-sparkle-version", "2.10.0", fixturePath],
+        { encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] }
+      );
+      expect.unreachable("CLI should have exited non-zero due to E036");
+    } catch (err: unknown) {
+      const execErr = err as { status: number; stdout: string; stderr: string };
+      expect(execErr.status).toBe(1);
+      expect(execErr.stdout + execErr.stderr).toContain("E036");
+    }
+  });
+
+  it("CLI accepts --target-sparkle-version for targeted multi-item feed", () => {
+    const cliPath = resolve(process.cwd(), "dist/cli/index.js");
+    const fixturePath = resolve(
+      process.cwd(),
+      "test/fixtures/valid/sparkle-2.10-mixed-history.xml"
+    );
+
+    const stdout = execFileSync(
+      "node",
+      [cliPath, "--target-sparkle-version", "200=2.10.0", fixturePath],
+      { encoding: "utf-8" }
+    );
+    expect(stdout).toContain("VALID");
   });
 });

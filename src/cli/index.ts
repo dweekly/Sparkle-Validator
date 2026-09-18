@@ -30,6 +30,10 @@ program
     "--require-signed-feed",
     "Require valid Ed25519 signatures for enclosures and release notes"
   )
+  .option(
+    "--target-sparkle-version <version>",
+    "Target Sparkle version context (e.g. 2.10.0 or 200=2.10.0)"
+  )
   .action(async (source: string, options) => {
     try {
       const { xml, feedUrl } = await readSource(source);
@@ -37,6 +41,7 @@ program
       const result = validate(xml, {
         baseUrl: effectiveBaseUrl,
         requireSignedFeed: options.requireSignedFeed,
+        targetSparkleVersion: options.targetSparkleVersion,
       });
 
       // Run remote validation if --check-urls is specified
