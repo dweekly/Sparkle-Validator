@@ -24,7 +24,7 @@ the tag. The workflow does the rest.
 
 1. **Update package.json version:**
    ```bash
-   npm version patch  # or minor/major
+   npm version patch --no-git-tag-version  # or minor/major
    ```
 
 2. **Update action.yml** to reference the new npm package version:

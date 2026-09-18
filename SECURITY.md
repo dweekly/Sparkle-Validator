@@ -34,12 +34,13 @@ This tool validates XML input and optionally fetches remote feeds and assets. Ou
 - Validation engine runs purely in-memory with zero disk or runtime shell side effects.
 
 ### Egress & SSRF Protection (Web Proxy)
-The Cloudflare Pages fetch proxy (`functions/api/fetch.ts`) enforces strict egress protection:
+The Cloudflare Pages fetch proxy (`functions/api/fetch.ts`) enforces defense-in-depth egress protection:
 - **IPv4 Protection:** Blocks private, loopback, broadcast, and link-local ranges (RFC 1918, RFC 3927, RFC 5735, RFC 6598) across standard dotted-decimal, hex, octal, and single-integer formats.
 - **IPv6 Protection:** Blocks IPv6 loopback (`::1`), link-local (`fe80::/10`), unique local (`fc00::/7`), and IPv4-mapped IPv6 (`::ffff:0:0/96`).
 - **Cloud Metadata Protection:** Explicitly denies access to internal cloud metadata endpoints (e.g. `169.254.169.254`, `metadata.google.internal`).
-- **Redirect Policy:** Enforces egress policy on every redirect hop (up to 3 hops max); disallows redirects to restricted destinations or non-HTTP(S) schemes.
-- **Resource Bounds:** Enforces response size ceilings (max 10 MB) and request timeout limits (5s default, abort signal enforced).
+- **DNS Pre-checking:** Resolves hostnames via DNS-over-HTTPS (DoH) prior to fetch and aborts if any resolved IP belongs to a blocked range. *(Note: Because edge serverless runtimes do not expose socket-level IP pinning for outbound fetch, this pre-check provides defense-in-depth against private hosts but cannot eliminate the TOCTOU window of adversarial 0-TTL DNS rebinding).*
+- **Redirect Policy:** Enforces egress policy on every redirect hop (up to 5 hops max); disallows redirects to restricted destinations or non-HTTP(S) schemes.
+- **Resource Bounds:** Enforces response size ceilings (max 1 MB) and request timeout limits (10s default, abort signal enforced).
 
 ### GitHub Action Security
 - Inputs are passed directly as data arguments to the runner script (`scripts/run-action.mjs`), completely eliminating shell injection vectors.

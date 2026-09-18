@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { describe, it, expect, beforeAll } from "vitest";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
@@ -76,6 +76,16 @@ describe("valid fixtures", () => {
 });
 
 describe("invalid fixtures", () => {
+  beforeAll(() => {
+    const cliPath = resolve(process.cwd(), "dist/cli/index.js");
+    if (!existsSync(cliPath)) {
+      execFileSync("npm", ["run", "build"], {
+        cwd: process.cwd(),
+        stdio: "ignore",
+      });
+    }
+  });
+
   it("malformed.xml produces E001", () => {
     const result = validate(readFixture("invalid", "malformed.xml"));
     expect(result.valid).toBe(false);

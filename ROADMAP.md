@@ -23,7 +23,7 @@ The product includes a CLI, JavaScript library, browser validator, Pages fetch p
 | 13 | R13: Repair documentation and distribution hygiene | Update format/rule/security docs, release procedure, Homebrew template, executable examples, and roadmap status. | Documentation, release, Homebrew, and roadmap follow-ups | [x] |
 | 14 | R14: Verify release readiness across all surfaces | Validate the packed library/CLI, Action, web/Function, schema downloads, release metadata, and migration notes before delivery. | Cross-project verification and compatibility risk | [x] |
 
-All security fixes, toolchain refreshes, schema self-containment, diagnostic uniqueness, Sparkle 2.10 semantics, URL resolution, bounded remote checks, and accessibility enhancements have been delivered and verified across the entire test suite.
+All security fixes, toolchain refreshes, schema self-containment, diagnostic uniqueness, Sparkle 2.10 semantics, URL resolution, bounded remote checks, accessibility enhancements, and clean-checkout/targeting/range/signed-feed review remediations have been delivered and verified across the entire test suite.
 
 **Release gates**
 

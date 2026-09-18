@@ -5,12 +5,17 @@ import {
   validate,
   consolidateDiagnostics,
 } from "../../../src/core/validator.js";
+import { RULE_CATALOG } from "../../../src/core/rules/catalog.js";
 
 describe("Rule ID Catalog & Lossless Reporting (R06)", () => {
   it("has strictly unique rule IDs across all rule files", () => {
     const rulesDir = join(process.cwd(), "src/core/rules");
     const ruleFiles = readdirSync(rulesDir).filter(
-      (f) => f.endsWith(".ts") && f !== "utils.ts" && f !== "index.ts"
+      (f) =>
+        f.endsWith(".ts") &&
+        f !== "utils.ts" &&
+        f !== "index.ts" &&
+        f !== "catalog.ts"
     );
 
     const emittedIds = new Map<string, string[]>();
@@ -122,5 +127,15 @@ describe("Rule ID Catalog & Lossless Reporting (R06)", () => {
     const consolidatedW011 = consolidated.filter((d) => d.id === "W011");
     expect(consolidatedW011.length).toBe(1);
     expect(consolidatedW011[0].message).toContain("and 1 more similar issue");
+  });
+
+  it("RULE_CATALOG includes all defined rule IDs with valid metadata", () => {
+    expect(Object.keys(RULE_CATALOG).length).toBeGreaterThan(50);
+    for (const [id, meta] of Object.entries(RULE_CATALOG)) {
+      expect(meta.id).toBe(id);
+      expect(["error", "warning", "info"]).toContain(meta.severity);
+      expect(meta.name.length).toBeGreaterThan(0);
+      expect(meta.description.length).toBeGreaterThan(0);
+    }
   });
 });
