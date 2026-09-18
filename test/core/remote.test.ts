@@ -257,6 +257,44 @@ describe("remote validation - deterministic mocked network checks", () => {
     expect(w023).toBeDefined();
     expect(w023?.message).toContain("Relative URL without base URL context");
   });
+
+  it("handles 405 Method Not Allowed fallback to GET Range and parses total from Content-Range", async () => {
+    const fetchMock = vi
+      .fn()
+      // First call is HEAD -> return 405
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 405,
+          statusText: "Method Not Allowed",
+        })
+      )
+      // Second call is GET with Range: bytes=0-0 -> return 206 with Content-Range
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([0]), {
+          status: 206,
+          statusText: "Partial Content",
+          headers: {
+            "Content-Length": "1",
+            "Content-Range": "bytes 0-0/12345678",
+          },
+        })
+      );
+    globalThis.fetch = fetchMock;
+
+    const xml = `<rss version="2.0"><channel><item><enclosure url="https://example.com/app.zip" length="12345678"/></item></channel></rss>`;
+    const { document } = parseXml(xml);
+    const diagnostics = await validateRemote(document);
+
+    // Should NOT report E028 mismatch (1 byte vs 12345678)
+    const e028 = diagnostics.find((d) => d.id === "E028");
+    expect(e028).toBeUndefined();
+
+    // Verify both requests were made
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][1]?.method).toBe("HEAD");
+    expect(fetchMock.mock.calls[1][1]?.method).toBe("GET");
+    expect(fetchMock.mock.calls[1][1]?.headers?.Range).toBe("bytes=0-0");
+  });
 });
 
 // Optional live network tests - skip in CI

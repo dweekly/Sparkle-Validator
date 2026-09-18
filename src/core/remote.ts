@@ -509,10 +509,27 @@ async function checkUrl(
       }
     }
 
-    const contentLengthHeader = response.headers.get("content-length");
-    const contentLength = contentLengthHeader
-      ? parseInt(contentLengthHeader, 10)
-      : null;
+    // In HTTP 206 Partial Content (or when Content-Range is present),
+    // the total file size is in Content-Range: bytes <start>-<end>/<total>
+    // while Content-Length only specifies the length of the partial range chunk (e.g. 1 byte).
+    let contentLength: number | null = null;
+    const contentRangeHeader = response.headers.get("content-range");
+    if (contentRangeHeader) {
+      const match = contentRangeHeader.match(/\/(\d+)$/);
+      if (match) {
+        const total = parseInt(match[1], 10);
+        if (!isNaN(total)) {
+          contentLength = total;
+        }
+      }
+    }
+
+    if (contentLength === null) {
+      const contentLengthHeader = response.headers.get("content-length");
+      contentLength = contentLengthHeader
+        ? parseInt(contentLengthHeader, 10)
+        : null;
+    }
 
     return {
       url,
