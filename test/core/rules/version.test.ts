@@ -318,4 +318,48 @@ describe("version rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W018")).toBe(false);
   });
+
+  it("W044: warns on conflicting element version and enclosure attribute version", () => {
+    const xml = wrap(`
+      <title>V1</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>2.0</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
+                 sparkle:version="1.0" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W044")).toBe(true);
+  });
+
+  it("enclosure version takes precedence over element version matching Sparkle (Finding 7 counterexample)", () => {
+    // Item 1 has element version 2 and enclosure version 1
+    // Item 2 has version 1
+    // In Sparkle, Item 1 is version 1, so this is a duplicate version (W020)
+    const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>T</title><link>https://example.com</link>
+    <item>
+      <title>Item 1</title>
+      <pubDate>Fri, 14 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>2</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"
+                 sparkle:version="1" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Item 2</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <description>x</description>
+      <enclosure url="https://example.com/b.zip" length="1" type="application/octet-stream"
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W044")).toBe(true);
+    // Because Sparkle treats Item 1 as version 1, duplicate version W020 must be triggered
+    expect(result.diagnostics.some((d) => d.id === "W020")).toBe(true);
+  });
 });

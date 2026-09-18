@@ -80,42 +80,44 @@ describe("best practice rules", () => {
   });
 
   it("no W017 when informationalUpdate has version conditions", () => {
-    // With minimumSystemVersion - this is a valid use case for targeted informational updates
-    const xmlWithMinSystem = `<?xml version="1.0"?>
+    // With nested sparkle:version inside informationalUpdate
+    const xmlWithVersion = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel><title>T</title><link>https://example.com</link>
     <item>
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
-      <sparkle:informationalUpdate/>
+      <sparkle:informationalUpdate>
+        <sparkle:version>90</sparkle:version>
+      </sparkle:informationalUpdate>
       <description>x</description>
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
     expect(
-      validate(xmlWithMinSystem).diagnostics.some((d) => d.id === "W017")
+      validate(xmlWithVersion).diagnostics.some((d) => d.id === "W017")
     ).toBe(false);
 
-    // With minimumAutoupdateVersion
-    const xmlWithMinAutoupdate = `<?xml version="1.0"?>
+    // With nested sparkle:belowVersion inside informationalUpdate
+    const xmlWithBelowVersion = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel><title>T</title><link>https://example.com</link>
     <item>
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
       <sparkle:version>100</sparkle:version>
-      <sparkle:minimumAutoupdateVersion>50</sparkle:minimumAutoupdateVersion>
-      <sparkle:informationalUpdate/>
+      <sparkle:informationalUpdate>
+        <sparkle:belowVersion>95</sparkle:belowVersion>
+      </sparkle:informationalUpdate>
       <description>x</description>
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     </item>
   </channel>
 </rss>`;
     expect(
-      validate(xmlWithMinAutoupdate).diagnostics.some((d) => d.id === "W017")
+      validate(xmlWithBelowVersion).diagnostics.some((d) => d.id === "W017")
     ).toBe(false);
   });
 
@@ -298,12 +300,65 @@ describe("info rules", () => {
     expect(result.diagnostics.some((d) => d.id === "W036")).toBe(true);
   });
 
-  it("no W036 warning for known architectures", () => {
+  it("W036: warns about not-arm64 (token matching prevents substring bypass)", () => {
     const xml = wrap(
-      `<sparkle:hardwareRequirements>arm64, x86_64</sparkle:hardwareRequirements>`
+      `<sparkle:hardwareRequirements>not-arm64</sparkle:hardwareRequirements>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(true);
+  });
+
+  it("W036: warns about empty hardwareRequirements", () => {
+    const xml = wrap(
+      `<sparkle:hardwareRequirements>   </sparkle:hardwareRequirements>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W036")).toBe(true);
+  });
+
+  it("no W036 warning for arm64 (case-insensitive)", () => {
+    const xmlLower = wrap(
+      `<sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>`
+    );
+    expect(validate(xmlLower).diagnostics.some((d) => d.id === "W036")).toBe(false);
+
+    const xmlUpper = wrap(
+      `<sparkle:hardwareRequirements>ARM64</sparkle:hardwareRequirements>`
+    );
+    expect(validate(xmlUpper).diagnostics.some((d) => d.id === "W036")).toBe(false);
+  });
+
+  it("W048: warns about empty minimumUpdateVersion", () => {
+    const xml = wrap(
+      `<sparkle:minimumUpdateVersion></sparkle:minimumUpdateVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W048")).toBe(true);
+  });
+
+  it("W048: warns about non-numeric minimumUpdateVersion", () => {
+    const xml = wrap(
+      `<sparkle:minimumUpdateVersion>2.0-beta</sparkle:minimumUpdateVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W048")).toBe(true);
+  });
+
+  it("W049: warns when minimumUpdateVersion is greater than item version", () => {
+    const xml = wrap(
+      `<sparkle:minimumUpdateVersion>200</sparkle:minimumUpdateVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W049")).toBe(true);
+  });
+
+  it("no W048/W049 warning when minimumUpdateVersion is valid and <= item version", () => {
+    const xml = wrap(
+      `<sparkle:minimumUpdateVersion>50</sparkle:minimumUpdateVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W048")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W049")).toBe(false);
   });
 });
 

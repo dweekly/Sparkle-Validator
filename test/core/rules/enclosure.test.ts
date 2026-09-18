@@ -27,6 +27,30 @@ describe("enclosure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "E009")).toBe(false);
   });
 
+  it("E009: reports missing destination when informationalUpdate has neither enclosure nor link (Finding 9 counterexample)", () => {
+    const xml = wrap(`<sparkle:informationalUpdate/>`);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E009")).toBe(true);
+  });
+
+  it("E009: reports missing destination when informationalUpdate has empty link (Finding 9)", () => {
+    const xml = wrap(`
+      <sparkle:informationalUpdate/>
+      <link/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E009")).toBe(true);
+  });
+
+  it("accepts informationalUpdate with usable link", () => {
+    const xml = wrap(`
+      <sparkle:informationalUpdate/>
+      <link>https://example.com/info</link>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E009")).toBe(false);
+  });
+
   it("E010: reports missing url on enclosure", () => {
     const xml = wrap(`<enclosure length="1" type="application/octet-stream"/>`);
     const result = validate(xml);

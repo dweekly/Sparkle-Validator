@@ -335,9 +335,12 @@ interface Diagnostic {
 | W041 | Version missing but deducible from filename (Sparkle fallback) |
 | W042 | Sparkle namespace URI differs from canonical |
 | W043 | `sparkle:os` deprecated (prefer separate feeds per platform) |
+| W044 | Conflicting version between `<sparkle:version>` element and enclosure attribute |
 | W045 | Invalid `minimumSystemVersion` format |
 | W046 | Invalid `maximumSystemVersion` format |
 | W047 | Version only as enclosure attribute (prefer `<sparkle:version>` element) |
+| W048 | `minimumUpdateVersion` format invalid or empty |
+| W049 | `minimumUpdateVersion` is greater than item version (unreachable update) |
 
 ### Info (I001-I012)
 

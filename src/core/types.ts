@@ -54,6 +54,8 @@ export interface XmlElement {
   column: number;
   /** Parent element (undefined for root) */
   parent?: XmlElement;
+  /** Namespace mappings in scope on this element */
+  namespaces?: Record<string, string>;
 }
 
 /** An XML attribute */

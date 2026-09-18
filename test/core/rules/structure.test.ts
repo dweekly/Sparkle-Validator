@@ -61,4 +61,22 @@ describe("structure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
     expect(result.valid).toBe(true); // Should still be valid (warning, not error)
   });
+
+  it("accepts valid namespace aliases for canonical URI (Finding 8 counterexample)", () => {
+    const xml = `<rss version="2.0" xmlns:s="http://www.andymatuschak.org/xml-namespaces/sparkle">
+      <channel><title>T</title><item><s:version>1.0</s:version>
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" s:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E004")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(false);
+    expect(result.valid).toBe(true);
+  });
+
+  it("reports E004 when prefix is bound to an unrelated non-Sparkle namespace", () => {
+    const xml = `<rss version="2.0" xmlns:sparkle="http://example.com/unrelated">
+      <channel><title>T</title><item><sparkle:version>1.0</sparkle:version>
+      <enclosure url="https://x.com/a" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/></item></channel></rss>`;
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E004")).toBe(true);
+  });
 });

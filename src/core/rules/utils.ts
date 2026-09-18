@@ -167,3 +167,123 @@ export function parseRfc2822Date(dateStr: string): Date | null {
 
   return d;
 }
+
+/**
+ * Check if a version string is numeric (can include dots for semver-like versions).
+ * Valid: "100", "1.0", "1.0.1", "2023.1"
+ * Invalid: "1.0-beta", "v2.0", "1.0rc1"
+ */
+export function isNumericVersion(version: string): boolean {
+  return /^\d+(\.\d+)*$/.test(version);
+}
+
+/**
+ * Extract version from a download URL using Sparkle's underscore-splitting fallback.
+ *
+ * Sparkle's logic (from SUAppcastItem.m):
+ * 1. Split URL by underscore characters
+ * 2. If there are at least 2 components, take the last one
+ * 3. Remove the file extension
+ */
+export function extractVersionFromUrl(url: string): string | null {
+  const components = url.split("_");
+  if (components.length < 2) {
+    return null;
+  }
+  const lastComponent = components[components.length - 1];
+  const lastDotIndex = lastComponent.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return lastComponent;
+  }
+  const version = lastComponent.substring(0, lastDotIndex);
+  if (!version || !/\d/.test(version)) {
+    return null;
+  }
+  return version;
+}
+
+/**
+ * Compare two version strings numerically.
+ * Returns negative if v1 < v2, positive if v1 > v2, 0 if equal.
+ * Handles versions like "1.0", "1.0.1", "100", "2023.1"
+ */
+export function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split(".").map((p) => parseInt(p, 10) || 0);
+  const parts2 = v2.split(".").map((p) => parseInt(p, 10) || 0);
+
+  const maxLen = Math.max(parts1.length, parts2.length);
+  for (let i = 0; i < maxLen; i++) {
+    const p1 = parts1[i] || 0;
+    const p2 = parts2[i] || 0;
+    if (p1 !== p2) return p1 - p2;
+  }
+  return 0;
+}
+
+export interface EffectiveVersionInfo {
+  version: string | undefined;
+  source: "enclosure" | "element" | "filename" | undefined;
+  enclosureVersion: string | undefined;
+  elementVersion: string | undefined;
+  filenameVersion: string | null;
+  hasConflict: boolean;
+}
+
+/**
+ * Centralized effective-version selection matching Sparkle's SUAppcastItem.m precedence:
+ * 1. sparkle:version attribute on enclosure (takes precedence in Sparkle!)
+ * 2. <sparkle:version> child element
+ * 3. Version extracted from enclosure URL filename (fallback)
+ */
+export function getEffectiveVersion(item: XmlElement): EffectiveVersionInfo {
+  const enclosure = childElement(item, "enclosure");
+  const rawEnclosureVersion = enclosure
+    ? sparkleAttr(enclosure, "version")
+    : undefined;
+  const enclosureVersion =
+    rawEnclosureVersion !== undefined && rawEnclosureVersion.trim() !== ""
+      ? rawEnclosureVersion.trim()
+      : undefined;
+
+  const versionEl = sparkleChildElement(item, "version");
+  const rawVersionElText = versionEl ? textContent(versionEl).trim() : undefined;
+  const elementVersion =
+    rawVersionElText !== undefined && rawVersionElText.trim() !== ""
+      ? rawVersionElText.trim()
+      : undefined;
+
+  const enclosureUrl = enclosure ? attr(enclosure, "url") : undefined;
+  const filenameVersion = enclosureUrl
+    ? extractVersionFromUrl(enclosureUrl)
+    : null;
+
+  const hasConflict = Boolean(
+    enclosureVersion &&
+      elementVersion &&
+      enclosureVersion !== elementVersion
+  );
+
+  let version: string | undefined;
+  let source: "enclosure" | "element" | "filename" | undefined;
+
+  if (enclosureVersion) {
+    version = enclosureVersion;
+    source = "enclosure";
+  } else if (elementVersion) {
+    version = elementVersion;
+    source = "element";
+  } else if (filenameVersion) {
+    version = filenameVersion;
+    source = "filename";
+  }
+
+  return {
+    version,
+    source,
+    enclosureVersion,
+    elementVersion,
+    filenameVersion,
+    hasConflict,
+  };
+}
+

@@ -45,10 +45,12 @@ export function parseXml(xml: string): ParseResult {
 
   parser.on("opentag", (node) => {
     // Collect namespace declarations
+    const localNs: Record<string, string> = {};
     if (node.ns) {
       for (const [prefix, uri] of Object.entries(node.ns)) {
         if (uri) {
           namespaces[prefix] = uri;
+          localNs[prefix] = uri;
         }
       }
     }
@@ -76,6 +78,7 @@ export function parseXml(xml: string): ParseResult {
       line: parser.line,
       column: parser.column,
       parent: stack.length > 0 ? stack[stack.length - 1] : undefined,
+      namespaces: localNs,
     };
 
     if (stack.length > 0) {

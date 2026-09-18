@@ -9,6 +9,7 @@ import {
   isNonNegativeInteger,
   sparkleChildElement,
   textContent,
+  getEffectiveVersion,
 } from "./utils.js";
 
 /** Valid values for sparkle:os attribute */
@@ -102,28 +103,19 @@ export function enclosureRules(
   // Collect all versions in the feed for W031 check
   const feedVersions = new Set<string>();
   for (const item of items) {
-    const versionEl = sparkleChildElement(item, "version");
-    if (versionEl) {
-      const version = textContent(versionEl).trim();
-      if (version) feedVersions.add(version);
-    }
-    const enclosure = childElement(item, "enclosure");
-    if (enclosure) {
-      const enclosureVersion = sparkleAttr(enclosure, "version");
-      if (enclosureVersion) feedVersions.add(enclosureVersion);
-    }
+    const eff = getEffectiveVersion(item);
+    if (eff.version) feedVersions.add(eff.version);
   }
 
   for (const item of items) {
     const enclosure = childElement(item, "enclosure");
     const link = childElement(item, "link");
-    const informationalUpdate = sparkleChildElement(
-      item,
-      "informationalUpdate"
-    );
+    const linkText = link ? textContent(link).trim() : "";
+    const hasUsableLink = linkText.length > 0;
 
-    // E009: Must have enclosure with url or link
-    if (!enclosure && !link && !informationalUpdate) {
+    // E009: Must have enclosure with url or usable link
+    // Sparkle rejects items with neither an enclosure nor an information URL (even with informationalUpdate)
+    if (!enclosure && !hasUsableLink) {
       diagnostics.push({
         id: "E009",
         severity: "error",

@@ -1,5 +1,5 @@
 import type { Diagnostic, XmlDocument } from "../types.js";
-import { SPARKLE_NS } from "../constants.js";
+import { SPARKLE_NS, isSparkleNamespace } from "../constants.js";
 import { childElements, elementPath } from "./utils.js";
 
 /**
@@ -48,9 +48,30 @@ export function structureRules(
     });
   }
 
-  // E004 / E026: Sparkle namespace
-  const sparkleNsUri = doc.namespaces["sparkle"];
-  if (!sparkleNsUri) {
+  // E004 / W042: Sparkle namespace declaration
+  // Accepts aliases for the canonical URI (e.g. xmlns:s="http://www.andymatuschak.org/xml-namespaces/sparkle")
+  const declaredUris = Object.values(doc.namespaces);
+  const hasCanonicalSparkle = declaredUris.includes(SPARKLE_NS);
+  const variantSparkleUri = declaredUris.find(
+    (uri) => uri !== SPARKLE_NS && isSparkleNamespace(uri)
+  );
+
+  if (hasCanonicalSparkle) {
+    // Valid canonical Sparkle namespace is present under some prefix or default
+  } else if (variantSparkleUri) {
+    // W042: Namespace variant - old format or HTTPS version
+    // These work fine with Sparkle; the URI is just an identifier, not fetched
+    diagnostics.push({
+      id: "W042",
+      severity: "warning",
+      message: `Sparkle namespace URI "${variantSparkleUri}" differs from canonical "${SPARKLE_NS}"`,
+      line: root.line,
+      column: root.column,
+      path: elementPath(root),
+      fix: `Consider using the canonical namespace URI "${SPARKLE_NS}"`,
+    });
+  } else {
+    // E004: Missing Sparkle namespace declaration
     diagnostics.push({
       id: "E004",
       severity: "error",
@@ -59,18 +80,6 @@ export function structureRules(
       column: root.column,
       path: elementPath(root),
       fix: `Add xmlns:sparkle="${SPARKLE_NS}" to the <rss> element`,
-    });
-  } else if (sparkleNsUri !== SPARKLE_NS) {
-    // W042: Namespace variant - old format or HTTPS version
-    // These work fine with Sparkle; the URI is just an identifier, not fetched
-    diagnostics.push({
-      id: "W042",
-      severity: "warning",
-      message: `Sparkle namespace URI "${sparkleNsUri}" differs from canonical "${SPARKLE_NS}"`,
-      line: root.line,
-      column: root.column,
-      path: elementPath(root),
-      fix: `Consider using the canonical namespace URI "${SPARKLE_NS}"`,
     });
   }
 

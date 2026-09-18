@@ -97,7 +97,7 @@ export function bestPracticeRules(
     }
 
     // W017: informationalUpdate on item that also has enclosure
-    // Only warn if there are NO version conditions (minimumSystemVersion, etc.)
+    // Only warn if there are NO version conditions (sparkle:version or sparkle:belowVersion inside informationalUpdate)
     // because informationalUpdate with enclosure is valid when targeting specific versions
     const informationalUpdate = sparkleChildElement(
       item,
@@ -105,31 +105,13 @@ export function bestPracticeRules(
     );
     const enclosure = childElement(item, "enclosure");
     if (informationalUpdate && enclosure) {
-      // Check for version conditions that would make this combination valid
-      const hasMinSystemVersion = sparkleChildElement(
-        item,
-        "minimumSystemVersion"
-      );
-      const hasMaxSystemVersion = sparkleChildElement(
-        item,
-        "maximumSystemVersion"
-      );
-      const hasMinAutoupdateVersion = sparkleChildElement(
-        item,
-        "minimumAutoupdateVersion"
-      );
-      const hasIgnoreSkippedUpgradesBelowVersion = sparkleChildElement(
-        item,
-        "ignoreSkippedUpgradesBelowVersion"
-      );
+      // Check for nested version conditions inside informationalUpdate
+      const versionConditions = [
+        ...sparkleChildElements(informationalUpdate, "version"),
+        ...sparkleChildElements(informationalUpdate, "belowVersion"),
+      ];
 
-      const hasVersionConditions =
-        hasMinSystemVersion ||
-        hasMaxSystemVersion ||
-        hasMinAutoupdateVersion ||
-        hasIgnoreSkippedUpgradesBelowVersion;
-
-      if (!hasVersionConditions) {
+      if (versionConditions.length === 0) {
         diagnostics.push({
           id: "W017",
           severity: "warning",
@@ -138,7 +120,7 @@ export function bestPracticeRules(
           line: informationalUpdate.line,
           column: informationalUpdate.column,
           path: elementPath(informationalUpdate),
-          fix: "Remove <enclosure> if this is purely informational, add version conditions if targeting specific versions, or remove <sparkle:informationalUpdate> if a download is intended",
+          fix: "Remove <enclosure> if this is purely informational, add nested version conditions (<sparkle:version> or <sparkle:belowVersion>) inside <sparkle:informationalUpdate> if targeting specific versions, or remove <sparkle:informationalUpdate> if a download is intended",
         });
       }
     }
