@@ -53,7 +53,12 @@ describe("GitHub Action Runner (R01)", () => {
   function runRunner(
     env: Record<string, string>,
     allowFailure = false
-  ): { status: number; stdout: string; stderr: string; outputs: Record<string, string> } {
+  ): {
+    status: number;
+    stdout: string;
+    stderr: string;
+    outputs: Record<string, string>;
+  } {
     try {
       const stdout = execFileSync("node", [RUNNER_PATH], {
         env: {
@@ -74,9 +79,14 @@ describe("GitHub Action Runner (R01)", () => {
       };
     } catch (e: unknown) {
       const err = e as { status?: number; stdout?: string; stderr?: string };
-      const outputContent = fs.existsSync(outputFile) ? fs.readFileSync(outputFile, "utf-8") : "";
+      const outputContent = fs.existsSync(outputFile)
+        ? fs.readFileSync(outputFile, "utf-8")
+        : "";
       if (!allowFailure) {
-        throw new Error(`Command failed with status ${err.status}: ${err.stderr || err.stdout}`);
+        throw new Error(
+          `Command failed with status ${err.status}: ${err.stderr || err.stdout}`,
+          { cause: e }
+        );
       }
       return {
         status: err.status ?? 1,
@@ -162,7 +172,10 @@ describe("GitHub Action Runner (R01)", () => {
 
   it("handles files with leading dashes and spaces safely", () => {
     const spaceFile = path.join(tempDir, "--test file with spaces.xml");
-    const validXml = fs.readFileSync("test/fixtures/valid/minimal.xml", "utf-8");
+    const validXml = fs.readFileSync(
+      "test/fixtures/valid/minimal.xml",
+      "utf-8"
+    );
     fs.writeFileSync(spaceFile, validXml);
 
     const res = runRunner({

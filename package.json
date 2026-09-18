@@ -39,9 +39,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:xsd": "./scripts/test-xsd.sh",
-    "lint": "eslint src test && tsc --noEmit",
-    "format": "prettier --write src test",
-    "format:check": "prettier --check src test",
+    "lint": "eslint src test functions && tsc --noEmit && tsc -p tsconfig.functions.json --noEmit",
+    "format": "prettier --write src test functions",
+    "format:check": "prettier --check src test functions",
     "clean": "rm -rf dist public/*.js",
     "prepare": "husky"
   },
@@ -57,6 +57,7 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260918.1",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.1.0",
     "@typescript-eslint/eslint-plugin": "^8.54.0",

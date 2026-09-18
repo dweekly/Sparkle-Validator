@@ -1,69 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  isPrivateIP,
+  normalizeHostname,
+  parseIPv6,
+  onRequestGet,
+  MAX_RESPONSE_SIZE,
+} from "../../functions/api/fetch.js";
 
-/**
- * Tests for the fetch proxy SSRF protection.
- *
- * These test the isPrivateIP function extracted from functions/api/fetch.ts.
- * The actual function runs in Cloudflare Workers, so we duplicate the logic here for testing.
- */
-
-function isPrivateIP(ip: string): boolean {
-  // IPv4 check
-  const ipv4Match = ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
-  if (ipv4Match) {
-    const [, a, b, c, d] = ipv4Match.map(Number);
-
-    // Validate octets
-    if (a > 255 || b > 255 || c > 255 || d > 255) return true;
-
-    // 0.0.0.0/8 - "This" network
-    if (a === 0) return true;
-    // 10.0.0.0/8 - Private
-    if (a === 10) return true;
-    // 100.64.0.0/10 - Carrier-grade NAT
-    if (a === 100 && b >= 64 && b <= 127) return true;
-    // 127.0.0.0/8 - Loopback
-    if (a === 127) return true;
-    // 169.254.0.0/16 - Link-local (cloud metadata)
-    if (a === 169 && b === 254) return true;
-    // 172.16.0.0/12 - Private
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    // 192.0.0.0/24 - IETF Protocol Assignments
-    if (a === 192 && b === 0 && c === 0) return true;
-    // 192.0.2.0/24 - TEST-NET-1
-    if (a === 192 && b === 0 && c === 2) return true;
-    // 192.168.0.0/16 - Private
-    if (a === 192 && b === 168) return true;
-    // 198.18.0.0/15 - Benchmark testing
-    if (a === 198 && (b === 18 || b === 19)) return true;
-    // 198.51.100.0/24 - TEST-NET-2
-    if (a === 198 && b === 51 && c === 100) return true;
-    // 203.0.113.0/24 - TEST-NET-3
-    if (a === 203 && b === 0 && c === 113) return true;
-    // 224.0.0.0/4 - Multicast
-    if (a >= 224 && a <= 239) return true;
-    // 240.0.0.0/4 - Reserved
-    if (a >= 240) return true;
-
-    return false;
-  }
-
-  // IPv6 check
-  const ipv6 = ip.toLowerCase();
-  // Loopback
-  if (ipv6 === "::1") return true;
-  // Link-local
-  if (ipv6.startsWith("fe80:")) return true;
-  // Unique local (fc00::/7)
-  if (ipv6.startsWith("fc") || ipv6.startsWith("fd")) return true;
-  // IPv4-mapped IPv6 - check the embedded IPv4
-  if (ipv6.startsWith("::ffff:")) {
-    const embedded = ipv6.slice(7);
-    return isPrivateIP(embedded);
-  }
-
-  return false;
+interface JsonResponse {
+  error?: string;
+  xml?: string;
 }
+
+type PagesHandlerContext = Parameters<typeof onRequestGet>[0];
 
 describe("SSRF Protection - isPrivateIP", () => {
   describe("should block private IPv4 ranges", () => {
@@ -155,51 +104,322 @@ describe("SSRF Protection - isPrivateIP", () => {
     });
   });
 
-  describe("should handle IPv6 addresses", () => {
-    it("blocks loopback ::1", () => {
+  describe("should handle IPv6 addresses and normalization", () => {
+    it("normalizes bracketed and mixed-case hostnames", () => {
+      expect(normalizeHostname("[::1]")).toBe("::1");
+      expect(normalizeHostname("[2001:4860:4860::8888]")).toBe(
+        "2001:4860:4860::8888"
+      );
+      expect(normalizeHostname("Example.COM")).toBe("example.com");
+    });
+
+    it("parses valid IPv6 formats and compression", () => {
+      expect(parseIPv6("::1")).toEqual([0, 0, 0, 0, 0, 0, 0, 1]);
+      expect(parseIPv6("fe80::1")).toEqual([0xfe80, 0, 0, 0, 0, 0, 0, 1]);
+      expect(parseIPv6("::ffff:192.168.1.1")).toEqual([
+        0, 0, 0, 0, 0, 0xffff, 0xc0a8, 0x0101,
+      ]);
+    });
+
+    it("blocks loopback ::1, both bare and bracketed", () => {
       expect(isPrivateIP("::1")).toBe(true);
+      expect(isPrivateIP("[::1]")).toBe(true);
     });
 
     it("blocks link-local fe80::", () => {
       expect(isPrivateIP("fe80::1")).toBe(true);
+      expect(isPrivateIP("[fe80::1]")).toBe(true);
       expect(isPrivateIP("fe80:0000:0000:0000:0000:0000:0000:0001")).toBe(true);
     });
 
-    it("blocks unique local fc00::/7", () => {
+    it("blocks unique local fc00::/7 (ULA)", () => {
       expect(isPrivateIP("fc00::1")).toBe(true);
+      expect(isPrivateIP("[fc00::1]")).toBe(true);
       expect(isPrivateIP("fd00::1")).toBe(true);
+      expect(isPrivateIP("[fd00::1]")).toBe(true);
+      expect(isPrivateIP("fd12:3456:789a:1::1")).toBe(true);
     });
 
     it("blocks IPv4-mapped IPv6 with private IPv4", () => {
       expect(isPrivateIP("::ffff:127.0.0.1")).toBe(true);
+      expect(isPrivateIP("[::ffff:127.0.0.1]")).toBe(true);
       expect(isPrivateIP("::ffff:10.0.0.1")).toBe(true);
       expect(isPrivateIP("::ffff:192.168.1.1")).toBe(true);
       expect(isPrivateIP("::ffff:169.254.169.254")).toBe(true);
     });
 
+    it("blocks 6to4 (2002::/16) with private embedded IPv4", () => {
+      // 2002:7f00:0001:: -> 127.0.0.1
+      expect(isPrivateIP("2002:7f00:0001::")).toBe(true);
+      // 2002:0a00:0001:: -> 10.0.0.1
+      expect(isPrivateIP("2002:0a00:0001::")).toBe(true);
+    });
+
     it("allows IPv4-mapped IPv6 with public IPv4", () => {
       expect(isPrivateIP("::ffff:8.8.8.8")).toBe(false);
+      expect(isPrivateIP("[::ffff:8.8.8.8]")).toBe(false);
       expect(isPrivateIP("::ffff:1.1.1.1")).toBe(false);
     });
 
-    it("allows public IPv6 (falls through)", () => {
+    it("allows public IPv6 addresses", () => {
       expect(isPrivateIP("2001:4860:4860::8888")).toBe(false); // Google IPv6
+      expect(isPrivateIP("[2001:4860:4860::8888]")).toBe(false);
+      expect(isPrivateIP("2606:4700:4700::1111")).toBe(false); // Cloudflare IPv6
     });
   });
+});
 
-  describe("SSRF attack vectors", () => {
-    it("blocks cloud metadata endpoints", () => {
-      // AWS metadata
-      expect(isPrivateIP("169.254.169.254")).toBe(true);
-      // Common internal IPs
-      expect(isPrivateIP("10.0.0.1")).toBe(true);
-      expect(isPrivateIP("192.168.1.1")).toBe(true);
-    });
+describe("Cloudflare Pages Function Handler (R02 & R04)", () => {
+  const originalFetch = globalThis.fetch;
 
-    it("blocks localhost variants", () => {
-      expect(isPrivateIP("127.0.0.1")).toBe(true);
-      expect(isPrivateIP("127.0.0.2")).toBe(true);
-      expect(isPrivateIP("127.1.1.1")).toBe(true);
-    });
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  function makeContext(urlParam: string | null): PagesHandlerContext {
+    const requestUrl = new URL("https://sparklevalidator.com/api/fetch");
+    if (urlParam !== null) {
+      requestUrl.searchParams.set("url", urlParam);
+    }
+    const request = new Request(requestUrl.toString());
+    return {
+      request,
+      functionPath: "/api/fetch",
+      waitUntil: vi.fn(),
+      next: vi.fn(),
+      env: {},
+      params: {},
+      data: {},
+    } as unknown as PagesHandlerContext;
+  }
+
+  it("returns 400 if url parameter is missing", async () => {
+    const ctx = makeContext(null);
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("Missing url parameter");
+  });
+
+  it("returns 400 for non-HTTP schemes", async () => {
+    const ctx = makeContext("file:///etc/passwd");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("Only HTTP/HTTPS URLs are allowed");
+  });
+
+  it("returns 400 for URLs containing credentials", async () => {
+    const ctx = makeContext("http://admin:secret@example.com/feed.xml");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("credentials");
+  });
+
+  it("blocks private IPv6 literals directly without external fetch", async () => {
+    const fetchSpy = vi.fn();
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    for (const privateUrl of [
+      "http://[::1]/feed.xml",
+      "http://[fd00::1]/feed.xml",
+      "http://[fe80::1]/feed.xml",
+      "http://[::ffff:127.0.0.1]/feed.xml",
+    ]) {
+      const ctx = makeContext(privateUrl);
+      const res = await onRequestGet(ctx);
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as JsonResponse;
+      expect(body.error).toContain("private/internal addresses");
+    }
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("blocks private IPv4 literals directly without external fetch", async () => {
+    const fetchSpy = vi.fn();
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    for (const privateUrl of [
+      "http://127.0.0.1/feed.xml",
+      "http://10.0.0.1/feed.xml",
+      "http://169.254.169.254/latest/meta-data",
+      "http://localhost/feed.xml",
+    ]) {
+      const ctx = makeContext(privateUrl);
+      const res = await onRequestGet(ctx);
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as JsonResponse;
+      expect(body.error).toContain("private/internal addresses");
+    }
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("blocks hostnames that resolve to private IPv4 or IPv6 addresses", async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        if (urlStr.includes("type=A")) {
+          return new Response(
+            JSON.stringify({
+              Answer: [{ type: 1, data: "192.168.1.100" }],
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response(JSON.stringify({ Answer: [] }), { status: 200 });
+      }
+      return new Response("OK", { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://internal.mycorp.test/feed.xml");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("private IP address");
+  });
+
+  it("blocks hostnames with mixed public and private DNS records", async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        if (urlStr.includes("type=A")) {
+          return new Response(
+            JSON.stringify({
+              Answer: [
+                { type: 1, data: "93.184.216.34" }, // public
+                { type: 1, data: "10.0.0.5" }, // private
+              ],
+            }),
+            { status: 200 }
+          );
+        }
+        return new Response(JSON.stringify({ Answer: [] }), { status: 200 });
+      }
+      return new Response("OK", { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://mixed.example.com/feed.xml");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("private IP address");
+  });
+
+  it("blocks redirects to private IPv4/IPv6 addresses", async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        return new Response(
+          JSON.stringify({
+            Answer: [{ type: 1, data: "93.184.216.34" }],
+          }),
+          { status: 200 }
+        );
+      }
+      if (urlStr === "https://example.com/redirect-to-private") {
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: "http://127.0.0.1/secret",
+          },
+        });
+      }
+      return new Response("Should not reach here", { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://example.com/redirect-to-private");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("private/internal addresses");
+  });
+
+  it("detects redirect loops and enforces hop bounds", async () => {
+    let hop = 0;
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        return new Response(
+          JSON.stringify({
+            Answer: [{ type: 1, data: "93.184.216.34" }],
+          }),
+          { status: 200 }
+        );
+      }
+      hop++;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: `https://example.com/step-${hop}`,
+        },
+      });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://example.com/step-0");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("Too many redirects");
+  });
+
+  it("enforces maximum response size limit (1MB)", async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        return new Response(
+          JSON.stringify({
+            Answer: [{ type: 1, data: "93.184.216.34" }],
+          }),
+          { status: 200 }
+        );
+      }
+      // Return 2MB payload
+      const hugeXml = "<rss>" + "x".repeat(MAX_RESPONSE_SIZE + 100) + "</rss>";
+      return new Response(hugeXml, {
+        status: 200,
+        headers: { "Content-Type": "application/xml" },
+      });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://example.com/huge.xml");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(413);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.error).toContain("Response too large");
+  });
+
+  it("successfully fetches valid appcast XML through proxy", async () => {
+    const validXml =
+      '<?xml version="1.0"?><rss version="2.0"><channel><title>Test</title></channel></rss>';
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const urlStr = input.toString();
+      if (urlStr.includes("cloudflare-dns.com")) {
+        return new Response(
+          JSON.stringify({
+            Answer: [{ type: 1, data: "93.184.216.34" }],
+          }),
+          { status: 200 }
+        );
+      }
+      return new Response(validXml, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
+        },
+      });
+    }) as unknown as typeof fetch;
+
+    const ctx = makeContext("https://example.com/appcast.xml");
+    const res = await onRequestGet(ctx);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as JsonResponse;
+    expect(body.xml).toBe(validXml);
   });
 });
