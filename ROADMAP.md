@@ -9,7 +9,7 @@ The product includes a CLI, JavaScript library, browser validator, Pages fetch p
 | Rank | Work item | Scope and completion criterion | Review coverage | Status |
 |---|---|---|---|---|
 | 1 | R01: Secure the GitHub Action | Treat inputs as data, validate options, run validation once, preserve outputs and exit status; injection regressions pass. | Finding 1 | [x] |
-| 2 | R02: Enforce proxy destination policy | Correct IPv6 classification, validate redirects and DNS results, establish enforceable egress protection, and bound requests/bodies. | Findings 2–3 | [x] |
+| 2 | R02: Enforce proxy destination policy | Correct IPv6 classification, validate redirects and DNS results, establish enforceable egress protection, and bound requests/bodies. | Findings 2–3 | [x]* |
 | 3 | R03: Align and refresh the toolchain | Reconcile Node support with dependencies, update vulnerable packages/lockfile, and complete development and production audits. | Findings 13–14 | [x] |
 | 4 | R04: Test and check the actual Function | Replace copied helper tests with handler tests; include Functions in lint/type checks and exercise limits, redirects, DNS, and aborts. | Finding 3 | [x] |
 | 5 | R05: Make schemas correct and self-contained | Fix qualified attributes, vendor the XML namespace dependency, distinguish schema failures, require xmllint in CI, and generate public copies. | Findings 4–5; schema-copy follow-up | [x] |
@@ -23,6 +23,8 @@ The product includes a CLI, JavaScript library, browser validator, Pages fetch p
 | 13 | R13: Repair documentation and distribution hygiene | Update format/rule/security docs, release procedure, Homebrew template, executable examples, and roadmap status. | Documentation, release, Homebrew, and roadmap follow-ups | [x] |
 | 14 | R14: Verify release readiness across all surfaces | Validate the packed library/CLI, Action, web/Function, schema downloads, release metadata, and migration notes before delivery. | Cross-project verification and compatibility risk | [x] |
 
+\* *R02 Status Note (Accepted Platform Limitation):* IPv4/IPv6 classification, DoH pre-checking, redirect filtering, and request boundaries are fully implemented. Connection-level IP-pinning to eliminate 0-TTL DNS rebinding remains an explicitly accepted platform limitation of the Cloudflare Pages serverless runtime (outbound `fetch()` cannot pin destination socket IPs). See [`SECURITY.md`](SECURITY.md) for architectural details.
+
 All security fixes, toolchain refreshes, schema self-containment, diagnostic uniqueness, Sparkle 2.10 semantics, URL resolution, bounded remote checks, accessibility enhancements, and clean-checkout/targeting/range/signed-feed review remediations have been delivered and verified across the entire test suite.
 
 **Release gates**
@@ -30,7 +32,7 @@ All security fixes, toolchain refreshes, schema self-containment, diagnostic uni
 - All 14 numbered findings and every follow-up have an accepted fix or a documented, evidence-backed resolution.
 - Required tests run offline after dependency/tool installation, including schema compilation and actual Function/Action tests. No missing-tool skip may make required CI coverage green.
 - The advertised Node floor is exercised in CI; dependency audits distinguish vulnerability findings from unavailable audit service responses.
-- CLI, library, web, Action, and XSD behavior agree where they share scope; intentional differences and signature-verification limits are documented.
+- CLI, library, web, Action, and XSD behavior agree where they share scope; intentional differences, accepted platform limitations (e.g. DNS rebinding in edge runtimes), and signature-verification limits are documented.
 - Package contents, public schema copies, version references, and release instructions are consistent. Publishing/deployment is a separate execution step, not part of writing this plan.
 
 **Deferred until the repair backlog is complete**

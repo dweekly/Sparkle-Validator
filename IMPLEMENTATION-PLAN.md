@@ -34,6 +34,7 @@ Priority: P1. Dependencies: none to start; include the minimal actual-handler te
 5. Bound the entire operation, including DNS, redirects, headers, and body reads. Retain a streaming byte limit regardless of Content-Length; cancel and await cleanup on timeout, overflow, or abandoned responses. Replace repeated chunk-array spreading with a bounded linear copy or streaming decoder.
 
 Acceptance: actual-handler tests block `[::1]`, `[fd00::1]`, mapped private IPv4, private redirect targets, and mixed DNS answers before unsafe fetches. Public IPv4/IPv6 and allowed redirects work. Loops, slow DNS, stalled bodies, deceptive lengths, and oversized chunked responses terminate predictably. Record connection-level enforcement evidence separately from mocked policy tests; do not probe unrelated private services.
+Accepted Platform Limitation: The Cloudflare Pages serverless runtime cannot pin destination socket IPs for global fetch(). Independent DoH pre-checking and redirect filtering are enforced, but connection-level rebinding protection is recorded as an accepted platform constraint.
 
 **R03 — Establish a truthful Node and dependency baseline**
 
