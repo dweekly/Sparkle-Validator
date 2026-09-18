@@ -81,7 +81,7 @@ cmdArgs.push("--format", "json");
 cmdArgs.push("--", file);
 
 // 3. Resolve command to execute
-const rawCmd = process.env.SPARKLE_VALIDATOR_CMD || "npx sparkle-validator@1.2.1";
+const rawCmd = process.env.SPARKLE_VALIDATOR_CMD || "npx sparkle-validator@1.3.0";
 const cmdParts = rawCmd.trim().split(/\s+/);
 const executable = cmdParts[0];
 const fullArgs = [...cmdParts.slice(1), ...cmdArgs];

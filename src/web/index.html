@@ -435,7 +435,9 @@
                   aria-describedby="sparkle-version-help"
                 />
                 <span id="sparkle-version-help" class="option-help">
-                  Optional: checks macOS 12+ OS floor for Sparkle 2.10 updates
+                  Optional: use 2.10.0 for a single-item feed, or 200=2.10.0 to
+                  check build 200 in a feed with older releases. Targeted
+                  Sparkle 2.10+ updates must require macOS 12 or later.
                 </span>
               </div>
               <div class="option-item option-item-check">
@@ -444,9 +446,15 @@
                     type="checkbox"
                     id="require-signed-feed-checkbox"
                     class="option-checkbox"
+                    aria-describedby="signed-feed-help"
                   />
-                  <span>Require signed feed (Ed25519)</span>
+                  <span>Require signature metadata (Ed25519)</span>
                 </label>
+                <span id="signed-feed-help" class="option-help">
+                  Require enclosure signatures and signature/length metadata on
+                  in-app release notes. Checks format and length only; does not
+                  verify cryptographic authenticity.
+                </span>
               </div>
             </div>
           </div>
@@ -467,10 +475,19 @@
             <span class="dropcap">S</span>parkle is the standard framework for
             delivering software updates to macOS apps. It reads an
             <code>appcast.xml</code> feed to discover new versions. This tool
-            catches mistakes <em>before</em> your users do — checking
-            signatures, versions, URLs, and sixty-odd other rules drawn from the
+            catches mistakes <em>before</em> your users do — checking signature
+            metadata, versions, URLs, and appcast rules drawn from the
             <a href="https://sparkle-project.org/">Sparkle&nbsp;documentation</a
             >.
+          </p>
+          <p class="helper-text">
+            Updated for Sparkle 2.10: check the macOS 12 minimum for selected
+            updates, validate signed release-note metadata, and keep older
+            releases in your feed.
+            <a
+              href="https://github.com/dweekly/Sparkle-Validator/blob/main/CHANGELOG.md"
+              >Read the changelog ↗</a
+            >
           </p>
         </section>
 
@@ -482,7 +499,10 @@
             <div class="sigil">§II</div>
             <div class="module-title">
               <h2 id="cli-heading">From the terminal</h2>
-              <p>Install the CLI for local validation and CI/CD integration.</p>
+              <p>
+                Install the CLI for local validation and CI/CD integration.
+                Requires Node.js 22 or later.
+              </p>
             </div>
           </div>
 
@@ -534,7 +554,21 @@
             </li>
           </ul>
 
+          <p class="helper-text">
+            Check build 200 in a feed containing historical releases (replace
+            200 with your update's build version):
+          </p>
+          <div class="code-block">
+            <pre><code>sparkle-validator --target-sparkle-version 200=2.10.0 appcast.xml</code></pre>
+          </div>
+
           <div class="features-list">
+            <span class="feature-tag"
+              ><code>--require-signed-feed</code> metadata checks</span
+            >
+            <span class="feature-tag"
+              ><code>--base-url</code> relative links</span
+            >
             <span class="feature-tag"
               ><code>--check-urls</code> verify links</span
             >
@@ -578,6 +612,8 @@
           <div class="features-list">
             <span class="feature-tag"><code>strict</code> mode</span>
             <span class="feature-tag"><code>check-urls</code> option</span>
+            <span class="feature-tag"><code>target-sparkle-version</code></span>
+            <span class="feature-tag"><code>require-signed-feed</code></span>
             <span class="feature-tag">JSON output</span>
             <span class="feature-tag">
               <a href="https://github.com/marketplace/actions/sparkle-validator"
@@ -603,19 +639,30 @@
             <div class="code-block-chrome" aria-hidden="true">
               <span>terminal</span>
             </div>
-            <pre><code><span class="prompt">$</span> xmllint --schema https://sparklevalidator.com/appcast.xsd \
-        --noout your-appcast.xml</code></pre>
+            <pre><code><span class="prompt">$</span> curl -fSLO https://sparklevalidator.com/appcast.xsd
+<span class="prompt">$</span> curl -fSLO https://sparklevalidator.com/sparkle-appcast.xsd
+<span class="prompt">$</span> curl -fSLO https://sparklevalidator.com/xml.xsd
+<span class="prompt">$</span> xmllint --nonet --schema appcast.xsd --noout your-appcast.xml</code></pre>
             <button
               class="copy-btn copy-btn-floating"
               aria-label="Copy xmllint command"
-              data-copy="xmllint --schema https://sparklevalidator.com/appcast.xsd --noout your-appcast.xml"
+              data-copy="curl -fSLO https://sparklevalidator.com/appcast.xsd &amp;&amp;
+curl -fSLO https://sparklevalidator.com/sparkle-appcast.xsd &amp;&amp;
+curl -fSLO https://sparklevalidator.com/xml.xsd &amp;&amp;
+xmllint --nonet --schema appcast.xsd --noout your-appcast.xml"
             >
               <span class="copy-default">copy</span>
               <span class="copy-done">copied ✦</span>
             </button>
           </div>
 
+          <p class="helper-text">
+            Download all three files into the same directory once, then validate
+            offline. XSD checks structure; use the validator for version,
+            signature-format, and Sparkle compatibility checks.
+          </p>
           <div class="schema-links">
+            <a href="/xml.xsd" class="schema-link"><span>xml.xsd</span></a>
             <a href="/appcast.xsd" class="schema-link">
               <svg
                 width="14"

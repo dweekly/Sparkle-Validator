@@ -37,7 +37,7 @@ inputs:
     description: 'Base URL for resolving relative links'
     required: false
   require-signed-feed:
-    description: 'Require valid Ed25519 signatures for enclosures and release notes'
+    description: 'Require Ed25519 signature metadata for enclosures and in-app release notes (format checks only)'
     required: false
     default: 'false'
   target-sparkle-version:

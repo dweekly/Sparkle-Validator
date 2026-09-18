@@ -17,14 +17,17 @@ the tag. The workflow does the rest.
 - [ ] Linting and type-checking pass: `npm run lint`
 - [ ] Code formatting check passes: `npm run format:check`
 - [ ] Build succeeds: `npm run build`
+- [ ] Full and production dependency audits pass: `npm audit` and `npm audit --omit=dev`
 - [ ] Packaging dry-run succeeds: `npm pack --dry-run`
 - [ ] CHANGELOG.md updated with new version section
+- [ ] Website copy and options verified in the built `public/` site
+- [ ] Package version, lockfile version, Action npm pin, and intended tag agree
 
 ## Version Bump
 
 1. **Update package.json version:**
    ```bash
-   npm version patch --no-git-tag-version  # or minor/major
+   npm version minor --no-git-tag-version  # or patch/major
    ```
 
 2. **Update scripts/run-action.mjs** to reference the new npm package version:
@@ -46,13 +49,14 @@ the tag. The workflow does the rest.
 
 ```bash
 git tag vX.Y.Z
-git push origin main --tags
+git push origin main
+git push origin vX.Y.Z
 ```
 
 The tag push fires two workflows:
 
-- **`ci.yml`** — runs tests on Node 20/22/24, uploads coverage to
-  Codecov, builds the web app artifact.
+- **`ci.yml`** — runs tests on Node 22/24, uploads coverage to
+  Codecov. On pushes to main, it also builds the web app artifact.
 - **`release.yml`** — runs only on `vX.Y.Z` tags (the `v1` major-version
   pointer is deliberately excluded). This is the workflow that ships
   the release.

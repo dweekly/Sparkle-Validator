@@ -7,40 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Security
+## [1.3.0] - 2026-09-18
 
-- **GitHub Action Hardening (R01):** Replaced shell interpolation in `action.yml` with positional data arguments passed to a dedicated runner (`scripts/run-action.mjs`), eliminating shell command injection vulnerabilities. Single-pass execution eliminates redundant network calls.
-- **Proxy Egress & SSRF Protection (R02, R04):** Hardened Cloudflare fetch proxy (`functions/api/fetch.ts`) against SSRF attacks:
-  - Added IPv6 filtering for loopback (`::1`), link-local (`fe80::/10`), unique local (`fc00::/7`), and IPv4-mapped IPv6 (`::ffff:0:0/96`).
-  - Enforced egress security across redirect chains (up to 3 hops).
-  - Explicitly blocked internal cloud metadata endpoints (e.g., `169.254.169.254`, `metadata.google.internal`).
-  - Bounded response bodies to 10 MB and timeouts to 5 seconds.
-- **Remote Validation Bounds (R10):** Enforced concurrency (1–50) and timeout (1–60000ms) bounds in `src/core/remote.ts`. Added guaranteed timer cleanup in `finally` blocks and stream cancellation on probe aborts.
+Sparkle 2.10 compatibility checks, stricter signature metadata validation, and
+security hardening across the CLI, library, web app, and GitHub Action.
+Requires Node.js 22 or later (previously 20).
 
 ### Added
 
-- **Sparkle 2.10 Compatibility (R11):** Added `E036` enforcing `sparkle:minimumSystemVersion >= 12.0` for items bundling Sparkle 2.10+, with item targeting (`--target-sparkle-version`) to preserve older releases in mixed-history feeds without false positives.
-- **Strict Signature & Signed-Feed Validation (R08):**
-  - Pure browser-safe base64 decoding with canonical padding and length verification.
-  - `E031`: Invalid Ed25519 signature format (must decode to exactly 64 bytes).
-  - `E033`: Malformed release notes link signature.
-  - `E034`: Malformed `sparkle:length` on release notes link.
-  - `E032` / `E035`: Enforce signatures and lengths on all updates and release notes in signed-feed mode (`requireSignedFeed`).
-  - `W050`: Warn if release notes length is 0 bytes.
-  - `W051`: Warn if release notes length uses unqualified `length` instead of `sparkle:length`.
-- **Sparkle 2.9 Feature Validation (R07):** Added validation for `sparkle:hardwareRequirements` (`I006`, `W036`) and `sparkle:minimumUpdateVersion` (`I007`, `W048`, `W049`).
-- **Web UI Keyboard Accessibility (R12):** Converted collapsible section headers to native `<button type="button">` controls with `aria-expanded` and `aria-controls` linked to section regions. Added automatic focus restoration to `#results` on run completion and visible `:focus-visible` styling.
-- **Offline Self-Contained XSD Validation (R05):** Vendored `xml.xsd` to allow offline schema compilation without network fetches. Qualified `sparkle:version` on `criticalUpdate` and `xml:lang` on `releaseNotesLink`.
+- Check the macOS 12 minimum for updates bundling Sparkle 2.10 or later with
+  `--target-sparkle-version`. Use `300=2.10.0` to target one build in a feed
+  containing historical releases; unmatched or ambiguous targets report E037.
+- Signed-feed metadata mode (`--require-signed-feed`) requires Ed25519 enclosure
+  signatures and signature/length metadata on in-app release notes. Checks cover
+  encoding and length, not cryptographic authenticity.
+- Validate release-note signature formats and qualified `sparkle:length`,
+  hardware requirements, and minimum update versions.
+- Export `RULE_CATALOG` and `consolidateDiagnostics()` for library consumers.
+- Keyboard-accessible diagnostic sections, visible option help, and Sparkle 2.10
+  examples on the website.
+- Self-contained XSD downloads, including `xml.xsd`, for offline validation.
 
 ### Changed
 
-- **Node.js Baseline (R03):** Raised minimum Node.js engine baseline from `>=20` to `>=22`. Updated CI matrix to `[22, 24]`.
-- **Lossless Diagnostics & ID Disambiguation (R06):**
-  - Resolved rule ID collisions: assigned unique IDs `W044` (conflicting version), `W045` (invalid min macOS), `W046` (invalid max macOS), and `W047` (enclosure-only version).
-  - `result.diagnostics` now preserves every occurrence losslessly without dropping distinct messages or line numbers. Added `consolidateDiagnostics()` presentation helper.
-  - Enforced strict ID uniqueness across all rule files via automated tests.
-- **Item Interpretation & Precedence (R07):** `<sparkle:version>` element now strictly takes precedence over `<enclosure sparkle:version>` attribute, matching Sparkle framework behavior. Supported both canonical and legacy Sparkle namespace URI aliases.
-- **URL Resolution (R09):** Validates all localized release notes links and supports relative URL resolution against `--base-url` (or remote feed URL in web proxy).
+- Require Node.js 22 or later; CI tests Node 22 and 24.
+- Preserve every diagnostic occurrence in `result.diagnostics`. Consumers that
+  want grouped output can use `consolidateDiagnostics()`.
+- Disambiguate warning IDs: W044 (conflicting versions), W045/W046 (invalid
+  minimum/maximum macOS), W047 (enclosure-only version), and W048/W049 (minimum
+  update version checks).
+
+### Fixed
+
+- Prioritize the enclosure's `sparkle:version` attribute over the item element
+  and recognize supported Sparkle namespace aliases.
+- Require a destination for informational updates and inspect all localized
+  release-note links. Resolve relative URLs with `--base-url` or the fetched
+  feed's final URL.
+- Reject malformed base64 signatures, including excessive padding.
+- Read full resource sizes from HTTP 206 `Content-Range`; treat unknown totals
+  as unverifiable instead of comparing an archive against a one-byte chunk.
+- Restrict required signed-note metadata to in-app `releaseNotesLink`, rather
+  than browser-only `fullReleaseNotesLink`.
+- Correct schema attribute namespaces and fail offline schema tests when
+  compilation fails. Build before tests on clean checkouts.
+
+### Security
+
+- Refresh development dependencies to patched releases for npm audit findings.
+- Pass GitHub Action inputs as data arguments to a single validator invocation,
+  eliminating shell interpolation of feed content and options.
+- Filter private IPv4/IPv6 addresses, cloud metadata destinations, DNS answers,
+  and every redirect in the web proxy. Limit redirects to five, responses to
+  1 MB, and requests to a 10-second default timeout.
+- DNS prechecks cannot guarantee connection-level protection against rebinding;
+  this is an accepted limitation documented in `SECURITY.md`.
+- Bound remote-check concurrency to 1–50 and timeouts to 1–60000 ms, and clean
+  up timers and response streams.
 
 ## [1.2.1] - 2026-04-29
 

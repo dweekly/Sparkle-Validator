@@ -45,7 +45,7 @@ This empirical approach ensures the validator catches issues that actually matte
   - Enclosure attributes (url, length, type)
   - URL validity
   - Date formats (RFC 2822)
-  - Signatures (EdDSA/DSA)
+  - Signature metadata format and length (EdDSA/DSA)
   - System requirements
   - Delta updates
   - Phased rollouts
@@ -57,6 +57,8 @@ This empirical approach ensures the validator catches issues that actually matte
 Try it online at [SparkleValidator.com](https://sparklevalidator.com)
 
 ## CLI Installation
+
+Requires **Node.js 22 or later**.
 
 ```bash
 npm install -g sparkle-validator
@@ -110,12 +112,25 @@ sparkle-validator --check-urls --timeout 30000 appcast.xml
 | `-f, --format <type>` | Output format: `text` (default) or `json` |
 | `-s, --strict` | Treat warnings as errors |
 | `-c, --check-urls` | Check that URLs exist and sizes match |
+| `--target-sparkle-version <version>` | Bundled Sparkle version; use `300=2.10.0` to target build 300 in a multi-item feed |
+| `--require-signed-feed` | Require Ed25519 signature metadata on enclosures and signature/length metadata on in-app release notes |
+| `--base-url <url>` | Resolve relative resource URLs against this URL |
 | `--timeout <ms>` | Timeout for URL checks (default: 10000ms) |
 | `--no-info` | Suppress informational messages |
 | `--no-color` | Disable colored output |
 | `-q, --quiet` | Only show errors |
 | `-v, --version` | Show version number |
 | `-h, --help` | Show help |
+
+For Sparkle 2.10 updates in a mixed-history feed:
+
+```bash
+sparkle-validator --target-sparkle-version 300=2.10.0 appcast.xml
+```
+
+Replace `300` with the update’s build version. A bare `2.10.0` is suitable only
+for a single-item feed. Signature checks validate metadata format and length;
+they do not verify cryptographic authenticity.
 
 ### Exit Codes
 
@@ -169,6 +184,10 @@ jobs:
 | `check-urls` | Verify enclosure URLs exist | `false` |
 | `timeout` | URL check timeout (ms) | `10000` |
 | `quiet` | Only show errors | `false` |
+| `no-info` | Suppress informational diagnostics | `false` |
+| `base-url` | Base URL for relative resource links | (none) |
+| `require-signed-feed` | Require signature metadata; does not verify authenticity | `false` |
+| `target-sparkle-version` | Bundled Sparkle version, e.g. `300=2.10.0` | (none) |
 | `format` | Output format: `text` or `json` | `text` |
 
 #### Action Outputs
