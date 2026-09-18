@@ -178,12 +178,20 @@ describe("rollout rules", () => {
 });
 
 describe("system requirement rules", () => {
-  it("W011: warns about invalid minimumSystemVersion format", () => {
+  it("W045: warns about invalid minimumSystemVersion format", () => {
     const xml = wrap(
       `<sparkle:minimumSystemVersion>10.15.x</sparkle:minimumSystemVersion>`
     );
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W045")).toBe(true);
+  });
+
+  it("W046: warns about invalid maximumSystemVersion format", () => {
+    const xml = wrap(
+      `<sparkle:maximumSystemVersion>10.15.beta</sparkle:maximumSystemVersion>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W046")).toBe(true);
   });
 
   it("W013: warns when min > max system version", () => {
@@ -201,8 +209,8 @@ describe("system requirement rules", () => {
       <sparkle:maximumSystemVersion>14.0</sparkle:maximumSystemVersion>
     `);
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W011")).toBe(false);
-    expect(result.diagnostics.some((d) => d.id === "W012")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W045")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W046")).toBe(false);
     expect(result.diagnostics.some((d) => d.id === "W013")).toBe(false);
   });
 });

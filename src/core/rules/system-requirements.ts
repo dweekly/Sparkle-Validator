@@ -32,12 +32,12 @@ export function systemRequirementRules(
     let minVer: string | undefined;
     let maxVer: string | undefined;
 
-    // W011: minimumSystemVersion format
+    // W045: minimumSystemVersion format
     if (minVerEl) {
       minVer = textContent(minVerEl).trim();
       if (minVer && !MACOS_VERSION_REGEX.test(minVer)) {
         diagnostics.push({
-          id: "W011",
+          id: "W045",
           severity: "warning",
           message: `minimumSystemVersion "${minVer}" is not a valid macOS version format`,
           line: minVerEl.line,
@@ -48,12 +48,12 @@ export function systemRequirementRules(
       }
     }
 
-    // W012: maximumSystemVersion format
+    // W046: maximumSystemVersion format
     if (maxVerEl) {
       maxVer = textContent(maxVerEl).trim();
       if (maxVer && !MACOS_VERSION_REGEX.test(maxVer)) {
         diagnostics.push({
-          id: "W012",
+          id: "W046",
           severity: "warning",
           message: `maximumSystemVersion "${maxVer}" is not a valid macOS version format`,
           line: maxVerEl.line,

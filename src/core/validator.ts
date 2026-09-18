@@ -8,7 +8,7 @@ import type { Diagnostic, ValidationResult } from "./types.js";
  * This prevents a "blitz" of repeated warnings/errors for the same issue.
  * The first occurrence is kept, with its message updated to show count.
  */
-function consolidateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
+export function consolidateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
   // Group diagnostics by ID
   const byId = new Map<string, Diagnostic[]>();
   for (const diag of diagnostics) {
@@ -78,31 +78,24 @@ export function validate(xml: string): ValidationResult {
     xmlFormatRules(document, diagnostics, xml);
   }
 
-  // Step 4: Consolidate duplicate diagnostics
-  const consolidatedDiagnostics = consolidateDiagnostics(diagnostics);
-
-  // Sort diagnostics: errors first, then warnings, then info
+  // Step 4: Sort diagnostics: errors first, then warnings, then info
   const severityOrder = { error: 0, warning: 1, info: 2 };
-  consolidatedDiagnostics.sort((a, b) => {
+  diagnostics.sort((a, b) => {
     const sev = severityOrder[a.severity] - severityOrder[b.severity];
     if (sev !== 0) return sev;
     // Within same severity, sort by line number
     return (a.line ?? 0) - (b.line ?? 0);
   });
 
-  const errorCount = consolidatedDiagnostics.filter(
-    (d) => d.severity === "error"
-  ).length;
-  const warningCount = consolidatedDiagnostics.filter(
+  const errorCount = diagnostics.filter((d) => d.severity === "error").length;
+  const warningCount = diagnostics.filter(
     (d) => d.severity === "warning"
   ).length;
-  const infoCount = consolidatedDiagnostics.filter(
-    (d) => d.severity === "info"
-  ).length;
+  const infoCount = diagnostics.filter((d) => d.severity === "info").length;
 
   return {
     valid: errorCount === 0,
-    diagnostics: consolidatedDiagnostics,
+    diagnostics,
     errorCount,
     warningCount,
     infoCount,

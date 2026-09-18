@@ -166,7 +166,7 @@ describe("invalid fixtures", () => {
     expect(result.warningCount).toBeGreaterThan(0);
     // Specific checks
     expect(result.diagnostics.some((d) => d.id === "W004")).toBe(true); // bad date
-    expect(result.diagnostics.some((d) => d.id === "W011")).toBe(true); // bad min version
+    expect(result.diagnostics.some((d) => d.id === "W045")).toBe(true); // bad min version
     expect(result.diagnostics.some((d) => d.id === "E022")).toBe(true); // bad installationType
     expect(result.diagnostics.some((d) => d.id === "E019")).toBe(true); // bad channel name
   });
@@ -278,11 +278,11 @@ describe("invalid fixtures", () => {
     expect(result.diagnostics.some((d) => d.id === "W040")).toBe(true);
   });
 
-  it("version-enclosure-only.xml produces W042", () => {
+  it("version-enclosure-only.xml produces W047", () => {
     const result = validate(
       readFixture("invalid", "version-enclosure-only.xml")
     );
-    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W047")).toBe(true);
   });
 
   it("deprecated-sparkle-os.xml produces W043", () => {

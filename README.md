@@ -304,7 +304,9 @@ interface Diagnostic {
 | W007-W008 | Redundant version declarations |
 | W009 | No release notes |
 | W010 | Non-standard MIME type |
-| W011-W013 | System version format issues |
+| W011 | Missing enclosure length attribute |
+| W012 | Missing enclosure type attribute |
+| W013 | minimumSystemVersion is greater than maximumSystemVersion |
 | W014 | (Moved to I011) |
 | W016 | Unencoded URL characters |
 | W017 | informationalUpdate with enclosure |
@@ -331,8 +333,11 @@ interface Diagnostic {
 | W039 | XML declaration missing encoding attribute |
 | W040 | Channel has language but items have different lang |
 | W041 | Version missing but deducible from filename (Sparkle fallback) |
-| W042 | Version only as enclosure attribute (prefer `<sparkle:version>` element) |
+| W042 | Sparkle namespace URI differs from canonical |
 | W043 | `sparkle:os` deprecated (prefer separate feeds per platform) |
+| W045 | Invalid `minimumSystemVersion` format |
+| W046 | Invalid `maximumSystemVersion` format |
+| W047 | Version only as enclosure attribute (prefer `<sparkle:version>` element) |
 
 ### Info (I001-I012)
 

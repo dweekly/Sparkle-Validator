@@ -247,7 +247,7 @@ describe("version rules", () => {
     expect(result.diagnostics.some((d) => d.id === "W028")).toBe(false);
   });
 
-  it("W042: warns when version only in enclosure attribute", () => {
+  it("W047: warns when version only in enclosure attribute", () => {
     const xml = wrap(`
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
@@ -256,10 +256,10 @@ describe("version rules", () => {
                  sparkle:version="100" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(true);
+    expect(result.diagnostics.some((d) => d.id === "W047")).toBe(true);
   });
 
-  it("no W042 when version is in sparkle:version element", () => {
+  it("no W047 when version is in sparkle:version element", () => {
     const xml = wrap(`
       <title>V1</title>
       <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
@@ -268,7 +268,7 @@ describe("version rules", () => {
       <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
     `);
     const result = validate(xml);
-    expect(result.diagnostics.some((d) => d.id === "W042")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "W047")).toBe(false);
   });
 
   it("W018: warns when items not sorted by version", () => {

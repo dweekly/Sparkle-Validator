@@ -90,7 +90,7 @@ function compareVersions(v1: string, v2: string): number {
  * W027: Version string is non-numeric (contains letters/symbols)
  * W028: Version decreases while pubDate increases (accounting for update branches)
  * W041: Version missing but can be deduced from filename (undocumented Sparkle fallback)
- * W042: Version only in enclosure attribute, not as sparkle:version element
+ * W047: Version only in enclosure attribute, not as sparkle:version element
  */
 export function versionRules(
   doc: XmlDocument,
@@ -200,11 +200,11 @@ export function versionRules(
     // Effective version for subsequent checks (explicit takes precedence)
     const version = explicitVersion || filenameVersion!;
 
-    // W042: Version only in enclosure attribute, not as sparkle:version element
+    // W047: Version only in enclosure attribute, not as sparkle:version element
     // While valid, the element form is preferred for clarity and consistency
     if (!versionElText && enclosureVersion) {
       diagnostics.push({
-        id: "W042",
+        id: "W047",
         severity: "warning",
         message: `Version "${enclosureVersion}" is only specified as enclosure attribute, not as <sparkle:version> element`,
         line: enclosure!.line,
