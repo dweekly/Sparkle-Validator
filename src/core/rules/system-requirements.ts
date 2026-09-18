@@ -179,55 +179,59 @@ export function systemRequirementRules(
       continue;
     }
 
-    if (matched.length > 1 && !target.enclosureUrl) {
+    if (matched.length > 1) {
       diagnostics.push({
         id: "E037",
         severity: "error",
-        message: `Ambiguous target selector: multiple items match version "${target.itemVersion}". Disambiguate with enclosureUrl.`,
+        message:
+          `Ambiguous target selector: ${matched.length} items match selector ${target.itemVersion ? `itemVersion="${target.itemVersion}"` : ""} ${target.enclosureUrl ? `enclosureUrl="${target.enclosureUrl}"` : ""}`.trim(),
         line: channel.line,
         column: channel.column,
         path: elementPath(channel),
-        fix: "Specify an enclosureUrl to target a specific item",
+        fix: "Ensure target selector unambiguously identifies a single item",
       });
-      continue;
     }
 
-    const targetItem = matched[0];
-    if (compareVersions(target.sparkleVersion, "2.10") >= 0) {
-      const minVerEl = sparkleChildElement(targetItem, "minimumSystemVersion");
-      const minVer = minVerEl ? textContent(minVerEl).trim() : undefined;
-      const itemVer = getItemVersion(targetItem) || "unknown";
+    for (const targetItem of matched) {
+      if (compareVersions(target.sparkleVersion, "2.10") >= 0) {
+        const minVerEl = sparkleChildElement(
+          targetItem,
+          "minimumSystemVersion"
+        );
+        const minVer = minVerEl ? textContent(minVerEl).trim() : undefined;
+        const itemVer = getItemVersion(targetItem) || "unknown";
 
-      if (!minVer || minVer.length === 0) {
-        diagnostics.push({
-          id: "E036",
-          severity: "error",
-          message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but no <sparkle:minimumSystemVersion> is specified`,
-          line: targetItem.line,
-          column: targetItem.column,
-          path: elementPath(targetItem),
-          fix: "Add <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>",
-        });
-      } else if (!MACOS_VERSION_REGEX.test(minVer)) {
-        diagnostics.push({
-          id: "E036",
-          severity: "error",
-          message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but minimumSystemVersion "${minVer}" is invalid`,
-          line: minVerEl!.line,
-          column: minVerEl!.column,
-          path: elementPath(minVerEl!),
-          fix: "Use a valid macOS version format of at least 12.0",
-        });
-      } else if (compareVersions(minVer, "12.0") < 0) {
-        diagnostics.push({
-          id: "E036",
-          severity: "error",
-          message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but minimumSystemVersion is set to "${minVer}"`,
-          line: minVerEl!.line,
-          column: minVerEl!.column,
-          path: elementPath(minVerEl!),
-          fix: "Set <sparkle:minimumSystemVersion> to at least 12.0",
-        });
+        if (!minVer || minVer.length === 0) {
+          diagnostics.push({
+            id: "E036",
+            severity: "error",
+            message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but no <sparkle:minimumSystemVersion> is specified`,
+            line: targetItem.line,
+            column: targetItem.column,
+            path: elementPath(targetItem),
+            fix: "Add <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>",
+          });
+        } else if (!MACOS_VERSION_REGEX.test(minVer)) {
+          diagnostics.push({
+            id: "E036",
+            severity: "error",
+            message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but minimumSystemVersion "${minVer}" is invalid`,
+            line: minVerEl!.line,
+            column: minVerEl!.column,
+            path: elementPath(minVerEl!),
+            fix: "Use a valid macOS version format of at least 12.0",
+          });
+        } else if (compareVersions(minVer, "12.0") < 0) {
+          diagnostics.push({
+            id: "E036",
+            severity: "error",
+            message: `Item version "${itemVer}" bundles Sparkle ${target.sparkleVersion} which requires macOS 12.0 or later, but minimumSystemVersion is set to "${minVer}"`,
+            line: minVerEl!.line,
+            column: minVerEl!.column,
+            path: elementPath(minVerEl!),
+            fix: "Set <sparkle:minimumSystemVersion> to at least 12.0",
+          });
+        }
       }
     }
   }

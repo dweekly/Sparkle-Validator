@@ -362,6 +362,46 @@ describe("system requirement rules", () => {
       ).toContain("Ambiguous");
     });
 
+    it("E037 & E036: errors when selector matches multiple items sharing enclosureUrl and evaluates all matching items", () => {
+      const xml = `<?xml version="1.0"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel><title>App</title><link>https://example.com</link>
+    <item>
+      <title>Item 1</title><pubDate>Thu, 15 Aug 2026 12:00:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version><description>x</description>
+      <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://example.com/shared.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+    <item>
+      <title>Item 2</title><pubDate>Wed, 10 May 2023 12:00:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version><description>x</description>
+      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <enclosure url="https://example.com/shared.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    </item>
+  </channel>
+</rss>`;
+      const result = validate(xml, {
+        sparkleItemTargets: [
+          {
+            enclosureUrl: "https://example.com/shared.zip",
+            sparkleVersion: "2.10.0",
+          },
+        ],
+      });
+
+      // E037 must be reported because 2 items matched
+      expect(result.diagnostics.some((d) => d.id === "E037")).toBe(true);
+      expect(
+        result.diagnostics.find((d) => d.id === "E037")?.message
+      ).toContain("Ambiguous target selector");
+
+      // E036 must also be reported for Item 2 (version 100 on macOS 10.15)
+      const e036 = result.diagnostics.find((d) => d.id === "E036");
+      expect(e036).toBeDefined();
+      expect(e036?.message).toContain("100");
+      expect(e036?.message).toContain("10.15");
+    });
+
     it("E037: errors when selector does not match any item in feed", () => {
       const xml = wrap(`
         <sparkle:version>100</sparkle:version>
