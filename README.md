@@ -6,7 +6,8 @@
 
 <p align="center">
   A comprehensive validator for <a href="https://sparkle-project.org/">Sparkle</a> appcast.xml feeds.<br>
-  Available as a CLI tool, JavaScript library, and web application.
+  Available as a CLI tool, JavaScript library, web application, and GitHub Action.<br>
+  <strong>Appcast validation updated for Sparkle 2.10.0.</strong>
 </p>
 
 <p align="center">
@@ -17,6 +18,11 @@
 </p>
 
 > **Note:** This is an independent community project. It is not affiliated with, endorsed by, or sponsored by the official Sparkle project or its maintainers.
+
+Validation covers appcast structure, metadata, and compatibility rules through
+Sparkle **2.10.0**, including the macOS 12 minimum for targeted updates and signed
+release-note metadata. Signature checks validate format and length; they do not
+verify cryptographic authenticity or test installation of an update.
 
 ## Methodology
 
@@ -35,7 +41,7 @@ This empirical approach ensures the validator catches issues that actually matte
 
 ## Features
 
-- Validates Sparkle appcast.xml feeds against all known requirements
+- Validates Sparkle appcast.xml structure, metadata, and compatibility rules
 - Reports errors, warnings, and informational messages with line numbers
 - Provides fix suggestions for common issues
 - Works as CLI, library, web app, or GitHub Action
@@ -147,6 +153,11 @@ they do not verify cryptographic authenticity.
 
 Use the official GitHub Action for the simplest integration:
 
+`@v1` follows releases within major version 1 and already includes the Sparkle
+2.10.0 checks shipped in **v1.3.0**. Existing `@v1` users do not need to change
+their Action reference. To pin this release, use `@v1.3.0`; users pinned to older
+releases must update their reference to receive these checks.
+
 ```yaml
 name: Validate Appcast
 
@@ -175,6 +186,18 @@ jobs:
           strict: true
           check-urls: true
 ```
+
+To check an update that bundles Sparkle 2.10.0 in a feed with older releases:
+
+```yaml
+- uses: dweekly/Sparkle-Validator@v1
+  with:
+    file: appcast.xml
+    target-sparkle-version: '300=2.10.0'
+```
+
+Replace `300` with the update's build version. For a single-item feed, use
+`target-sparkle-version: '2.10.0'`.
 
 #### Action Inputs
 
