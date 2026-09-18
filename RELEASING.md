@@ -27,17 +27,18 @@ the tag. The workflow does the rest.
    npm version patch --no-git-tag-version  # or minor/major
    ```
 
-2. **Update action.yml** to reference the new npm package version:
-   ```yaml
-   DEFAULT_VERSION="X.Y.Z"
+2. **Update scripts/run-action.mjs** to reference the new npm package version:
+   The composite Action delegates execution to `scripts/run-action.mjs`, which pins the default npm package release:
+   ```javascript
+   // scripts/run-action.mjs line 84:
+   const rawCmd = process.env.SPARKLE_VALIDATOR_CMD || "npx sparkle-validator@X.Y.Z";
    ```
-   (and update default `npx --yes sparkle-validator@X.Y.Z` in `action.yml` if pinned)
 
 3. **Update CHANGELOG.md** with release date and changes
 
 4. **Commit the version bump:**
    ```bash
-   git add package.json package-lock.json action.yml CHANGELOG.md
+   git add package.json package-lock.json scripts/run-action.mjs CHANGELOG.md
    git commit -m "vX.Y.Z"
    ```
 
