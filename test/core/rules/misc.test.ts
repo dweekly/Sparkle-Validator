@@ -621,4 +621,26 @@ describe("XML format rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W038")).toBe(true);
   });
+
+  describe("signed feed release-notes links scope (Sparkle 2.10)", () => {
+    it("accepts fullReleaseNotesLink without signatures in signed-feed mode without E035", () => {
+      const xml = wrap(`
+        <sparkle:version>100</sparkle:version>
+        <sparkle:fullReleaseNotesLink>https://example.com/history</sparkle:fullReleaseNotesLink>
+        <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { requireSignedFeed: true });
+      expect(result.diagnostics.some((d) => d.id === "E035")).toBe(false);
+    });
+
+    it("emits E035 on in-app releaseNotesLink when missing signature/length in signed-feed mode", () => {
+      const xml = wrap(`
+        <sparkle:version>100</sparkle:version>
+        <sparkle:releaseNotesLink>https://example.com/notes.html</sparkle:releaseNotesLink>
+        <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+      `);
+      const result = validate(xml, { requireSignedFeed: true });
+      expect(result.diagnostics.some((d) => d.id === "E035")).toBe(true);
+    });
+  });
 });

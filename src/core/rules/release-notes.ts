@@ -136,7 +136,14 @@ export function releaseNotesRules(
         }
       }
 
-      if (options?.requireSignedFeed) {
+      // Only require signatures and length on in-app releaseNotesLink in signed-feed mode.
+      // In Sparkle (SUAppcastItem.m), fullReleaseNotesLink is an external browser link and is not verified in signed-feed mode.
+      const isReleaseNotesLink =
+        noteLink.name === "releaseNotesLink" ||
+        noteLink.qname.endsWith(":releaseNotesLink") ||
+        noteLink.qname === "releaseNotesLink";
+
+      if (options?.requireSignedFeed && isReleaseNotesLink) {
         if (!edSig) {
           diagnostics.push({
             id: "E035",
