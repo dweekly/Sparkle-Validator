@@ -89,6 +89,10 @@ The tag push fires two workflows:
    version matches the tag. Fails the release if the tap update is
    inconsistent.
 
+The Homebrew update waits up to ten minutes for npm tarball availability. If
+npm is still processing the package after that, verify the tarball is available
+and re-run the failed jobs; do not republish or move the version tag.
+
 After the workflow goes green, only two steps remain locally: the `v1`
 pointer bump and the website deploy.
 

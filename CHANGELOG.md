@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Wait for npm tarball availability before updating Homebrew, and make tap
+  updates safe to retry after a partial release failure.
+
 ## [1.3.0] - 2026-09-18
 
 Sparkle 2.10 compatibility checks, stricter signature metadata validation, and
