@@ -57,68 +57,19 @@ runs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
 
     - name: Validate appcast
       id: validate
       shell: bash
+      env:
+        INPUT_FILE: ${{ inputs.file }}
+        INPUT_STRICT: ${{ inputs.strict }}
+        INPUT_CHECK_URLS: ${{ inputs.check-urls }}
+        INPUT_TIMEOUT: ${{ inputs.timeout }}
+        INPUT_QUIET: ${{ inputs.quiet }}
+        INPUT_NO_INFO: ${{ inputs.no-info }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        # Build command with options
-        CMD="npx sparkle-validator@1.2.1"
-
-        if [ "${{ inputs.strict }}" = "true" ]; then
-          CMD="$CMD --strict"
-        fi
-
-        if [ "${{ inputs.check-urls }}" = "true" ]; then
-          CMD="$CMD --check-urls --timeout ${{ inputs.timeout }}"
-        fi
-
-        if [ "${{ inputs.quiet }}" = "true" ]; then
-          CMD="$CMD --quiet"
-        fi
-
-        if [ "${{ inputs.no-info }}" = "true" ]; then
-          CMD="$CMD --no-info"
-        fi
-
-        # Always get JSON for parsing outputs
-        JSON_RESULT=$($CMD --format json "${{ inputs.file }}" 2>&1) || true
-
-        # Parse results
-        VALID=$(echo "$JSON_RESULT" | jq -r '.valid // false')
-        ERROR_COUNT=$(echo "$JSON_RESULT" | jq -r '.errorCount // 0')
-        WARNING_COUNT=$(echo "$JSON_RESULT" | jq -r '.warningCount // 0')
-        INFO_COUNT=$(echo "$JSON_RESULT" | jq -r '.infoCount // 0')
-
-        # Set outputs
-        echo "valid=$VALID" >> $GITHUB_OUTPUT
-        echo "error_count=$ERROR_COUNT" >> $GITHUB_OUTPUT
-        echo "warning_count=$WARNING_COUNT" >> $GITHUB_OUTPUT
-        echo "info_count=$INFO_COUNT" >> $GITHUB_OUTPUT
-
-        # Store full JSON (escape for multiline)
-        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-        echo "json<<$EOF" >> $GITHUB_OUTPUT
-        echo "$JSON_RESULT" >> $GITHUB_OUTPUT
-        echo "$EOF" >> $GITHUB_OUTPUT
-
-        # Display human-readable output if format is text
-        if [ "${{ inputs.format }}" = "text" ]; then
-          $CMD "${{ inputs.file }}"
-          EXIT_CODE=$?
-        else
-          echo "$JSON_RESULT" | jq .
-          EXIT_CODE=$?
-        fi
-
-        # Exit with appropriate code
-        if [ "$VALID" = "false" ]; then
-          exit 1
-        fi
-
-        if [ "${{ inputs.strict }}" = "true" ] && [ "$WARNING_COUNT" -gt 0 ]; then
-          exit 1
-        fi
-
-        exit 0
+        node "${ACTION_PATH:-.}/scripts/run-action.mjs"
