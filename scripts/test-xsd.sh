@@ -23,10 +23,10 @@ echo "Valid fixtures (should pass):"
 for f in test/fixtures/valid/*.xml; do
   if xmllint --schema appcast.xsd --nonet --noout "$f" 2>/dev/null; then
     echo "  ✓ $(basename "$f")"
-    ((PASS++))
+    PASS=$((PASS + 1))
   else
     echo "  ✗ $(basename "$f") - UNEXPECTED FAILURE"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 done
 
@@ -49,10 +49,10 @@ for f in "${STRUCTURAL_INVALID[@]}"; do
   if [ -f "$path" ]; then
     if xmllint --schema appcast.xsd --nonet --noout "$path" 2>/dev/null; then
       echo "  ✗ $f - UNEXPECTED PASS"
-      ((FAIL++))
+      FAIL=$((FAIL + 1))
     else
       echo "  ✓ $f (correctly rejected)"
-      ((EXPECTED_FAIL++))
+      EXPECTED_FAIL=$((EXPECTED_FAIL + 1))
     fi
   fi
 done
@@ -73,10 +73,10 @@ for f in "${SEMANTIC_INVALID[@]}"; do
   if [ -f "$path" ]; then
     if xmllint --schema appcast.xsd --nonet --noout "$path" 2>/dev/null; then
       echo "  ✓ $f (XSD passes, validator catches)"
-      ((PASS++))
+      PASS=$((PASS + 1))
     else
       echo "  ? $f (XSD fails - may need review)"
-      ((FAIL++))
+      FAIL=$((FAIL + 1))
     fi
   fi
 done
@@ -95,10 +95,10 @@ if [ "$1" = "--remote" ]; then
     name=$(basename "$url")
     if curl -sL "$url" | xmllint --schema appcast.xsd --noout - 2>/dev/null; then
       echo "  ✓ $name"
-      ((PASS++))
+      PASS=$((PASS + 1))
     else
       echo "  ✗ $name"
-      ((FAIL++))
+      FAIL=$((FAIL + 1))
     fi
   done
   echo ""
