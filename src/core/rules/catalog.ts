@@ -76,38 +76,41 @@ export const RULE_CATALOG: Record<string, RuleMetadata> = {
   E014: {
     id: "E014",
     severity: "error",
-    name: "invalid-url",
-    description: "Invalid URL format or unsupported scheme",
+    name: "invalid-enclosure-url",
+    description: "Invalid enclosure URL format or unsupported scheme",
   },
   E015: {
     id: "E015",
     severity: "error",
-    name: "multiple-enclosures",
-    description: "Item has multiple <enclosure> elements",
+    name: "invalid-link-url",
+    description: "Invalid link URL format or unsupported scheme",
   },
   E016: {
     id: "E016",
     severity: "error",
-    name: "invalid-channel-name",
-    description: "Invalid channel name",
+    name: "invalid-release-notes-url",
+    description:
+      "Invalid sparkle:releaseNotesLink URL format or unsupported scheme",
   },
   E017: {
     id: "E017",
     severity: "error",
-    name: "critical-update-value",
-    description: "Invalid sparkle:criticalUpdate value",
+    name: "invalid-full-release-notes-url",
+    description:
+      "Invalid sparkle:fullReleaseNotesLink URL format or unsupported scheme",
   },
   E018: {
     id: "E018",
     severity: "error",
-    name: "invalid-installation-type",
-    description: "Invalid sparkle:installationType",
+    name: "invalid-delta-enclosure-url",
+    description: "Invalid delta enclosure URL format or unsupported scheme",
   },
   E019: {
     id: "E019",
     severity: "error",
-    name: "invalid-format-attribute",
-    description: "Invalid sparkle:format attribute on description",
+    name: "invalid-channel-name",
+    description:
+      "Invalid sparkle:channel name (must contain only alphanumeric characters, hyphens, underscores, or dots)",
   },
   E020: {
     id: "E020",
@@ -124,26 +127,27 @@ export const RULE_CATALOG: Record<string, RuleMetadata> = {
   E022: {
     id: "E022",
     severity: "error",
-    name: "critical-and-phased-rollout",
-    description: "Critical update with phased rollout",
+    name: "invalid-installation-type",
+    description:
+      'Invalid sparkle:installationType (must be "application" or "package")',
   },
   E023: {
     id: "E023",
     severity: "error",
-    name: "delta-missing-delta-from",
-    description: "Delta enclosure missing deltaFrom attribute",
+    name: "deltas-missing-enclosure",
+    description: "<sparkle:deltas> element has no <enclosure> children",
   },
   E024: {
     id: "E024",
     severity: "error",
-    name: "delta-missing-signature",
-    description: "Delta enclosure missing signature",
+    name: "delta-missing-delta-from",
+    description: "Delta <enclosure> is missing sparkle:deltaFrom attribute",
   },
   E025: {
     id: "E025",
     severity: "error",
-    name: "delta-missing-length",
-    description: "Delta enclosure missing length attribute",
+    name: "delta-missing-url",
+    description: "Delta <enclosure> is missing url attribute",
   },
   E027: {
     id: "E027",
@@ -251,14 +255,15 @@ export const RULE_CATALOG: Record<string, RuleMetadata> = {
     id: "W007",
     severity: "warning",
     name: "redundant-version-declaration",
-    description: "Redundant version declaration in title and element",
+    description:
+      "Version declared both as <sparkle:version> element and enclosure attribute",
   },
   W008: {
     id: "W008",
     severity: "warning",
-    name: "redundant-enclosure-version",
+    name: "redundant-short-version-string",
     description:
-      "Redundant version declaration in sparkle:version element and enclosure",
+      "shortVersionString declared both as element and enclosure attribute",
   },
   W009: {
     id: "W009",

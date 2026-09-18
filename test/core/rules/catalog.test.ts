@@ -138,4 +138,116 @@ describe("Rule ID Catalog & Lossless Reporting (R06)", () => {
       expect(meta.description.length).toBeGreaterThan(0);
     }
   });
+
+  it("reconciles RULE_CATALOG against all diagnostic IDs emitted in src/core", () => {
+    const srcDir = join(process.cwd(), "src/core");
+    const tsFiles: string[] = [];
+
+    function collectFiles(dir: string): void {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          collectFiles(full);
+        } else if (entry.name.endsWith(".ts") && entry.name !== "catalog.ts") {
+          tsFiles.push(full);
+        }
+      }
+    }
+    collectFiles(srcDir);
+
+    const emittedIds = new Set<string>();
+    for (const file of tsFiles) {
+      const content = readFileSync(file, "utf-8");
+      for (const m of content.matchAll(/id:\s*["']([EWI]\d{3})["']/g)) {
+        emittedIds.add(m[1]);
+      }
+      for (const m of content.matchAll(
+        /validateResourceUrl\([^,]+,\s*["']([EWI]\d{3})["']/g
+      )) {
+        emittedIds.add(m[1]);
+      }
+    }
+
+    // Every diagnostic ID emitted in code must exist in RULE_CATALOG
+    for (const id of emittedIds) {
+      expect(
+        RULE_CATALOG[id],
+        `Emitted rule ID ${id} must exist in RULE_CATALOG`
+      ).toBeDefined();
+    }
+  });
+
+  it("accurately describes E014-E025, W007, and W008 in RULE_CATALOG", () => {
+    // E014-E018: URL rules
+    expect(RULE_CATALOG.E014.name).toBe("invalid-enclosure-url");
+    expect(RULE_CATALOG.E014.description).toContain("enclosure URL");
+
+    expect(RULE_CATALOG.E015.name).toBe("invalid-link-url");
+    expect(RULE_CATALOG.E015.description).toContain("link URL");
+
+    expect(RULE_CATALOG.E016.name).toBe("invalid-release-notes-url");
+    expect(RULE_CATALOG.E016.description).toContain("releaseNotesLink");
+
+    expect(RULE_CATALOG.E017.name).toBe("invalid-full-release-notes-url");
+    expect(RULE_CATALOG.E017.description).toContain("fullReleaseNotesLink");
+
+    expect(RULE_CATALOG.E018.name).toBe("invalid-delta-enclosure-url");
+    expect(RULE_CATALOG.E018.description).toContain("delta enclosure URL");
+
+    // E019: Channel name
+    expect(RULE_CATALOG.E019.name).toBe("invalid-channel-name");
+    expect(RULE_CATALOG.E019.description).toContain("channel name");
+
+    // E022: installationType
+    expect(RULE_CATALOG.E022.name).toBe("invalid-installation-type");
+    expect(RULE_CATALOG.E022.description).toContain("installationType");
+
+    // E023-E025: Delta update structure
+    expect(RULE_CATALOG.E023.name).toBe("deltas-missing-enclosure");
+    expect(RULE_CATALOG.E024.name).toBe("delta-missing-delta-from");
+    expect(RULE_CATALOG.E025.name).toBe("delta-missing-url");
+
+    // W007, W008
+    expect(RULE_CATALOG.W007.name).toBe("redundant-version-declaration");
+    expect(RULE_CATALOG.W007.description).toContain("enclosure attribute");
+    expect(RULE_CATALOG.W008.name).toBe("redundant-short-version-string");
+    expect(RULE_CATALOG.W008.description).toContain("shortVersionString");
+  });
+
+  it("emits E015, E019, and E022 for matching diagnostics as defined in catalog", () => {
+    const xml = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Test App</title>
+    <link>not-a-valid-url</link>
+    <item>
+      <title>v1.0</title>
+      <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
+      <sparkle:version>100</sparkle:version>
+      <sparkle:channel>invalid channel name with spaces!</sparkle:channel>
+      <sparkle:installationType>invalid-type</sparkle:installationType>
+      <enclosure url="https://example.com/app.zip"
+                 length="1234"
+                 type="application/octet-stream"
+                 sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==" />
+    </item>
+  </channel>
+</rss>`;
+
+    const result = validate(xml);
+    const ids = result.diagnostics.map((d) => d.id);
+
+    expect(ids).toContain("E015");
+    expect(ids).toContain("E019");
+    expect(ids).toContain("E022");
+
+    const e015 = result.diagnostics.find((d) => d.id === "E015");
+    const e019 = result.diagnostics.find((d) => d.id === "E019");
+    const e022 = result.diagnostics.find((d) => d.id === "E022");
+
+    expect(e015?.message).toContain("<link>");
+    expect(e019?.message).toContain("channel name");
+    expect(e022?.message).toContain("installationType");
+  });
 });
+
