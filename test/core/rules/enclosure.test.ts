@@ -215,6 +215,25 @@ describe("enclosure rules", () => {
     expect(result.diagnostics.some((d) => d.id === "E031")).toBe(false);
   });
 
+  it("E032: reports missing sparkle:edSignature when requireSignedFeed option is enabled", () => {
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream"/>`
+    );
+    const result = validate(xml, { requireSignedFeed: true });
+    expect(result.diagnostics.some((d) => d.id === "E032")).toBe(true);
+    expect(result.valid).toBe(false);
+  });
+
+  it("passes requireSignedFeed when enclosure has valid sparkle:edSignature", () => {
+    const validSig =
+      "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==";
+    const xml = wrap(
+      `<enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="${validSig}"/>`
+    );
+    const result = validate(xml, { requireSignedFeed: true });
+    expect(result.diagnostics.some((d) => d.id === "E032")).toBe(false);
+  });
+
   it("I012: reports delta referencing non-existent version as info", () => {
     const xml = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">

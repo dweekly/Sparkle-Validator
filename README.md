@@ -269,7 +269,7 @@ interface Diagnostic {
 
 ## Validation Rules
 
-### Errors (E001-E031, excluding E026)
+### Errors (E001-E035, excluding E026)
 
 | ID | Description |
 |----|-------------|
@@ -292,9 +292,16 @@ interface Diagnostic {
 | E028 | Content-Length doesn't match declared length (`--check-urls`) |
 | E029 | Version string is empty or whitespace-only |
 | E030 | Invalid `sparkle:os` value (must be "macos" or "windows") |
-| E031 | Invalid Ed25519/DSA signature (malformed base64 or wrong length) |
+| E031 | Invalid Ed25519/DSA enclosure signature (malformed base64 or wrong length) |
+| E032 | Enclosure missing required `sparkle:edSignature` in signed-feed mode |
+| E033 | Release note link signature is malformed |
+| E034 | Release note link `sparkle:length` is not a valid non-negative integer |
+| E035 | Release note link missing required signature or length in signed-feed mode |
 
-### Warnings (W001-W043)
+> **Note on Signature Verification Scope:**
+> Signature format validation (`E031`, `E033`, `E035`) checks base64 encoding integrity, padding, and exact decoded byte sizes (e.g. exactly 64 bytes for Ed25519). Offline validation does not cryptographically authenticate payloads against private/public keys, which requires out-of-band key distribution.
+
+### Warnings (W001-W051)
 
 | ID | Description |
 |----|-------------|
@@ -341,6 +348,8 @@ interface Diagnostic {
 | W047 | Version only as enclosure attribute (prefer `<sparkle:version>` element) |
 | W048 | `minimumUpdateVersion` format invalid or empty |
 | W049 | `minimumUpdateVersion` is greater than item version (unreachable update) |
+| W050 | `sparkle:length` on release notes link is 0 |
+| W051 | Release notes link uses unqualified `length` instead of `sparkle:length` |
 
 ### Info (I001-I012)
 

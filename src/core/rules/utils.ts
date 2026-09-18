@@ -246,7 +246,9 @@ export function getEffectiveVersion(item: XmlElement): EffectiveVersionInfo {
       : undefined;
 
   const versionEl = sparkleChildElement(item, "version");
-  const rawVersionElText = versionEl ? textContent(versionEl).trim() : undefined;
+  const rawVersionElText = versionEl
+    ? textContent(versionEl).trim()
+    : undefined;
   const elementVersion =
     rawVersionElText !== undefined && rawVersionElText.trim() !== ""
       ? rawVersionElText.trim()
@@ -258,9 +260,7 @@ export function getEffectiveVersion(item: XmlElement): EffectiveVersionInfo {
     : null;
 
   const hasConflict = Boolean(
-    enclosureVersion &&
-      elementVersion &&
-      enclosureVersion !== elementVersion
+    enclosureVersion && elementVersion && enclosureVersion !== elementVersion
   );
 
   let version: string | undefined;
@@ -286,4 +286,3 @@ export function getEffectiveVersion(item: XmlElement): EffectiveVersionInfo {
     hasConflict,
   };
 }
-

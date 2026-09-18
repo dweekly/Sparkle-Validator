@@ -1,4 +1,9 @@
-import type { Diagnostic, XmlDocument, XmlElement } from "../types.js";
+import type {
+  Diagnostic,
+  XmlDocument,
+  XmlElement,
+  ValidationOptions,
+} from "../types.js";
 import { ENCLOSURE_MIME_TYPE, VALID_INSTALLATION_TYPES } from "../constants.js";
 import {
   childElements,
@@ -11,64 +16,10 @@ import {
   textContent,
   getEffectiveVersion,
 } from "./utils.js";
+import { validateSignature } from "../signature.js";
 
 /** Valid values for sparkle:os attribute */
 const VALID_OS_VALUES = ["macos", "windows"] as const;
-
-/**
- * Validate a base64-encoded signature.
- * Returns { valid: true } or { valid: false, reason: string }.
- *
- * Checks:
- * 1. Valid base64 characters (after stripping whitespace)
- * 2. Proper padding (length % 4 === 0 after padding)
- * 3. EdDSA (Ed25519) signatures must be exactly 64 bytes (88 base64 chars)
- * 4. DSA signatures are typically 46-48 bytes (DER-encoded)
- */
-function validateSignature(
-  sig: string,
-  type: "ed" | "dsa"
-): { valid: true } | { valid: false; reason: string } {
-  // Strip whitespace - base64 often contains line breaks for readability
-  const cleanSig = sig.replace(/\s/g, "");
-
-  // Check for valid base64 characters
-  const base64Pattern = /^[A-Za-z0-9+/]*=*$/;
-  if (!base64Pattern.test(cleanSig)) {
-    return { valid: false, reason: "contains invalid base64 characters" };
-  }
-
-  // Check padding is correct (length should be multiple of 4)
-  if (cleanSig.length % 4 !== 0) {
-    return { valid: false, reason: "base64 padding is incorrect" };
-  }
-
-  // Try to calculate decoded byte length
-  // Formula: (base64Length * 3/4) - padding
-  const paddingCount = (cleanSig.match(/=+$/) || [""])[0].length;
-  const decodedBytes = (cleanSig.length * 3) / 4 - paddingCount;
-
-  if (type === "ed") {
-    // Ed25519 signatures are EXACTLY 64 bytes
-    if (decodedBytes !== 64) {
-      return {
-        valid: false,
-        reason: `Ed25519 signature must be 64 bytes, got ${decodedBytes}`,
-      };
-    }
-  } else {
-    // DSA signatures are DER-encoded, typically 46-48 bytes
-    // but can vary based on r and s values (40-50 bytes is reasonable)
-    if (decodedBytes < 40 || decodedBytes > 150) {
-      return {
-        valid: false,
-        reason: `DSA signature length ${decodedBytes} bytes is unusual`,
-      };
-    }
-  }
-
-  return { valid: true };
-}
 
 /**
  * E009: Item has neither <enclosure> with url nor <link>
@@ -90,7 +41,8 @@ function validateSignature(
  */
 export function enclosureRules(
   doc: XmlDocument,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  options?: ValidationOptions
 ): void {
   const { root } = doc;
   if (!root || root.name !== "rss") return;
@@ -129,7 +81,7 @@ export function enclosureRules(
     }
 
     if (enclosure) {
-      validateEnclosure(enclosure, diagnostics);
+      validateEnclosure(enclosure, diagnostics, options);
 
       // Check sparkle:os attribute
       const os = sparkleAttr(enclosure, "os");
@@ -142,10 +94,10 @@ export function enclosureRules(
           line: enclosure.line,
           column: enclosure.column,
           path: elementPath(enclosure),
-          fix: "Create separate appcast.xml files for each platform instead of using sparkle:os",
+          fix: "Remove sparkle:os and maintain separate feed URLs for macOS and Windows",
         });
 
-        // E030: Also check for invalid values
+        // E030: Invalid os value
         if (
           !(VALID_OS_VALUES as readonly string[]).includes(os.toLowerCase())
         ) {
@@ -159,6 +111,23 @@ export function enclosureRules(
             fix: 'Set sparkle:os to "macos" or "windows"',
           });
         }
+      }
+
+      // Check installationType on enclosure attribute
+      const instType = sparkleAttr(enclosure, "installationType");
+      if (
+        instType &&
+        !(VALID_INSTALLATION_TYPES as readonly string[]).includes(instType)
+      ) {
+        diagnostics.push({
+          id: "E022",
+          severity: "error",
+          message: `Invalid sparkle:installationType "${instType}" on enclosure; must be "application" or "package"`,
+          line: enclosure.line,
+          column: enclosure.column,
+          path: elementPath(enclosure),
+          fix: 'Set installationType to "application" or "package"',
+        });
       }
     }
 
@@ -179,36 +148,18 @@ export function enclosureRules(
       }
     }
 
-    // Check installationType on enclosure attribute
-    if (enclosure) {
-      const instType = sparkleAttr(enclosure, "installationType");
-      if (
-        instType &&
-        !(VALID_INSTALLATION_TYPES as readonly string[]).includes(instType)
-      ) {
-        diagnostics.push({
-          id: "E022",
-          severity: "error",
-          message: `Invalid sparkle:installationType "${instType}" on enclosure; must be "application" or "package"`,
-          line: enclosure.line,
-          column: enclosure.column,
-          path: elementPath(enclosure),
-          fix: 'Set installationType to "application" or "package"',
-        });
-      }
-    }
-
     // Delta updates: check <sparkle:deltas> children
     const deltasEl = sparkleChildElement(item, "deltas");
     if (deltasEl) {
-      validateDeltas(deltasEl, feedVersions, diagnostics);
+      validateDeltas(deltasEl, feedVersions, diagnostics, options);
     }
   }
 }
 
 function validateEnclosure(
   enclosure: XmlElement,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  options?: ValidationOptions
 ): void {
   const url = attr(enclosure, "url");
   const length = attr(enclosure, "length");
@@ -232,20 +183,21 @@ function validateEnclosure(
     diagnostics.push({
       id: "W011",
       severity: "warning",
-      message: "<enclosure> is missing the length attribute",
+      message:
+        "<enclosure> is missing length attribute (recommended for download progress display)",
       line: enclosure.line,
       column: enclosure.column,
       path: elementPath(enclosure),
-      fix: "Add a length attribute with the file size in bytes",
+      fix: 'Add length="..." with the file size in bytes',
     });
   }
 
-  // W012: Missing type (Sparkle works without it, can infer from URL)
-  if (!type) {
+  // W012: Missing type (Sparkle works without it, defaults to application/octet-stream)
+  if (type === undefined) {
     diagnostics.push({
       id: "W012",
       severity: "warning",
-      message: "<enclosure> is missing the type attribute",
+      message: `<enclosure> is missing type attribute; defaulting to "${ENCLOSURE_MIME_TYPE}"`,
       line: enclosure.line,
       column: enclosure.column,
       path: elementPath(enclosure),
@@ -292,12 +244,23 @@ function validateEnclosure(
     });
   }
 
-  // I010/W006: Signature checks
-  // Signatures are optional in Sparkle but recommended for security
+  // I010/W006/E032: Signature checks
+  // Signatures are optional in standard feeds, but mandatory when requireSignedFeed is enabled
   const edSig = sparkleAttr(enclosure, "edSignature");
   const dsaSig = sparkleAttr(enclosure, "dsaSignature");
 
-  if (!edSig && !dsaSig) {
+  if (options?.requireSignedFeed && !edSig) {
+    diagnostics.push({
+      id: "E032",
+      severity: "error",
+      message:
+        "Enclosure is missing required sparkle:edSignature attribute (signed feeds require Ed25519 signatures)",
+      line: enclosure.line,
+      column: enclosure.column,
+      path: elementPath(enclosure),
+      fix: "Add a valid sparkle:edSignature attribute to the enclosure",
+    });
+  } else if (!edSig && !dsaSig) {
     diagnostics.push({
       id: "I010",
       severity: "info",
@@ -322,7 +285,7 @@ function validateEnclosure(
   }
 
   // E031: Check if signatures are valid (error because Sparkle will reject malformed signatures)
-  if (edSig) {
+  if (edSig !== undefined) {
     const result = validateSignature(edSig, "ed");
     if (!result.valid) {
       diagnostics.push({
@@ -336,7 +299,7 @@ function validateEnclosure(
       });
     }
   }
-  if (dsaSig) {
+  if (dsaSig !== undefined) {
     const result = validateSignature(dsaSig, "dsa");
     if (!result.valid) {
       diagnostics.push({
@@ -355,7 +318,8 @@ function validateEnclosure(
 function validateDeltas(
   deltasEl: XmlElement,
   feedVersions: Set<string>,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  options?: ValidationOptions
 ): void {
   const deltaEnclosures = childElements(deltasEl, "enclosure");
 
@@ -424,7 +388,7 @@ function validateDeltas(
     }
 
     // Also validate the delta enclosure like a regular one (length, type, signatures)
-    validateEnclosure(deltaEnc, diagnostics);
+    validateEnclosure(deltaEnc, diagnostics, options);
   }
 
   // W032: Check for duplicate deltaFrom versions

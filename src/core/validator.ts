@@ -1,14 +1,20 @@
 import { parseXml } from "./parser.js";
 import { allRules } from "./rules/index.js";
 import { xmlFormatRules } from "./rules/xml-format.js";
-import type { Diagnostic, ValidationResult } from "./types.js";
+import type {
+  Diagnostic,
+  ValidationResult,
+  ValidationOptions,
+} from "./types.js";
 
 /**
  * Consolidate multiple diagnostics of the same type into single entries.
  * This prevents a "blitz" of repeated warnings/errors for the same issue.
  * The first occurrence is kept, with its message updated to show count.
  */
-export function consolidateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
+export function consolidateDiagnostics(
+  diagnostics: Diagnostic[]
+): Diagnostic[] {
   // Group diagnostics by ID
   const byId = new Map<string, Diagnostic[]>();
   for (const diag of diagnostics) {
@@ -17,17 +23,19 @@ export function consolidateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] 
     byId.set(diag.id, existing);
   }
 
-  // For each group, keep first occurrence but update message if count > 1
   const consolidated: Diagnostic[] = [];
-  for (const group of byId.values()) {
-    if (group.length === 1) {
-      consolidated.push(group[0]);
+
+  for (const diags of byId.values()) {
+    if (diags.length === 1) {
+      consolidated.push(diags[0]);
     } else {
-      // Keep the first diagnostic but update message to show count
-      const first = { ...group[0] };
-      const count = group.length;
-      first.message = `${first.message} (and ${count - 1} more similar issue${count > 2 ? "s" : ""})`;
-      consolidated.push(first);
+      // Keep the first occurrence, but note additional occurrences in message
+      const first = diags[0];
+      const additionalCount = diags.length - 1;
+      consolidated.push({
+        ...first,
+        message: `${first.message} (and ${additionalCount} more similar issue${additionalCount > 1 ? "s" : ""})`,
+      });
     }
   }
 
@@ -35,12 +43,19 @@ export function consolidateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] 
 }
 
 /**
- * Validate an appcast XML string.
+ * Validate an appcast XML string against all Sparkle rules.
+ *
+ * Runs parser, all rule checks, format rules, and deduplicates/consolidates
+ * results into a clean, actionable ValidationResult.
  *
  * @param xml - The raw XML string to validate
+ * @param options - Optional validation configuration
  * @returns A ValidationResult with all diagnostics
  */
-export function validate(xml: string): ValidationResult {
+export function validate(
+  xml: string,
+  options?: ValidationOptions
+): ValidationResult {
   const diagnostics: Diagnostic[] = [];
 
   // Step 1: Parse the XML
@@ -55,7 +70,7 @@ export function validate(xml: string): ValidationResult {
   if (!hasFatalParseError) {
     // Step 2: Run all validation rules
     for (const rule of allRules) {
-      rule(document, diagnostics);
+      rule(document, diagnostics, options);
 
       // If structural errors were found (E002-E007), skip deeper rules
       // since they require a valid RSS/channel/item structure

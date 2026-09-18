@@ -94,8 +94,32 @@ export interface XmlDocument {
   namespaces: Record<string, string>;
 }
 
+/**
+ * Configuration options for validation.
+ */
+export interface ValidationOptions {
+  /**
+   * Require signed feeds / signatures.
+   * When true, enclosures and external release notes must provide valid Ed25519 signatures.
+   * Note: format validation verifies encoding and byte length; it does not verify cryptographic authenticity.
+   */
+  requireSignedFeed?: boolean;
+
+  /**
+   * Base URL / Feed URL for resolving relative links and verifying scheme context.
+   */
+  baseUrl?: string;
+
+  /**
+   * Target Sparkle version bundled in an update (e.g., "2.10.0").
+   * Used for item-specific compatibility checks.
+   */
+  targetSparkleVersion?: string;
+}
+
 /** A validation rule function */
 export type ValidationRule = (
   doc: XmlDocument,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  options?: ValidationOptions
 ) => void;

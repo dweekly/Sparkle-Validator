@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
-import { validate, consolidateDiagnostics } from "../../../src/core/validator.js";
+import {
+  validate,
+  consolidateDiagnostics,
+} from "../../../src/core/validator.js";
 
 describe("Rule ID Catalog & Lossless Reporting (R06)", () => {
   it("has strictly unique rule IDs across all rule files", () => {

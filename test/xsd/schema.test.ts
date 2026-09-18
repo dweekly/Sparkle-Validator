@@ -15,10 +15,14 @@ const SCHEMA_PATH = join(process.cwd(), "appcast.xsd");
 
 function validateWithXsd(xmlPath: string): { valid: boolean; error?: string } {
   try {
-    execFileSync("xmllint", ["--schema", SCHEMA_PATH, "--nonet", "--noout", xmlPath], {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    execFileSync(
+      "xmllint",
+      ["--schema", SCHEMA_PATH, "--nonet", "--noout", xmlPath],
+      {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+      }
+    );
     return { valid: true };
   } catch (e) {
     const error = e as { stdout?: string; stderr?: string; message?: string };
@@ -31,7 +35,10 @@ function validateWithXsd(xmlPath: string): { valid: boolean; error?: string } {
       errorText.includes("failed to parse") ||
       errorText.includes("failed to build")
     ) {
-      throw new Error(`Schema compilation or dependency failure: ${errorText}`, { cause: e });
+      throw new Error(
+        `Schema compilation or dependency failure: ${errorText}`,
+        { cause: e }
+      );
     }
 
     return {
@@ -58,7 +65,9 @@ describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
     // Assert schema compiles offline against a baseline minimal fixture
     const baseline = validateWithXsd(join(FIXTURES_DIR, "valid/minimal.xml"));
     if (!baseline.valid) {
-      throw new Error(`XSD Schema failed to compile offline: ${baseline.error}`);
+      throw new Error(
+        `XSD Schema failed to compile offline: ${baseline.error}`
+      );
     }
   });
 

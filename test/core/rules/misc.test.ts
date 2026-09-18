@@ -136,6 +136,63 @@ describe("best practice rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W009")).toBe(true);
   });
+
+  it("E033: reports malformed signature on sparkle:releaseNotesLink", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink sparkle:edSignature="invalid-sig!">https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E033")).toBe(true);
+  });
+
+  it("E034: reports non-integer sparkle:length on releaseNotesLink", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink sparkle:length="abc">https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E034")).toBe(true);
+  });
+
+  it("W050: warns when sparkle:length is 0 on releaseNotesLink", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink sparkle:length="0">https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W050")).toBe(true);
+  });
+
+  it("W051: warns when unqualified length is used on releaseNotesLink", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink length="500">https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "W051")).toBe(true);
+  });
+
+  it("E035: reports missing signature or length on releaseNotesLink in signed-feed mode", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink>https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml, { requireSignedFeed: true });
+    expect(result.diagnostics.some((d) => d.id === "E035")).toBe(true);
+  });
+
+  it("passes signed-feed mode when releaseNotesLink has valid sparkle:edSignature and sparkle:length", () => {
+    const validSig =
+      "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==";
+    const xml = wrap(`
+      <sparkle:releaseNotesLink sparkle:edSignature="${validSig}" sparkle:length="1024">https://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="${validSig}"/>
+    `);
+    const result = validate(xml, { requireSignedFeed: true });
+    expect(result.diagnostics.some((d) => d.id === "E035")).toBe(false);
+    expect(result.valid).toBe(true);
+  });
 });
 
 describe("channel rules", () => {
@@ -320,12 +377,16 @@ describe("info rules", () => {
     const xmlLower = wrap(
       `<sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>`
     );
-    expect(validate(xmlLower).diagnostics.some((d) => d.id === "W036")).toBe(false);
+    expect(validate(xmlLower).diagnostics.some((d) => d.id === "W036")).toBe(
+      false
+    );
 
     const xmlUpper = wrap(
       `<sparkle:hardwareRequirements>ARM64</sparkle:hardwareRequirements>`
     );
-    expect(validate(xmlUpper).diagnostics.some((d) => d.id === "W036")).toBe(false);
+    expect(validate(xmlUpper).diagnostics.some((d) => d.id === "W036")).toBe(
+      false
+    );
   });
 
   it("W048: warns about empty minimumUpdateVersion", () => {
