@@ -250,4 +250,3 @@ describe("Rule ID Catalog & Lossless Reporting (R06)", () => {
     expect(e022?.message).toContain("installationType");
   });
 });
-

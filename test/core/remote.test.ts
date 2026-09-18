@@ -340,19 +340,15 @@ const SKIP_NETWORK_TESTS = process.env.CI === "true";
 describe.skipIf(SKIP_NETWORK_TESTS)(
   "remote validation - live network tests",
   () => {
-    it(
-      "W024: warns about HTTP URLs",
-      async () => {
-        const xml = readFixture("http-url.xml");
-        const { document } = parseXml(xml);
-        const diagnostics = await validateRemote(document, { timeout: 10000 });
+    it("W024: warns about HTTP URLs", async () => {
+      const xml = readFixture("http-url.xml");
+      const { document } = parseXml(xml);
+      const diagnostics = await validateRemote(document, { timeout: 10000 });
 
-        const w024 = diagnostics.find((d) => d.id === "W024");
-        expect(w024).toBeDefined();
-        expect(w024?.message).toContain("insecure HTTP");
-      },
-      15000
-    );
+      const w024 = diagnostics.find((d) => d.id === "W024");
+      expect(w024).toBeDefined();
+      expect(w024?.message).toContain("insecure HTTP");
+    }, 15000);
 
     it("E027: errors on non-existent domain", async () => {
       const xml = readFixture("nonexistent-domain.xml");
