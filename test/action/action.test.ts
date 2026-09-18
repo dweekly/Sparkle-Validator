@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -10,6 +10,15 @@ const CLI_PATH = path.resolve(process.cwd(), "dist/cli/index.js");
 describe("GitHub Action Runner (R01)", () => {
   let tempDir: string;
   let outputFile: string;
+
+  beforeAll(() => {
+    if (!fs.existsSync(CLI_PATH)) {
+      execFileSync("npm", ["run", "build"], {
+        cwd: process.cwd(),
+        stdio: "ignore",
+      });
+    }
+  });
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "action-test-"));

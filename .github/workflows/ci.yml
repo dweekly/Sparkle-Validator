@@ -29,6 +29,9 @@ jobs:
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
+      - name: Build
+        run: npm run build
+
       - name: Format check
         run: npm run format:check
 
@@ -51,9 +54,6 @@ jobs:
 
       - name: npm audit (production)
         run: npm audit --omit=dev
-
-      - name: Build
-        run: npm run build
 
       - name: Test CLI
         run: |
