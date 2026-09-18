@@ -295,6 +295,43 @@ describe("remote validation - deterministic mocked network checks", () => {
     expect(fetchMock.mock.calls[1][1]?.method).toBe("GET");
     expect(fetchMock.mock.calls[1][1]?.headers?.Range).toBe("bytes=0-0");
   });
+
+  it("handles RFC 9110 unknown total size in Content-Range (bytes 0-0/*) on HTTP 206 as unknown size (W022, not E028)", async () => {
+    const fetchMock = vi
+      .fn()
+      // First call HEAD -> 405 Method Not Allowed
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 405,
+          statusText: "Method Not Allowed",
+        })
+      )
+      // Second call GET Range: bytes=0-0 -> return 206 with Content-Range: bytes 0-0/* and Content-Length: 1
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([0]), {
+          status: 206,
+          statusText: "Partial Content",
+          headers: {
+            "Content-Length": "1",
+            "Content-Range": "bytes 0-0/*",
+          },
+        })
+      );
+    globalThis.fetch = fetchMock;
+
+    const xml = `<rss version="2.0"><channel><item><enclosure url="https://example.com/app.zip" length="52428800"/></item></channel></rss>`;
+    const { document } = parseXml(xml);
+    const diagnostics = await validateRemote(document);
+
+    // MUST NOT report E028 (mismatch claiming server size is 1 byte)
+    const e028 = diagnostics.find((d) => d.id === "E028");
+    expect(e028).toBeUndefined();
+
+    // MUST report W022 (server did not return complete size, cannot verify declared size)
+    const w022 = diagnostics.find((d) => d.id === "W022");
+    expect(w022).toBeDefined();
+    expect(w022?.message).toContain("cannot verify declared size");
+  });
 });
 
 // Optional live network tests - skip in CI
@@ -303,15 +340,19 @@ const SKIP_NETWORK_TESTS = process.env.CI === "true";
 describe.skipIf(SKIP_NETWORK_TESTS)(
   "remote validation - live network tests",
   () => {
-    it("W024: warns about HTTP URLs", async () => {
-      const xml = readFixture("http-url.xml");
-      const { document } = parseXml(xml);
-      const diagnostics = await validateRemote(document, { timeout: 10000 });
+    it(
+      "W024: warns about HTTP URLs",
+      async () => {
+        const xml = readFixture("http-url.xml");
+        const { document } = parseXml(xml);
+        const diagnostics = await validateRemote(document, { timeout: 10000 });
 
-      const w024 = diagnostics.find((d) => d.id === "W024");
-      expect(w024).toBeDefined();
-      expect(w024?.message).toContain("insecure HTTP");
-    });
+        const w024 = diagnostics.find((d) => d.id === "W024");
+        expect(w024).toBeDefined();
+        expect(w024?.message).toContain("insecure HTTP");
+      },
+      15000
+    );
 
     it("E027: errors on non-existent domain", async () => {
       const xml = readFixture("nonexistent-domain.xml");

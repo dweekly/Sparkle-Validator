@@ -524,7 +524,12 @@ async function checkUrl(
       }
     }
 
-    if (contentLength === null) {
+    // Only inspect Content-Length for full responses (not 206 Partial Content).
+    // In HTTP 206 Partial Content, Content-Length indicates the size of the returned chunk
+    // (e.g. 1 byte for Range: bytes=0-0), NOT the total resource size.
+    // Under RFC 9110 §14.4, Content-Range can indicate an unknown total (e.g. bytes 0-0/*);
+    // in that scenario, the total resource length is unknown (null).
+    if (contentLength === null && response.status !== 206) {
       const contentLengthHeader = response.headers.get("content-length");
       contentLength = contentLengthHeader
         ? parseInt(contentLengthHeader, 10)
