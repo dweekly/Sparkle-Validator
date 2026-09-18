@@ -116,4 +116,62 @@ describe("URL rules", () => {
     const result = validate(xml);
     expect(result.diagnostics.some((d) => d.id === "W035")).toBe(false);
   });
+
+  it("E014: rejects feed: scheme for enclosure downloads", () => {
+    const xml = wrap(
+      `<enclosure url="feed://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>`
+    );
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E014")).toBe(true);
+    expect(result.diagnostics.find((d) => d.id === "E014")?.message).toContain(
+      "feed:"
+    );
+  });
+
+  it("E016: rejects feed: and javascript: schemes for release notes", () => {
+    const xmlFeed = wrap(`
+      <sparkle:releaseNotesLink>feed://example.com/notes.html</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    expect(validate(xmlFeed).diagnostics.some((d) => d.id === "E016")).toBe(
+      true
+    );
+
+    const xmlJs = wrap(`
+      <sparkle:releaseNotesLink>javascript:alert(1)</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    expect(validate(xmlJs).diagnostics.some((d) => d.id === "E016")).toBe(true);
+  });
+
+  it("E016: inspects all localized releaseNotesLinks and catches later invalid URLs (Finding 12)", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink xml:lang="en">https://example.com/notes-en.html</sparkle:releaseNotesLink>
+      <sparkle:releaseNotesLink xml:lang="de">javascript:bad</sparkle:releaseNotesLink>
+      <enclosure url="https://example.com/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml);
+    expect(result.diagnostics.some((d) => d.id === "E016")).toBe(true);
+  });
+
+  it("resolves relative URLs against baseUrl and emits W014 warning", () => {
+    const xml = wrap(`
+      <sparkle:releaseNotesLink>notes.html</sparkle:releaseNotesLink>
+      <enclosure url="downloads/app.zip" length="1" type="application/octet-stream" sparkle:edSignature="eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="/>
+    `);
+    const result = validate(xml, {
+      baseUrl: "https://example.com/updates/appcast.xml",
+    });
+    // Should NOT error with E014 or E016
+    expect(result.diagnostics.some((d) => d.id === "E014")).toBe(false);
+    expect(result.diagnostics.some((d) => d.id === "E016")).toBe(false);
+    // Should warn with W014
+    expect(result.diagnostics.some((d) => d.id === "W014")).toBe(true);
+    const w014Enclosure = result.diagnostics.find(
+      (d) => d.id === "W014" && d.message.includes("downloads/app.zip")
+    );
+    expect(w014Enclosure?.message).toContain(
+      "https://example.com/updates/downloads/app.zip"
+    );
+  });
 });

@@ -92,7 +92,7 @@ btnUrl.addEventListener("click", async () => {
       return;
     }
 
-    showResults(validate(data.xml));
+    showResults(validate(data.xml, { baseUrl: data.finalUrl || url }));
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     showError(`Failed to fetch URL: ${msg}`);

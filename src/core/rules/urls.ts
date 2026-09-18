@@ -1,12 +1,16 @@
-import type { Diagnostic, XmlDocument, XmlElement } from "../types.js";
+import type {
+  Diagnostic,
+  XmlDocument,
+  XmlElement,
+  ValidationOptions,
+} from "../types.js";
 import {
   childElements,
   childElement,
   attr,
   textContent,
   elementPath,
-  isValidUrl,
-  sparkleChildElement,
+  sparkleChildElements,
 } from "./utils.js";
 
 /** Expected file extensions for enclosure downloads */
@@ -53,11 +57,16 @@ function getUrlExtension(url: string): string | null {
 
 /**
  * E014-E018: URL validation rules
+ * W014: Relative URL
  * W016: URL has unencoded special characters
  * W030: URL file extension doesn't match expected type
  * W035: Feed mixes HTTP and HTTPS URLs
  */
-export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
+export function urlRules(
+  doc: XmlDocument,
+  diagnostics: Diagnostic[],
+  options?: ValidationOptions
+): void {
   const { root } = doc;
   if (!root || root.name !== "rss") return;
 
@@ -89,22 +98,17 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
     if (enclosure) {
       const url = attr(enclosure, "url");
       if (url) {
-        validateUrl(url, "E014", "enclosure url", enclosure, diagnostics);
-        trackProtocol(url, enclosure);
-
-        // W030: Check for suspicious file extensions on enclosure URLs
-        const ext = getUrlExtension(url);
-        if (ext && SUSPICIOUS_EXTENSIONS.includes(ext)) {
-          diagnostics.push({
-            id: "W030",
-            severity: "warning",
-            message: `Enclosure URL has suspicious extension "${ext}" for a download file`,
-            line: enclosure.line,
-            column: enclosure.column,
-            path: elementPath(enclosure),
-            fix: `Download URLs should typically end with ${EXPECTED_DOWNLOAD_EXTENSIONS.slice(0, 3).join(", ")}, etc.`,
-          });
-        }
+        validateResourceUrl(
+          url,
+          "E014",
+          "enclosure url",
+          enclosure,
+          ["https", "http"],
+          options,
+          diagnostics,
+          trackProtocol,
+          true
+        );
       }
     }
 
@@ -113,72 +117,78 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
     if (link) {
       const url = textContent(link).trim();
       if (url) {
-        validateUrl(url, "E015", "item <link>", link, diagnostics);
-        trackProtocol(url, link);
+        validateResourceUrl(
+          url,
+          "E015",
+          "item <link>",
+          link,
+          ["https", "http", "feed"],
+          options,
+          diagnostics,
+          trackProtocol,
+          false
+        );
       }
     }
 
-    // Check sparkle:releaseNotesLink
-    const rnLink = sparkleChildElement(item, "releaseNotesLink");
-    if (rnLink) {
+    // Check ALL sparkle:releaseNotesLink elements (Finding 12: inspect every localized note link)
+    const rnLinks = sparkleChildElements(item, "releaseNotesLink");
+    for (const rnLink of rnLinks) {
       const url = textContent(rnLink).trim();
       if (url) {
-        validateUrl(
+        validateResourceUrl(
           url,
           "E016",
           "sparkle:releaseNotesLink",
           rnLink,
-          diagnostics
+          ["https", "http"],
+          options,
+          diagnostics,
+          trackProtocol,
+          false
         );
-        trackProtocol(url, rnLink);
       }
     }
 
-    // Check sparkle:fullReleaseNotesLink
-    const frnLink = sparkleChildElement(item, "fullReleaseNotesLink");
-    if (frnLink) {
+    // Check ALL sparkle:fullReleaseNotesLink elements
+    const frnLinks = sparkleChildElements(item, "fullReleaseNotesLink");
+    for (const frnLink of frnLinks) {
       const url = textContent(frnLink).trim();
       if (url) {
-        validateUrl(
+        validateResourceUrl(
           url,
           "E017",
           "sparkle:fullReleaseNotesLink",
           frnLink,
-          diagnostics
+          ["https", "http"],
+          options,
+          diagnostics,
+          trackProtocol,
+          false
         );
-        trackProtocol(url, frnLink);
       }
     }
 
     // Check delta enclosure URLs
-    const deltasEl = sparkleChildElement(item, "deltas");
-    if (deltasEl) {
-      const deltaEnclosures = childElements(deltasEl, "enclosure");
+    const deltasEl = childElements(item, "deltas").concat(
+      sparkleChildElements(item, "deltas")
+    );
+    for (const dEl of deltasEl) {
+      const deltaEnclosures = childElements(dEl, "enclosure");
       for (const deltaEnc of deltaEnclosures) {
         const url = attr(deltaEnc, "url");
         if (url) {
-          validateUrl(
+          validateResourceUrl(
             url,
             "E018",
             "delta enclosure url",
             deltaEnc,
-            diagnostics
+            ["https", "http"],
+            options,
+            diagnostics,
+            trackProtocol,
+            true
           );
-          trackProtocol(url, deltaEnc);
-
-          // W030: Check for suspicious file extensions on delta enclosure URLs
-          const ext = getUrlExtension(url);
-          if (ext && SUSPICIOUS_EXTENSIONS.includes(ext)) {
-            diagnostics.push({
-              id: "W030",
-              severity: "warning",
-              message: `Delta enclosure URL has suspicious extension "${ext}" for a download file`,
-              line: deltaEnc.line,
-              column: deltaEnc.column,
-              path: elementPath(deltaEnc),
-              fix: `Download URLs should typically end with ${EXPECTED_DOWNLOAD_EXTENSIONS.slice(0, 3).join(", ")}, etc.`,
-            });
-          }
         }
       }
     }
@@ -189,8 +199,17 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   if (channelLink) {
     const url = textContent(channelLink).trim();
     if (url) {
-      validateUrl(url, "E015", "channel <link>", channelLink, diagnostics);
-      trackProtocol(url, channelLink);
+      validateResourceUrl(
+        url,
+        "E015",
+        "channel <link>",
+        channelLink,
+        ["https", "http", "feed"],
+        options,
+        diagnostics,
+        trackProtocol,
+        false
+      );
     }
   }
 
@@ -212,38 +231,111 @@ export function urlRules(doc: XmlDocument, diagnostics: Diagnostic[]): void {
   }
 }
 
-function validateUrl(
-  url: string,
+function validateResourceUrl(
+  rawUrl: string,
   errorId: string,
   context: string,
   element: XmlElement,
-  diagnostics: Diagnostic[]
+  allowedSchemes: string[],
+  options: ValidationOptions | undefined,
+  diagnostics: Diagnostic[],
+  trackProtocol: (url: string, element: XmlElement) => void,
+  checkSuspiciousExtension: boolean
 ): void {
-  if (!isValidUrl(url)) {
-    diagnostics.push({
-      id: errorId,
-      severity: "error",
-      message: `Invalid URL in ${context}: "${url}"`,
-      line: element.line,
-      column: element.column,
-      path: elementPath(element),
-      fix: "Use a valid absolute URL with https://, http://, or feed:// scheme",
-    });
-    return;
-  }
-
   // W016: Check for unencoded special characters
-  // Characters that should be percent-encoded in URLs
   const unencodedPattern = /[{}|\\^`[\]<> ]/;
-  if (unencodedPattern.test(url)) {
+  if (unencodedPattern.test(rawUrl)) {
     diagnostics.push({
       id: "W016",
       severity: "warning",
-      message: `URL in ${context} contains unencoded special characters: "${url}"`,
+      message: `URL in ${context} contains unencoded special characters: "${rawUrl}"`,
       line: element.line,
       column: element.column,
       path: elementPath(element),
       fix: "Percent-encode special characters in the URL",
     });
+  }
+
+  let parsed: URL | null = null;
+  let isRelative = false;
+
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    isRelative = true;
+  }
+
+  if (isRelative) {
+    if (!options?.baseUrl) {
+      diagnostics.push({
+        id: errorId,
+        severity: "error",
+        message: `Relative URL in ${context}: "${rawUrl}" cannot be resolved without a base URL context`,
+        line: element.line,
+        column: element.column,
+        path: elementPath(element),
+        fix: "Provide an absolute URL (https://...) or specify a base URL for validation",
+      });
+      return;
+    }
+
+    try {
+      parsed = new URL(rawUrl, options.baseUrl);
+      // Relative URL successfully resolved against base URL
+      diagnostics.push({
+        id: "W014",
+        severity: "warning",
+        message: `Relative URL "${rawUrl}" in ${context} resolved against base URL to "${parsed.href}"`,
+        line: element.line,
+        column: element.column,
+        path: elementPath(element),
+        fix: "Prefer absolute URLs with https:// scheme",
+      });
+    } catch {
+      diagnostics.push({
+        id: errorId,
+        severity: "error",
+        message: `Invalid relative URL in ${context}: "${rawUrl}" could not be resolved against base URL "${options.baseUrl}"`,
+        line: element.line,
+        column: element.column,
+        path: elementPath(element),
+        fix: "Provide a valid URL path",
+      });
+      return;
+    }
+  }
+
+  if (!parsed) return;
+
+  // Scheme verification
+  const scheme = parsed.protocol.replace(":", "").toLowerCase();
+  if (!allowedSchemes.includes(scheme)) {
+    diagnostics.push({
+      id: errorId,
+      severity: "error",
+      message: `Invalid URL scheme "${parsed.protocol}" in ${context}: "${rawUrl}". Allowed schemes: ${allowedSchemes.map((s) => s + "://").join(", ")}`,
+      line: element.line,
+      column: element.column,
+      path: elementPath(element),
+      fix: `Use a valid URL with ${allowedSchemes.map((s) => s + "://").join(" or ")} scheme`,
+    });
+    return;
+  }
+
+  trackProtocol(parsed.href, element);
+
+  if (checkSuspiciousExtension) {
+    const ext = getUrlExtension(parsed.href);
+    if (ext && SUSPICIOUS_EXTENSIONS.includes(ext)) {
+      diagnostics.push({
+        id: "W030",
+        severity: "warning",
+        message: `URL in ${context} has suspicious extension "${ext}" for a download file`,
+        line: element.line,
+        column: element.column,
+        path: elementPath(element),
+        fix: `Download URLs should typically end with ${EXPECTED_DOWNLOAD_EXTENSIONS.slice(0, 3).join(", ")}, etc.`,
+      });
+    }
   }
 }

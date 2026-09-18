@@ -36,10 +36,12 @@ function getChildElements(parent: XmlElement, localName: string): XmlElement[] {
 export interface RemoteValidationOptions {
   /** Timeout for each request in milliseconds (default: 10000) */
   timeout?: number;
-  /** Maximum concurrent requests (default: 5) */
+  /** Maximum concurrent requests (default: 5, between 1 and 50) */
   concurrency?: number;
-  /** User-Agent header to send (default: "sparkle-validator/1.0") */
+  /** User-Agent header to send (default: "sparkle-validator/1.2") */
   userAgent?: string;
+  /** Base URL for resolving relative links */
+  baseUrl?: string;
 }
 
 /** Result of checking a single URL */
@@ -55,17 +57,22 @@ interface UrlCheckResult {
   isHttp?: boolean;
 }
 
+interface ExtractedEnclosure {
+  url: string;
+  rawUrl: string;
+  length: number;
+  element: XmlElement;
+  unresolvable?: boolean;
+}
+
 /**
  * Extract all enclosure URLs from a parsed appcast document.
  */
 function extractEnclosures(
-  doc: XmlDocument
-): Array<{ url: string; length: number; element: XmlElement }> {
-  const enclosures: Array<{
-    url: string;
-    length: number;
-    element: XmlElement;
-  }> = [];
+  doc: XmlDocument,
+  baseUrl?: string
+): ExtractedEnclosure[] {
+  const enclosures: ExtractedEnclosure[] = [];
 
   if (!doc.root) return enclosures;
 
@@ -74,6 +81,30 @@ function extractEnclosures(
 
   const items = getChildElements(channel, "item");
 
+  function processUrl(
+    rawUrl: string,
+    length: number,
+    element: XmlElement
+  ): ExtractedEnclosure {
+    try {
+      // Test if rawUrl is absolute
+      new URL(rawUrl);
+      return { url: rawUrl, rawUrl, length, element };
+    } catch {
+      // Relative URL
+      if (baseUrl) {
+        try {
+          const resolved = new URL(rawUrl, baseUrl).href;
+          return { url: resolved, rawUrl, length, element };
+        } catch {
+          return { url: rawUrl, rawUrl, length, element, unresolvable: true };
+        }
+      } else {
+        return { url: rawUrl, rawUrl, length, element, unresolvable: true };
+      }
+    }
+  }
+
   for (const item of items) {
     // Main enclosure
     const enclosure = getChildElement(item, "enclosure");
@@ -81,11 +112,9 @@ function extractEnclosures(
       const url = enclosure.attributes["url"]?.value;
       const lengthStr = enclosure.attributes["length"]?.value;
       if (url) {
-        enclosures.push({
-          url,
-          length: parseInt(lengthStr || "0", 10) || 0,
-          element: enclosure,
-        });
+        enclosures.push(
+          processUrl(url, parseInt(lengthStr || "0", 10) || 0, enclosure)
+        );
       }
     }
 
@@ -99,18 +128,16 @@ function extractEnclosures(
           const url = deltaEnc.attributes["url"]?.value;
           const lengthStr = deltaEnc.attributes["length"]?.value;
           if (url) {
-            enclosures.push({
-              url,
-              length: parseInt(lengthStr || "0", 10) || 0,
-              element: deltaEnc,
-            });
+            enclosures.push(
+              processUrl(url, parseInt(lengthStr || "0", 10) || 0, deltaEnc)
+            );
           }
         }
       }
     }
   }
 
-  // Also check releaseNotesLink URLs
+  // Also check releaseNotesLink and fullReleaseNotesLink URLs
   for (const item of items) {
     for (const child of allChildElements(item)) {
       if (
@@ -118,21 +145,14 @@ function extractEnclosures(
           child.name === "fullReleaseNotesLink") &&
         isSparkleNamespace(child.namespace)
       ) {
-        // Get text content as URL
         const textNode = child.children.find((c) => c.type === "text");
         if (textNode && textNode.type === "text") {
-          const url = textNode.text.trim();
-          // releaseNotesLink can have length attribute for verification
+          const rawUrl = textNode.text.trim();
           const lengthStr = sparkleAttr(child, "length");
-          if (
-            url &&
-            (url.startsWith("http://") || url.startsWith("https://"))
-          ) {
-            enclosures.push({
-              url,
-              length: parseInt(lengthStr || "0", 10) || 0,
-              element: child,
-            });
+          if (rawUrl) {
+            enclosures.push(
+              processUrl(rawUrl, parseInt(lengthStr || "0", 10) || 0, child)
+            );
           }
         }
       }
@@ -142,41 +162,104 @@ function extractEnclosures(
   return enclosures;
 }
 
+function normalizeHostname(hostname: string): string {
+  let h = hostname.toLowerCase().trim();
+  if (h.startsWith("[") && h.endsWith("]")) {
+    h = h.slice(1, -1);
+  }
+  return h;
+}
+
+function parseIPv6Words(clean: string): number[] | null {
+  const doubleColonCount = (clean.match(/::/g) || []).length;
+  if (doubleColonCount > 1) return null;
+
+  let parts: string[];
+  if (doubleColonCount === 1) {
+    const [head, tail] = clean.split("::");
+    const headParts = head ? head.split(":") : [];
+    const tailParts = tail ? tail.split(":") : [];
+    const missing = 8 - (headParts.length + tailParts.length);
+    if (missing < 1) return null;
+    parts = [...headParts, ...Array(missing).fill("0"), ...tailParts];
+  } else {
+    parts = clean.split(":");
+    if (parts.length !== 8) return null;
+  }
+
+  const words: number[] = [];
+  for (const p of parts) {
+    if (!/^[0-9a-f]{1,4}$/i.test(p)) return null;
+    words.push(parseInt(p, 16));
+  }
+  return words;
+}
+
 /**
  * Check if a URL points to a local/private address.
  */
-function isLocalOrPrivateUrl(url: string): boolean {
+export function isLocalOrPrivateUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    const hostname = parsed.hostname.toLowerCase();
+    const host = normalizeHostname(parsed.hostname);
 
-    // localhost
-    if (hostname === "localhost" || hostname === "localhost.localdomain") {
+    // localhost and local domain aliases
+    if (
+      host === "localhost" ||
+      host === "localhost.localdomain" ||
+      host.endsWith(".localhost") ||
+      host.endsWith(".local") ||
+      host.endsWith(".internal")
+    ) {
       return true;
     }
 
-    // IPv4 loopback (127.x.x.x)
-    if (hostname.startsWith("127.")) {
-      return true;
-    }
-
-    // IPv6 loopback
-    if (hostname === "::1" || hostname === "[::1]") {
-      return true;
-    }
-
-    // Private IPv4 ranges
-    const ipv4Match = hostname.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+    // IPv4 check
+    const ipv4Match = host.match(
+      /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/
+    );
     if (ipv4Match) {
-      const [, a, b] = ipv4Match.map(Number);
-      // 10.x.x.x
-      if (a === 10) return true;
-      // 172.16.x.x - 172.31.x.x
-      if (a === 172 && b >= 16 && b <= 31) return true;
-      // 192.168.x.x
-      if (a === 192 && b === 168) return true;
-      // 169.254.x.x (link-local)
-      if (a === 169 && b === 254) return true;
+      const [, a, b, c, d] = ipv4Match.map(Number);
+      if (a > 255 || b > 255 || c > 255 || d > 255) return true;
+      if (a === 0) return true; // 0.0.0.0/8
+      if (a === 10) return true; // 10.0.0.0/8
+      if (a === 127) return true; // 127.0.0.0/8 loopback
+      if (a === 169 && b === 254) return true; // 169.254.0.0/16
+      if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
+      if (a === 192 && b === 168) return true; // 192.168.0.0/16
+      if (a === 100 && b >= 64 && b <= 127) return true; // 100.64.0.0/10
+      return false;
+    }
+
+    // IPv6 check
+    if (host === "::1" || host === "::") return true;
+
+    // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1)
+    const ipv4MappedMatch = host.match(
+      /^(?:::ffff:)?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/
+    );
+    if (ipv4MappedMatch) {
+      return isLocalOrPrivateUrl(`http://${ipv4MappedMatch[1]}`);
+    }
+
+    const words = parseIPv6Words(host);
+    if (words) {
+      // Loopback ::1
+      if (words.slice(0, 7).every((w) => w === 0) && words[7] === 1)
+        return true;
+      // Unspecified ::
+      if (words.every((w) => w === 0)) return true;
+      // Unique local: fc00::/7 (first byte 0xfc or 0xfd)
+      if ((words[0] & 0xfe00) === 0xfc00) return true;
+      // Link-local unicast: fe80::/10
+      if ((words[0] & 0xffc0) === 0xfe80) return true;
+      // IPv4-mapped in words (::ffff:w7:w8)
+      if (words.slice(0, 5).every((w) => w === 0) && words[5] === 0xffff) {
+        const high = words[6];
+        const low = words[7];
+        const ip = `${(high >> 8) & 255}.${high & 255}.${(low >> 8) & 255}.${low & 255}`;
+        return isLocalOrPrivateUrl(`http://${ip}`);
+      }
     }
 
     return false;
@@ -198,7 +281,6 @@ function getFetchErrorMessage(err: unknown, url: string): string {
     return "Request timed out";
   }
 
-  // Try to get the underlying cause for better messages
   const cause = (err as { cause?: Error }).cause;
   if (cause instanceof Error) {
     const code = (cause as { code?: string }).code;
@@ -250,13 +332,11 @@ function getFetchErrorMessage(err: unknown, url: string): string {
       return "Host unreachable";
     }
 
-    // Use cause message if it's more descriptive
     if (cause.message && cause.message !== "fetch failed") {
       return cause.message;
     }
   }
 
-  // Fallback to original error message
   if (err.message && err.message !== "fetch failed") {
     return err.message;
   }
@@ -265,14 +345,28 @@ function getFetchErrorMessage(err: unknown, url: string): string {
 }
 
 /**
- * Check a single URL using HEAD request.
+ * Check a single URL using HEAD request with manual redirect following and SSRF protections.
  */
 async function checkUrl(
-  url: string,
+  enclosure: ExtractedEnclosure,
   options: RemoteValidationOptions
 ): Promise<UrlCheckResult> {
+  const { url, rawUrl, unresolvable } = enclosure;
   const timeout = options.timeout ?? 10000;
-  const userAgent = options.userAgent ?? "sparkle-validator/1.1";
+  const userAgent = options.userAgent ?? "sparkle-validator/1.2";
+
+  if (unresolvable) {
+    return {
+      url: rawUrl,
+      status: null,
+      contentLength: null,
+      error: null,
+      redirected: false,
+      finalUrl: null,
+      skipped: true,
+      skipReason: "Relative URL without base URL context",
+    };
+  }
 
   // Check for local/private URLs
   if (isLocalOrPrivateUrl(url)) {
@@ -288,23 +382,132 @@ async function checkUrl(
     };
   }
 
-  // Check if URL uses HTTP (insecure)
   const isHttp = url.toLowerCase().startsWith("http://");
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    let currentUrl = url;
+    let redirected = false;
+    let redirectCount = 0;
+    const maxRedirects = 5;
+    let response: Response | null = null;
 
-    const response = await fetch(url, {
-      method: "HEAD",
-      headers: {
-        "User-Agent": userAgent,
-      },
-      signal: controller.signal,
-      redirect: "follow",
-    });
+    while (redirectCount <= maxRedirects) {
+      if (isLocalOrPrivateUrl(currentUrl)) {
+        return {
+          url,
+          status: null,
+          contentLength: null,
+          error: null,
+          redirected: true,
+          finalUrl: currentUrl,
+          skipped: true,
+          skipReason: "Local/private redirect destination",
+          isHttp,
+        };
+      }
 
-    clearTimeout(timeoutId);
+      let res = await fetch(currentUrl, {
+        method: "HEAD",
+        headers: {
+          "User-Agent": userAgent,
+        },
+        signal: controller.signal,
+        redirect: "manual",
+      });
+
+      // If HEAD is not supported (405 Method Not Allowed), fall back to GET with range
+      if (res.status === 405) {
+        if (res.body) {
+          try {
+            await res.body.cancel();
+          } catch {
+            // Ignore cancel error
+          }
+        }
+        res = await fetch(currentUrl, {
+          method: "GET",
+          headers: {
+            "User-Agent": userAgent,
+            Range: "bytes=0-0",
+          },
+          signal: controller.signal,
+          redirect: "manual",
+        });
+      }
+
+      // Check redirect codes
+      if ([301, 302, 303, 307, 308].includes(res.status)) {
+        if (res.body) {
+          try {
+            await res.body.cancel();
+          } catch {
+            // Ignore cancel error
+          }
+        }
+        const location = res.headers.get("location");
+        if (!location) {
+          response = res;
+          break;
+        }
+        try {
+          const nextUrl = new URL(location, currentUrl).href;
+          currentUrl = nextUrl;
+          redirected = true;
+          redirectCount++;
+          if (redirectCount > maxRedirects) {
+            return {
+              url,
+              status: null,
+              contentLength: null,
+              error: "Too many redirects (exceeded 5)",
+              redirected: true,
+              finalUrl: currentUrl,
+              skipped: false,
+              isHttp,
+            };
+          }
+          continue;
+        } catch {
+          return {
+            url,
+            status: null,
+            contentLength: null,
+            error: `Invalid redirect location: "${location}"`,
+            redirected: true,
+            finalUrl: location,
+            skipped: false,
+            isHttp,
+          };
+        }
+      }
+
+      response = res;
+      break;
+    }
+
+    if (!response) {
+      return {
+        url,
+        status: null,
+        contentLength: null,
+        error: "No response received",
+        redirected,
+        finalUrl: redirected ? currentUrl : null,
+        skipped: false,
+        isHttp,
+      };
+    }
+
+    // Cancel body immediately to release connections
+    if (response.body) {
+      try {
+        await response.body.cancel();
+      } catch {
+        // Ignore cancel error
+      }
+    }
 
     const contentLengthHeader = response.headers.get("content-length");
     const contentLength = contentLengthHeader
@@ -316,8 +519,8 @@ async function checkUrl(
       status: response.status,
       contentLength,
       error: null,
-      redirected: response.redirected,
-      finalUrl: response.redirected ? response.url : null,
+      redirected,
+      finalUrl: redirected ? currentUrl : null,
       skipped: false,
       isHttp,
     };
@@ -332,6 +535,8 @@ async function checkUrl(
       skipped: false,
       isHttp,
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -343,8 +548,34 @@ export async function validateRemote(
   doc: XmlDocument,
   options: RemoteValidationOptions = {}
 ): Promise<Diagnostic[]> {
+  if (options.concurrency !== undefined) {
+    if (
+      typeof options.concurrency !== "number" ||
+      !Number.isInteger(options.concurrency) ||
+      options.concurrency < 1 ||
+      options.concurrency > 50
+    ) {
+      throw new Error(
+        `Invalid concurrency "${options.concurrency}": must be an integer between 1 and 50`
+      );
+    }
+  }
+
+  if (options.timeout !== undefined) {
+    if (
+      typeof options.timeout !== "number" ||
+      !Number.isFinite(options.timeout) ||
+      options.timeout <= 0 ||
+      options.timeout > 60000
+    ) {
+      throw new Error(
+        `Invalid timeout "${options.timeout}": must be a positive number up to 60000ms`
+      );
+    }
+  }
+
   const diagnostics: Diagnostic[] = [];
-  const enclosures = extractEnclosures(doc);
+  const enclosures = extractEnclosures(doc, options.baseUrl);
 
   if (enclosures.length === 0) {
     return diagnostics;
@@ -354,7 +585,7 @@ export async function validateRemote(
 
   // Process URLs in batches for concurrency control
   const results: Array<{
-    enclosure: (typeof enclosures)[0];
+    enclosure: ExtractedEnclosure;
     result: UrlCheckResult;
   }> = [];
 
@@ -363,29 +594,29 @@ export async function validateRemote(
     const batchResults = await Promise.all(
       batch.map(async (enc) => ({
         enclosure: enc,
-        result: await checkUrl(enc.url, options),
+        result: await checkUrl(enc, options),
       }))
     );
     results.push(...batchResults);
   }
 
-  // Generate diagnostics from results
+  // Generate diagnostics in stable, deterministic order
   for (const { enclosure, result } of results) {
     const { element } = enclosure;
     const path = buildPath(element);
 
-    // W023: URL skipped (local/private)
+    // W023: URL skipped (local/private or unresolvable relative)
     if (result.skipped) {
       diagnostics.push({
         id: "W023",
         severity: "warning",
-        message: `Skipped URL check: ${result.skipReason} (${enclosure.url})`,
+        message: `Skipped URL check: ${result.skipReason} (${enclosure.rawUrl})`,
         line: element.line,
         column: element.column,
         path,
         fix: `Use a publicly accessible URL for production appcasts`,
       });
-      continue; // Skip other checks for skipped URLs
+      continue;
     }
 
     // W024: URL uses HTTP instead of HTTPS
@@ -424,6 +655,19 @@ export async function validateRemote(
       });
     }
 
+    // W021: URL redirects
+    if (result.redirected && result.finalUrl) {
+      diagnostics.push({
+        id: "W021",
+        severity: "warning",
+        message: `URL redirects to: ${result.finalUrl}`,
+        line: element.line,
+        column: element.column,
+        path,
+        fix: `Consider using the final URL directly: ${result.finalUrl}`,
+      });
+    }
+
     // E028: Content-Length doesn't match declared length
     if (
       result.contentLength !== null &&
@@ -438,19 +682,6 @@ export async function validateRemote(
         column: element.column,
         path,
         fix: `Update the length attribute to ${result.contentLength}`,
-      });
-    }
-
-    // W021: URL redirects
-    if (result.redirected && result.finalUrl) {
-      diagnostics.push({
-        id: "W021",
-        severity: "warning",
-        message: `URL redirects to: ${result.finalUrl}`,
-        line: element.line,
-        column: element.column,
-        path,
-        fix: `Consider using the final URL directly: ${result.finalUrl}`,
       });
     }
 
@@ -490,8 +721,8 @@ function buildPath(element: XmlElement): string {
         (c) => c.type === "element" && c.name === current!.name
       );
       if (siblings.length > 1) {
-        const index = siblings.indexOf(current);
-        part += `[${index + 1}]`;
+        const idx = siblings.indexOf(current) + 1;
+        part += `[${idx}]`;
       }
     }
     parts.unshift(part);

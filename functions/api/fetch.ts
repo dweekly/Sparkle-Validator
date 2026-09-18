@@ -500,7 +500,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         );
       }
 
-      return new Response(JSON.stringify({ xml }), {
+      return new Response(JSON.stringify({ xml, finalUrl: currentUrl }), {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",

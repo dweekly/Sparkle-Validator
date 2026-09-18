@@ -24,16 +24,42 @@ program
   .option("-q, --quiet", "Only show errors")
   .option("-c, --check-urls", "Check that URLs exist and sizes match")
   .option("--timeout <ms>", "Timeout for URL checks in milliseconds", "10000")
+  .option("--concurrency <n>", "Maximum concurrent URL checks", "5")
+  .option("--base-url <url>", "Base URL for resolving relative links")
+  .option(
+    "--require-signed-feed",
+    "Require valid Ed25519 signatures for enclosures and release notes"
+  )
   .action(async (source: string, options) => {
     try {
-      const xml = await readSource(source);
-      const result = validate(xml);
+      const { xml, feedUrl } = await readSource(source);
+      const effectiveBaseUrl = options.baseUrl || feedUrl;
+      const result = validate(xml, {
+        baseUrl: effectiveBaseUrl,
+        requireSignedFeed: options.requireSignedFeed,
+      });
 
       // Run remote validation if --check-urls is specified
       if (options.checkUrls) {
+        const timeout = parseInt(options.timeout, 10);
+        if (isNaN(timeout) || timeout <= 0) {
+          throw new Error(
+            `Invalid --timeout value "${options.timeout}": must be a positive number`
+          );
+        }
+
+        const concurrency = parseInt(options.concurrency, 10);
+        if (isNaN(concurrency) || concurrency < 1 || concurrency > 50) {
+          throw new Error(
+            `Invalid --concurrency value "${options.concurrency}": must be an integer between 1 and 50`
+          );
+        }
+
         const { document } = parseXml(xml);
         const remoteDiags = await validateRemote(document, {
-          timeout: parseInt(options.timeout, 10) || 10000,
+          timeout,
+          concurrency,
+          baseUrl: effectiveBaseUrl,
         });
         result.diagnostics.push(...remoteDiags);
 
@@ -93,21 +119,26 @@ program
     }
   });
 
-async function readSource(source: string): Promise<string> {
+async function readSource(
+  source: string
+): Promise<{ xml: string; feedUrl?: string }> {
   // Stdin
   if (source === "-") {
-    return readStdin();
+    const xml = await readStdin();
+    return { xml };
   }
 
   // URL
   if (source.startsWith("http://") || source.startsWith("https://")) {
-    return fetchUrl(source);
+    const { text, finalUrl } = await fetchUrl(source);
+    return { xml: text, feedUrl: finalUrl };
   }
 
   // File path
   const filePath = resolve(source);
   try {
-    return readFileSync(filePath, "utf-8");
+    const xml = readFileSync(filePath, "utf-8");
+    return { xml };
   } catch (err) {
     const code = (err as { code?: string }).code;
     if (code === "ENOENT") {
