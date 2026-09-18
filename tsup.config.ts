@@ -42,7 +42,10 @@ export default defineConfig([
       // Copy HTML and CSS from src/web to public (src/web is source of truth)
       copyFileSync("src/web/index.html", "public/index.html");
       copyFileSync("src/web/style.css", "public/style.css");
-      console.log("Copied index.html and style.css to public/");
+      copyFileSync("appcast.xsd", "public/appcast.xsd");
+      copyFileSync("sparkle-appcast.xsd", "public/sparkle-appcast.xsd");
+      copyFileSync("xml.xsd", "public/xml.xsd");
+      console.log("Copied index.html, style.css, and XSD schemas to public/");
     },
   },
 ]);

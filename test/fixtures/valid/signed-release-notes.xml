@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Signed Release Notes Example</title>
+    <link>https://example.com</link>
+    <item>
+      <title>Version 2.0.0</title>
+      <pubDate>Thu, 13 Jul 2026 14:30:00 -0700</pubDate>
+      <sparkle:version>200</sparkle:version>
+      <sparkle:shortVersionString>2.0.0</sparkle:shortVersionString>
+      <sparkle:criticalUpdate sparkle:version="150"/>
+      <sparkle:releaseNotesLink
+        xml:lang="en"
+        sparkle:edSignature="c2lnbmF0dXJlMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OA=="
+        sparkle:length="4096">https://example.com/notes-en.html</sparkle:releaseNotesLink>
+      <sparkle:fullReleaseNotesLink
+        xml:lang="en"
+        sparkle:edSignature="c2lnbmF0dXJlMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OA=="
+        sparkle:length="8192">https://example.com/full-notes.html</sparkle:fullReleaseNotesLink>
+      <enclosure
+        url="https://example.com/app-2.0.0.zip"
+        length="1234567"
+        type="application/octet-stream"
+        sparkle:edSignature="c2lnbmF0dXJlMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3OA=="/>
+    </item>
+  </channel>
+</rss>

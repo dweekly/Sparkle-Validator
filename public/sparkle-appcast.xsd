@@ -12,7 +12,7 @@
 
   Namespace: http://www.andymatuschak.org/xml-namespaces/sparkle
 
-  Version: 1.0 (supports Sparkle 2.9+)
+  Version: 1.2 (supports Sparkle 2.9+)
 -->
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -24,7 +24,7 @@
 
   <!-- Import XML namespace for xml:lang attribute -->
   <xs:import namespace="http://www.w3.org/XML/1998/namespace"
-             schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+             schemaLocation="xml.xsd"/>
 
   <!-- ==================== SIMPLE TYPES ==================== -->
 
@@ -128,8 +128,8 @@
       <xs:simpleContent>
         <xs:extension base="xs:anyURI">
           <xs:attribute ref="xml:lang"/>
-          <xs:attribute name="edSignature" type="sparkle:signatureType"/>
-          <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+          <xs:attribute ref="sparkle:edSignature"/>
+          <xs:attribute ref="sparkle:length"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -141,8 +141,8 @@
       <xs:simpleContent>
         <xs:extension base="xs:anyURI">
           <xs:attribute ref="xml:lang"/>
-          <xs:attribute name="edSignature" type="sparkle:signatureType"/>
-          <xs:attribute name="length" type="xs:nonNegativeInteger"/>
+          <xs:attribute ref="sparkle:edSignature"/>
+          <xs:attribute ref="sparkle:length"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -154,7 +154,7 @@
   <!-- sparkle:criticalUpdate -->
   <xs:element name="criticalUpdate">
     <xs:complexType mixed="true">
-      <xs:attribute name="version" type="sparkle:versionType"/>
+      <xs:attribute ref="sparkle:version"/>
     </xs:complexType>
   </xs:element>
 
@@ -197,6 +197,7 @@
 
   <xs:attribute name="version" type="sparkle:versionType"/>
   <xs:attribute name="shortVersionString" type="xs:string"/>
+  <xs:attribute name="length" type="xs:nonNegativeInteger"/>
   <xs:attribute name="edSignature" type="sparkle:signatureType"/>
   <xs:attribute name="dsaSignature" type="sparkle:signatureType"/>
   <xs:attribute name="os" type="sparkle:osType"/>

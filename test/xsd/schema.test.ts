@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { execFileSync } from "child_process";
 import { readdirSync } from "fs";
 import { join } from "path";
@@ -6,7 +6,7 @@ import { join } from "path";
 /**
  * XSD Schema Validation Tests
  *
- * These tests validate our XSD schema against fixtures.
+ * These tests validate our self-contained XSD schema against fixtures offline.
  * Requires xmllint to be installed (comes with libxml2).
  */
 
@@ -15,16 +15,28 @@ const SCHEMA_PATH = join(process.cwd(), "appcast.xsd");
 
 function validateWithXsd(xmlPath: string): { valid: boolean; error?: string } {
   try {
-    execFileSync("xmllint", ["--schema", SCHEMA_PATH, "--noout", xmlPath], {
+    execFileSync("xmllint", ["--schema", SCHEMA_PATH, "--nonet", "--noout", xmlPath], {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
     });
     return { valid: true };
   } catch (e) {
     const error = e as { stdout?: string; stderr?: string; message?: string };
+    const errorText = error.stderr || error.stdout || error.message || "";
+
+    // Fail immediately on schema infrastructure / compilation errors
+    if (
+      errorText.includes("compilation error") ||
+      errorText.includes("failed to load external entity") ||
+      errorText.includes("failed to parse") ||
+      errorText.includes("failed to build")
+    ) {
+      throw new Error(`Schema compilation or dependency failure: ${errorText}`, { cause: e });
+    }
+
     return {
       valid: false,
-      error: error.stdout || error.stderr || error.message,
+      error: errorText,
     };
   }
 }
@@ -42,6 +54,14 @@ function hasXmllint(): boolean {
 const XSD_TEST_TIMEOUT = 30000;
 
 describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
+  beforeAll(() => {
+    // Assert schema compiles offline against a baseline minimal fixture
+    const baseline = validateWithXsd(join(FIXTURES_DIR, "valid/minimal.xml"));
+    if (!baseline.valid) {
+      throw new Error(`XSD Schema failed to compile offline: ${baseline.error}`);
+    }
+  });
+
   describe("Valid fixtures should pass XSD", () => {
     const validFixtures = readdirSync(join(FIXTURES_DIR, "valid")).filter((f) =>
       f.endsWith(".xml")
@@ -82,6 +102,7 @@ describe.skipIf(!hasXmllint())("XSD Schema Validation", () => {
       "bad-rollout.xml", // "not-a-number" for phasedRolloutInterval
       "invalid-os.xml", // "linux" is not valid (only macos/windows)
       "real-world-broken.xml", // Invalid version format, channel name
+      "bad-critical-version.xml", // Invalid criticalUpdate version
     ];
 
     it.each(typeInvalid)(

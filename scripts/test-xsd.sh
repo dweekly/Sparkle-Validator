@@ -12,10 +12,16 @@ EXPECTED_FAIL=0
 echo "=== Testing XSD schema ==="
 echo ""
 
+# Pre-check: verify schema compiles offline
+if ! xmllint --schema appcast.xsd --nonet --noout test/fixtures/valid/minimal.xml >/dev/null 2>&1; then
+  echo "FATAL: appcast.xsd failed to compile offline with xmllint --nonet" >&2
+  exit 1
+fi
+
 # Test valid fixtures (should all pass)
 echo "Valid fixtures (should pass):"
 for f in test/fixtures/valid/*.xml; do
-  if xmllint --schema appcast.xsd --noout "$f" 2>/dev/null; then
+  if xmllint --schema appcast.xsd --nonet --noout "$f" 2>/dev/null; then
     echo "  ✓ $(basename "$f")"
     ((PASS++))
   else
@@ -27,19 +33,21 @@ done
 echo ""
 
 # Test structurally invalid fixtures (should fail XSD)
-echo "Structural errors (should fail XSD):"
+echo "Structural/schema errors (should fail XSD):"
 STRUCTURAL_INVALID=(
   "malformed.xml"      # Not well-formed XML
   "not-rss.xml"        # Root is not <rss>
   "no-channel.xml"     # Missing <channel>
   "bad-namespace.xml"  # Wrong namespace
-  # Note: no-items.xml moved to semantic - XSD can't enforce "at least one item"
-  # while also allowing flexible element ordering
+  "bad-rollout.xml"    # Non-numeric phasedRolloutInterval
+  "invalid-os.xml"     # Invalid OS attribute
+  "real-world-broken.xml"
+  "bad-critical-version.xml"
 )
 for f in "${STRUCTURAL_INVALID[@]}"; do
   path="test/fixtures/invalid/$f"
   if [ -f "$path" ]; then
-    if xmllint --schema appcast.xsd --noout "$path" 2>/dev/null; then
+    if xmllint --schema appcast.xsd --nonet --noout "$path" 2>/dev/null; then
       echo "  ✗ $f - UNEXPECTED PASS"
       ((FAIL++))
     else
@@ -63,7 +71,7 @@ SEMANTIC_INVALID=(
 for f in "${SEMANTIC_INVALID[@]}"; do
   path="test/fixtures/invalid/$f"
   if [ -f "$path" ]; then
-    if xmllint --schema appcast.xsd --noout "$path" 2>/dev/null; then
+    if xmllint --schema appcast.xsd --nonet --noout "$path" 2>/dev/null; then
       echo "  ✓ $f (XSD passes, validator catches)"
       ((PASS++))
     else
