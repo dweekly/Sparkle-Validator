@@ -1,11 +1,11 @@
 class SparkleValidator < Formula
   desc "Validate Sparkle appcast.xml feeds for macOS app updates"
   homepage "https://github.com/dweekly/Sparkle-Validator"
-  url "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-1.0.0.tgz"
+  url "https://registry.npmjs.org/sparkle-validator/-/sparkle-validator-1.2.1.tgz"
   sha256 "PLACEHOLDER_SHA256"
   license "MIT"
 
-  depends_on "node"
+  depends_on "node" => ">=22"
 
   def install
     system "npm", "install", *std_npm_args
@@ -14,7 +14,7 @@ class SparkleValidator < Formula
 
   test do
     (testpath/"test.xml").write <<~XML
-      <?xml version="1.0"?>
+      <?xml version="1.0" encoding="utf-8"?>
       <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
         <channel>
           <title>Test</title>
@@ -23,8 +23,9 @@ class SparkleValidator < Formula
             <title>v1.0</title>
             <pubDate>Thu, 13 Jul 2023 14:30:00 -0700</pubDate>
             <sparkle:version>100</sparkle:version>
+            <sparkle:minimumSystemVersion>11.0</sparkle:minimumSystemVersion>
             <description>Test</description>
-            <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="s"/>
+            <enclosure url="https://example.com/a.zip" length="1" type="application/octet-stream" sparkle:edSignature="QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ=="/>
           </item>
         </channel>
       </rss>

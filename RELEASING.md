@@ -11,9 +11,13 @@ the tag. The workflow does the rest.
 
 ## Pre-Release Checklist
 
-- [ ] All tests pass: `npm test`
-- [ ] Linting passes: `npm run lint`
+- [ ] Node.js baseline verified: `>=22` (`node -v`)
+- [ ] All unit and integration tests pass: `npm test`
+- [ ] XSD schema validation passes: `npm run test:xsd`
+- [ ] Linting and type-checking pass: `npm run lint`
+- [ ] Code formatting check passes: `npm run format:check`
 - [ ] Build succeeds: `npm run build`
+- [ ] Packaging dry-run succeeds: `npm pack --dry-run`
 - [ ] CHANGELOG.md updated with new version section
 
 ## Version Bump
@@ -25,8 +29,9 @@ the tag. The workflow does the rest.
 
 2. **Update action.yml** to reference the new npm package version:
    ```yaml
-   CMD="npx sparkle-validator@X.Y.Z"
+   DEFAULT_VERSION="X.Y.Z"
    ```
+   (and update default `npx --yes sparkle-validator@X.Y.Z` in `action.yml` if pinned)
 
 3. **Update CHANGELOG.md** with release date and changes
 
@@ -148,6 +153,8 @@ that one version's attestation gap.
 
 ### Manual Homebrew tap update
 
+> **Note:** In standard releases, step 2 (`github-release`) in `.github/workflows/release.yml` automatically downloads the newly published npm tarball, calculates the SHA256 checksum, updates `Formula/sparkle-validator.rb` in `dweekly/homebrew-sparkle-validator`, and verifies the tap install. This manual procedure is only necessary if CI tap automation failed.
+
 ```bash
 VERSION="X.Y.Z"
 curl -fsSL -o /tmp/sparkle-validator.tgz \
@@ -160,6 +167,7 @@ cd homebrew-sparkle-validator
 # Edit Formula/sparkle-validator.rb:
 # - Update url to sparkle-validator-${VERSION}.tgz
 # - Update sha256 to ${SHA256}
+# - Ensure `depends_on "node" => ">=22"` is present
 
 git add Formula/sparkle-validator.rb
 git commit -m "Update sparkle-validator to ${VERSION}"

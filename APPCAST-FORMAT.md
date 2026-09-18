@@ -298,6 +298,36 @@ If `SURequireSignedFeed` is enabled:
 </sparkle:releaseNotesLink>
 ```
 
+> **Important:** Note that `sparkle:length` on release notes elements must be namespace-qualified with `sparkle:`. Unqualified `length` is only standard RSS on `<enclosure>`.
+
+### Signature Validation vs Cryptographic Authentication
+
+Sparkle Validator performs **structural and format validation** of signatures:
+- Base64 format verification with canonical padding check.
+- Verification that decoded Ed25519 signatures are exactly 64 bytes (88 base64 characters).
+- Verification that legacy DSA signatures are non-empty base64 strings.
+- Validation that signed-feed mode (`requireSignedFeed`) requires all updates and release notes to include signatures and lengths.
+
+Sparkle Validator **does not** perform cryptographic verification of signatures against archive binaries or developer public keys (which requires downloading the entire archive payload and possessing the private/public Ed25519 key pair).
+
+---
+
+## Sparkle 2.10 Migration & Compatibility
+
+Sparkle 2.10 introduced several important changes to requirements and best practices:
+
+### 1. Minimum System Version (macOS 12.0+)
+Items bundling Sparkle 2.10 or newer must specify a `sparkle:minimumSystemVersion` of at least `12.0` (macOS Monterey), because the Sparkle 2.10 framework itself drops support for macOS 11 and earlier.
+When validating feeds with historical releases, specify target versions (e.g. `--target-sparkle-version 200=2.10.0`) so older releases targeting earlier macOS versions (e.g. macOS 10.13+) are preserved without false positives.
+
+### 2. Signed Release Notes Metadata
+When running in signed feed mode (`SURequireSignedFeed`), Sparkle 2.10 enforces that all release notes links (`sparkle:releaseNotesLink` and `sparkle:fullReleaseNotesLink`) across all locales have:
+- A valid `sparkle:edSignature` attribute
+- A valid, positive `sparkle:length` attribute (qualified with the `sparkle:` namespace)
+
+### 3. Qualified Length Attribute
+On `<sparkle:releaseNotesLink>` and `<sparkle:fullReleaseNotesLink>`, the byte length attribute must be qualified as `sparkle:length="..."`. Unqualified `length="..."` is reserved for RSS standard `<enclosure>` elements.
+
 ---
 
 ## Complete Example
@@ -368,6 +398,7 @@ If `SURequireSignedFeed` is enabled:
 
 | Sparkle Version | Notable Appcast Changes |
 |-----------------|------------------------|
+| 2.10 | Framework requirement raised to macOS 12.0; signed release notes metadata enforcement; Apple Archive improvements |
 | 2.9 | `sparkle:hardwareRequirements`, `sparkle:minimumUpdateVersion` |
 | 2.7 | Apple Archive (`.aar`) support |
 | 2.4 | `sparkle:format` attribute for description |
