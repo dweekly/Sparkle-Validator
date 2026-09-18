@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Security
+
+- **GitHub Action Hardening (R01):** Replaced shell interpolation in `action.yml` with positional data arguments passed to a dedicated runner (`scripts/run-action.mjs`), eliminating shell command injection vulnerabilities. Single-pass execution eliminates redundant network calls.
+- **Proxy Egress & SSRF Protection (R02, R04):** Hardened Cloudflare fetch proxy (`functions/api/fetch.ts`) against SSRF attacks:
+  - Added IPv6 filtering for loopback (`::1`), link-local (`fe80::/10`), unique local (`fc00::/7`), and IPv4-mapped IPv6 (`::ffff:0:0/96`).
+  - Enforced egress security across redirect chains (up to 3 hops).
+  - Explicitly blocked internal cloud metadata endpoints (e.g., `169.254.169.254`, `metadata.google.internal`).
+  - Bounded response bodies to 10 MB and timeouts to 5 seconds.
+- **Remote Validation Bounds (R10):** Enforced concurrency (1–50) and timeout (1–60000ms) bounds in `src/core/remote.ts`. Added guaranteed timer cleanup in `finally` blocks and stream cancellation on probe aborts.
+
+### Added
+
+- **Sparkle 2.10 Compatibility (R11):** Added `E036` enforcing `sparkle:minimumSystemVersion >= 12.0` for items bundling Sparkle 2.10+, with item targeting (`--target-sparkle-version`) to preserve older releases in mixed-history feeds without false positives.
+- **Strict Signature & Signed-Feed Validation (R08):**
+  - Pure browser-safe base64 decoding with canonical padding and length verification.
+  - `E031`: Invalid Ed25519 signature format (must decode to exactly 64 bytes).
+  - `E033`: Malformed release notes link signature.
+  - `E034`: Malformed `sparkle:length` on release notes link.
+  - `E032` / `E035`: Enforce signatures and lengths on all updates and release notes in signed-feed mode (`requireSignedFeed`).
+  - `W050`: Warn if release notes length is 0 bytes.
+  - `W051`: Warn if release notes length uses unqualified `length` instead of `sparkle:length`.
+- **Sparkle 2.9 Feature Validation (R07):** Added validation for `sparkle:hardwareRequirements` (`I006`, `W036`) and `sparkle:minimumUpdateVersion` (`I007`, `W048`, `W049`).
+- **Web UI Keyboard Accessibility (R12):** Converted collapsible section headers to native `<button type="button">` controls with `aria-expanded` and `aria-controls` linked to section regions. Added automatic focus restoration to `#results` on run completion and visible `:focus-visible` styling.
+- **Offline Self-Contained XSD Validation (R05):** Vendored `xml.xsd` to allow offline schema compilation without network fetches. Qualified `sparkle:version` on `criticalUpdate` and `xml:lang` on `releaseNotesLink`.
+
+### Changed
+
+- **Node.js Baseline (R03):** Raised minimum Node.js engine baseline from `>=20` to `>=22`. Updated CI matrix to `[22, 24]`.
+- **Lossless Diagnostics & ID Disambiguation (R06):**
+  - Resolved rule ID collisions: assigned unique IDs `W044` (conflicting version), `W045` (invalid min macOS), `W046` (invalid max macOS), and `W047` (enclosure-only version).
+  - `result.diagnostics` now preserves every occurrence losslessly without dropping distinct messages or line numbers. Added `consolidateDiagnostics()` presentation helper.
+  - Enforced strict ID uniqueness across all rule files via automated tests.
+- **Item Interpretation & Precedence (R07):** `<sparkle:version>` element now strictly takes precedence over `<enclosure sparkle:version>` attribute, matching Sparkle framework behavior. Supported both canonical and legacy Sparkle namespace URI aliases.
+- **URL Resolution (R09):** Validates all localized release notes links and supports relative URL resolution against `--base-url` (or remote feed URL in web proxy).
+
 ## [1.2.1] - 2026-04-29
 
 Maintenance release. No user-facing validator behavior changes.
